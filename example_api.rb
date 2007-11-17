@@ -1,4 +1,4 @@
-machine = StateMachine.specify do
+StateMachine.specify :item_lifecycle do
 
   initial_state :new
 
@@ -56,3 +56,8 @@ machine = StateMachine.specify do
   end
   
 end
+
+item_lifecycle_machine = StateMachine.new(:item_lifecycle)
+# :some_action is called cuz :on_entry to :new
+item_lifecycle_machine.current_state # => :new
+item_lifecycle_machine.states # => [:new, :deleted_before_approved]
