@@ -38,12 +38,17 @@ private
       @config["#{@states.last}#{name}"] = config
     end
     
+    def action(name, &proc)
+      @actions ||= {}
+      @actions[name] = proc
+    end
+    
     def initial_state(name)
       @initial_state = name
     end
     
     def to_specification
-      Specification.new(@states, @events, @initial_state, @config)
+      Specification.new(@states, @events, @initial_state, @config, @actions)
     end
     
   end
@@ -51,15 +56,18 @@ private
   # describes a Machine and how it should work, can validate itself
   class Specification
     attr_reader :states, :initial_state
-    def initialize(states, events, initial_state, config)
+    def initialize(states, events, initial_state, config, actions)
       @states, @events, @initial_state = states, events, initial_state
-      @config = config
+      @config, @actions = config, actions
     end
     def events_for_state(state)
       @events[state]
     end
     def config_for_event_in_state(state, event)
       @config["#{state}#{event}"]
+    end
+    def action(name)
+      @actions[name]
     end
   end
   
@@ -85,7 +93,15 @@ private
     
     def method_missing(event, *args, &block)
       if events_for_state(current_state).include?(event)
-        @current_state = @specification.config_for_event_in_state(current_state, event)[:transition_to]
+        config = @specification.config_for_event_in_state(current_state, event)
+        @current_state = config[:transition_to]
+        if config[:trigger]
+          if config[:trigger].is_a? Array
+            config[:trigger].each { |n| instance_eval &@specification.action(n) }
+          else
+            instance_eval &@specification.action(config[:trigger])
+          end
+        end 
       else
         raise Exceptions::InvalidEvent.new("#{event.inspect} is an invalid event for state #{current_state.inspect}, did you mean one of #{events_for_state(current_state).inspect}?")
       end
