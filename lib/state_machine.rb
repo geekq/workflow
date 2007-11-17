@@ -32,8 +32,10 @@ private
       instance_eval(&events) if events
     end
     
-    def event(name)
+    def event(name, config = {})
       (@events ||= {}; @events[@states.last] ||= []) << name
+      @config ||= {}
+      @config["#{@states.last}#{name}"] = config
     end
     
     def initial_state(name)
@@ -41,7 +43,7 @@ private
     end
     
     def to_specification
-      Specification.new(@states, @events, @initial_state)
+      Specification.new(@states, @events, @initial_state, @config)
     end
     
   end
@@ -49,11 +51,15 @@ private
   # describes a Machine and how it should work, can validate itself
   class Specification
     attr_reader :states, :initial_state
-    def initialize(states, events, initial_state)
+    def initialize(states, events, initial_state, config)
       @states, @events, @initial_state = states, events, initial_state
+      @config = config
     end
     def events_for_state(state)
       @events[state]
+    end
+    def config_for_event_in_state(state, event)
+      @config["#{state}#{event}"]
     end
   end
   
@@ -75,6 +81,21 @@ private
     
     def events_for_state(state)
       @specification.events_for_state(state)
+    end
+    
+    def method_missing(event, *args, &block)
+      if events_for_state(current_state).include?(event)
+        @current_state = @specification.config_for_event_in_state(current_state, event)[:transition_to]
+      else
+        raise Exceptions::InvalidEvent.new("#{event.inspect} is an invalid event for state #{current_state.inspect}, did you mean one of #{events_for_state(current_state).inspect}?")
+      end
+    end
+    
+  end
+  
+  module Exceptions
+    
+    class InvalidEvent < Exception
     end
     
   end
