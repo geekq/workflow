@@ -4,8 +4,8 @@ module StateMachine
 
   class << self
     
-    def specify(name = :default, &description)
-      @@specifications[name] = Specifier.new(&description).to_specification
+    def specify(name = :default, &states)
+      @@specifications[name] = Specifier.new(&states).to_specification
     end
     
     def new(name = :default)
@@ -23,12 +23,17 @@ private
   # implements the metaprogramming API for creating Specifications
   class Specifier
     
-    def initialize(&description)
-      instance_eval(&description)
+    def initialize(&states)
+      instance_eval(&states)
     end
     
-    def state(name)
+    def state(name, &events)
       (@states ||= []) << name
+      instance_eval(&events) if events
+    end
+    
+    def event(name)
+      (@events ||= {}; @events[@states.last] ||= []) << name
     end
     
     def initial_state(name)
@@ -36,17 +41,20 @@ private
     end
     
     def to_specification
-      spec = Specification.new
-      spec.states = @states
-      spec.initial_state = @initial_state
-      spec
+      Specification.new(@states, @events, @initial_state)
     end
     
   end
   
   # describes a Machine and how it should work, can validate itself
   class Specification
-    attr_accessor :states, :initial_state
+    attr_reader :states, :initial_state
+    def initialize(states, events, initial_state)
+      @states, @events, @initial_state = states, events, initial_state
+    end
+    def events_for_state(state)
+      @events[state]
+    end
   end
   
   # an instance of an actual machine, implementing the rest?
@@ -63,6 +71,10 @@ private
     
     def current_state
       @current_state
+    end
+    
+    def events_for_state(state)
+      @specification.events_for_state(state)
     end
     
   end
