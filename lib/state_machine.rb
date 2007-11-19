@@ -1,136 +1,155 @@
+%w(rubygems active_support).each { |f| require f }
+
 module StateMachine
 
   @@specifications = {}
 
   class << self
     
-    def specify(name = :default, &states)
-      @@specifications[name] = Specifier.new(&states).to_specification
+    def specify(name = :default, &specification)
+      @@specifications[name] = Specification.new(&specification)
     end
     
     def new(name = :default)
-      Machine.new(@@specifications[name])
+      @@specifications[name].to_machine
     end
     
-    # def reconstitute(name = :default, at_state = :default)
-    #   Machine.reconstitute(@@specifications[name], at_state)
-    # end
-    
-  end
-  
-private
-  
-  # implements the metaprogramming API for creating Specifications
-  class Specifier
-    
-    def initialize(&states)
-      instance_eval(&states)
-    end
-    
-    def state(name, args = {}, &events)
-      (@states ||= []) << name
-      @entry_actions ||= {}
-      @exit_actions ||= {}
-      @entry_actions[name] = args[:on_entry]
-      @exit_actions[name] = args[:on_exit]
-      instance_eval(&events) if events
-    end
-    
-    def event(name, config = {})
-      (@events ||= {}; @events[@states.last] ||= []) << name
-      @config ||= {}
-      @config["#{@states.last}#{name}"] = config
-    end
-    
-    def action(name, &proc)
-      @actions ||= {}
-      @actions[name] = proc
-    end
-    
-    def initial_state(name)
-      @initial_state = name
-    end
-    
-    def to_specification
-      Specification.new(@states, @events, @initial_state, @config, 
-                        @actions, @entry_actions, @exit_actions)
+    def reconstitute(name = :default, reconstitute_at = nil)
+      @@specifications[name].to_machine(reconstitute_at)
     end
     
   end
   
-  # describes a Machine and how it should work, can validate itself
   class Specification
-    attr_reader :states, :initial_state, :entry_actions, :exit_actions
-    def initialize(states, events, initial_state, config, 
-                   actions, entry_actions, exit_actions)
-      @states, @events, @initial_state = states, events, initial_state
-      @config, @actions = config, actions
-      @entry_actions, @exit_actions = entry_actions, exit_actions
+    
+    attr_accessor :states, :on_transition
+    
+    def initialize(&specification)
+      self.states = []
+      instance_eval(&specification)
     end
-    def events_for_state(state)
-      @events[state]
+    
+    def to_machine(reconstitute_at = nil)
+      Machine.new(states, on_transition, reconstitute_at)
     end
-    def config_for_event_in_state(state, event)
-      @config["#{state}#{event}"]
+    
+  private
+  
+    def state(name, &events_and_etc)
+      self.states << State.new(name)
+      instance_eval(&events_and_etc) if events_and_etc
     end
-    def action(name)
-      @actions[name]
+    
+    def on_transition(&proc)
+      self.on_transition = proc
     end
+    
+    def event(name, args = {}, &action)
+      scoped_state.events << Event.new(name, args, &action)
+    end
+    
+    def on_entry(&proc)
+      scoped_state.on_entry = proc
+    end
+    
+    def on_exit(&proc)
+      scoped_state.on_exit = proc
+    end
+    
+    def scoped_state
+      states.last
+    end
+    
   end
   
-  # an instance of an actual machine, implementing the rest?
   class Machine
     
-    def initialize(specification)
-      @specification = specification
-      @current_state = specification.initial_state
-    end
+    attr_accessor :states, :current_state, :on_transition
     
-    def states
-      @specification.states
-    end
-    
-    def current_state
-      @current_state
-    end
-    
-    def events_for_state(state)
-      @specification.events_for_state(state)
-    end
-    
-    def method_missing(event, *args, &block)
-      if events_for_state(current_state).include?(event)
-        config = @specification.config_for_event_in_state(current_state, event)
-        exit_action = @specification.exit_actions[@current_state]
-        instance_eval(&@specification.action(exit_action)) if exit_action
-        @current_state = config[:transition_to]
-        entry_action = @specification.entry_actions[@current_state]
-        instance_eval(&@specification.action(entry_action)) if entry_action
-        if config[:trigger]
-          if config[:trigger].is_a? Array
-            config[:trigger].each {|n| instance_eval &@specification.action(n)}
-          else
-            instance_eval &@specification.action(config[:trigger])
-          end
-        end 
+    def initialize(states, on_transition, reconstitute_at = nil)
+      self.states, self.on_transition = states, on_transition
+      if reconstitute_at.nil?
+        transition(nil, states.first, nil)
       else
-        raise Exceptions::InvalidEvent.new("#{event.inspect} is an invalid event for state #{current_state.inspect}, did you mean one of #{events_for_state(current_state).inspect}?")
+        self.current_state = find_state_by_name(reconstitute_at)
+      end
+    end
+    
+    def find_state_by_name(name)
+      states.detect { |s| s.name == name }
+    end
+    
+    def method_missing(name, *args)
+      if current_state.has_event?(name)
+        process_event!(name, *args)
+      else
+        super
+      end
+    end
+    
+  private
+    
+    def process_event!(name, *args)
+      event = current_state.find_event_by_name(name)
+      run_on_transition(current_state, find_state_by_name(event.transitions_to), name, *args)
+      transition(current_state, find_state_by_name(event.transitions_to), name, *args)
+      run_action(event.action, *args)
+    end
+    
+    def transition(from, to, name, *args)
+      run_on_exit(from, to, name, *args)
+      self.current_state = to
+      run_on_entry(to, from, name, *args)
+    end
+    
+    def run_on_transition(*args)
+      on_transition.call(*args) if on_transition
+    end
+    
+    def run_action(action, *args)
+      instance_exec(*args, &action) if action
+    end
+    
+    def run_on_entry(state, prior_state, triggering_event, *args)
+      if state.on_entry
+        instance_exec(prior_state, triggering_event, *args, &state.on_entry)
+      end
+    end
+    
+    def run_on_exit(state, new_state, triggering_event, *args)
+      if state and state.on_exit
+        instance_exec(new_state, triggering_event, *args, &state.on_exit)
       end
     end
     
   end
   
-  module Exceptions
+  class State
     
-    class InvalidEvent < Exception
+    attr_accessor :name, :events, :on_entry, :on_exit
+    
+    def initialize(name)
+      @name, @events = name, []
+    end
+    
+    def has_event?(name)
+      !!find_event_by_name(name)
+    end
+    
+    def find_event_by_name(name)
+      events.detect { |e| e.name == name }
     end
     
   end
   
-  # do we need classes for Actions/Events/Transitions/Etc? Perhaps
-  # in specification?
-  
-  # don't forget the bind-mode, the ability to plug in to
-  # another object and merge w/ it's API
+  class Event
+    
+    attr_accessor :name, :transitions_to, :action
+    
+    def initialize(name, args, &action)
+      @name, @transitions_to, @action = name, args[:transitions_to], action
+    end
+    
+  end
 
 end

@@ -35,8 +35,12 @@ class Item < ActiveRecord::Base
     state :rejected
     
     state :for_sale, do
-      on_entry { SomeCachingSingleton.add(self) }
-      on_exit  { SomeCachingSingleton.remove(self) }
+      on_entry do |prior_state, triggering_event, *event_args|
+        SomeCachingSingleton.add(self)
+      end
+      on_exit do |new_state, triggering_event, *event_args|
+        SomeCachingSingleton.remove(self)
+      end
       event :delete,  :transition_to => :deleted
       event :disable, :transition_to => :disabled
     end
@@ -49,9 +53,9 @@ class Item < ActiveRecord::Base
       event :undelete, :transition_to => :for_sale
     end
     
-    on_transition |old_state, new_state, event, *event_args| do
+    on_transition |prior_state, new_state, triggering_event, *event_args| do
       # e.g. in the case of 'has_many :histories'
-      self.histories.create!(:meta => [old_state, new_state, event, event_args])
+      self.histories.create!(:meta => {})
     end
     
   end
