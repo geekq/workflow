@@ -58,6 +58,7 @@ describe 'a machine with event actions' do
 end
 
 describe 'a machine with on exit and on entry actions' do
+  
   setup do
     StateMachine.specify do
       state :looking_for_speeders do
@@ -88,7 +89,6 @@ describe 'a machine with on exit and on entry actions' do
     @machine.speeding_car_detected
     @machine.photo_taken(:a_photo)
     @machine.records.last.should == [@machine.find_state_by_name(:looking_for_speeders), :photo_taken, :a_photo]
-    
   end
   
 end
@@ -126,9 +126,92 @@ describe 'specifying and instanciating named state machines' do
   
 end
 
-# reflection
-# reconstitution, and should not run exit/entry
-# hooking into all transitionis w/ on_transition 
-# binding to other object, bound context
-# class integration
-# AR integration? 
+describe 'reconstitution of a machine (say, from a serialised object)' do
+  
+  setup do
+    StateMachine.specify do
+      state :first
+      state :second
+      state :third
+    end
+    @machine = StateMachine.reconstitute(:second)
+  end
+  
+  it 'should reconstitute at second' do
+    @machine.current_state.should == @machine.find_state_by_name(:second)
+  end
+  
+  it 'should not execute on_entry when reconsituting a machine'
+  it 'should be possible to specify a named machine to reconsitute'
+  
+end
+
+describe 'a machine with an on transition hook' do  
+  
+  setup do
+    StateMachine.specify do
+      state(:first)  { event(:next, :transitions_to => :second) { |i| nil } }
+      state(:second) { event(:next, :transitions_to => :third)  { |i| nil } }
+      state(:third)  { event(:back, :transitions_to => :second) { |i| nil } }
+      on_transition do |from, to, triggering_event, *event_args|
+        record [from, to, triggering_event]+event_args
+      end
+    end
+    @machine = StateMachine.new
+    @machine.extend(Recorder)
+  end
+  
+  it 'should execute the hook on any transition of state, passing args' do
+    @machine.next(1) # => to :second
+    @machine.next(2) # => to :third
+    @machine.back(3) # => back to :second
+    first = @machine.find_state_by_name(:first)
+    second = @machine.find_state_by_name(:second)
+    third = @machine.find_state_by_name(:third)
+    @machine.records[0].should == [first, second, :next, 1]
+    @machine.records[1].should == [second, third, :next, 2]
+    @machine.records[2].should == [third, second, :back, 3]
+  end
+  
+end
+
+describe 'binding machines to another context' do
+  it 'should execute actions, on_exit, on_entry and on_transition in context'
+  it 'should have a current_state accessor'
+  it 'should chain-patch method_missing to respond to events'
+  it 'should have access to relfection, when we implement it'
+end
+
+#
+# STOP HERE AND GO TO SLEEP DAMNIT!
+#
+
+describe 'the class integration mixin' do
+  it 'should set up a state_machine class method for describing the machine'
+  it 'should instanciate a machine on initialize'
+  it 'should behave like a typical binding'
+  it 'should work with inhertiance'
+end
+
+describe 'active record integration mixin' do
+  it 'should do what the class integration mixin does'
+  it 'should handle serializing '
+end
+
+describe 'reflecting machines' do
+  it 'should allow you to intuitively reflect states'
+  it 'should allow you to intuitively reflect allowable events in states'
+end
+
+describe 'plain old quality' do
+  it 'should not use active support\'s instance_eval'
+  it 'should have more DRY method args, y\'know?'
+end
+
+describe 'more sophisticated error handling' do
+  it 'should compare arity of procs when passing args to events'
+  it 'should carry on if you say transitions_to a non-existant state'
+  it 'should be a bit more informative on method_missing, tell of events?'
+  it 'should provide helpful information if you fuck up the DSL'
+  it 'should specifically raise errors when you forget :transitions_to'
+end

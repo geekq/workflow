@@ -8,7 +8,7 @@ module Recorder
   end
   
   def records
-    @records
+    @records or []
   end
   
 end

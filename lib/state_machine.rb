@@ -14,7 +14,7 @@ module StateMachine
       @@specifications[name].to_machine
     end
     
-    def reconstitute(name = :default, reconstitute_at = nil)
+    def reconstitute(reconstitute_at = nil, name = :default)
       @@specifications[name].to_machine(reconstitute_at)
     end
     
@@ -30,7 +30,7 @@ module StateMachine
     end
     
     def to_machine(reconstitute_at = nil)
-      Machine.new(states, on_transition, reconstitute_at)
+      Machine.new(states, @on_transition, reconstitute_at)
     end
     
   private
@@ -41,7 +41,7 @@ module StateMachine
     end
     
     def on_transition(&proc)
-      self.on_transition = proc
+      @on_transition = proc
     end
     
     def event(name, args = {}, &action)
@@ -102,8 +102,8 @@ module StateMachine
       run_on_entry(to, from, name, *args)
     end
     
-    def run_on_transition(*args)
-      on_transition.call(*args) if on_transition
+    def run_on_transition(from, to, event, *args)
+      instance_exec(from, to, event, *args, &on_transition) if on_transition
     end
     
     def run_action(action, *args)
