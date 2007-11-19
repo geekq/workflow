@@ -1,6 +1,7 @@
-class Item << ActiveRecord::Base
+class Item < ActiveRecord::Base
   
-  include StateMachine::ClassIntegration
+  # include StateMachine::ClassIntegration
+  include StateMachine::ActiveRecordIntegration # deals w/ serialization
   
   state_machine do
     
@@ -34,8 +35,8 @@ class Item << ActiveRecord::Base
     state :rejected
     
     state :for_sale, do
-      entry { SomeCachingSingleton.add(self) }
-      exit  { SomeCachingSingleton.remove(self) }
+      on_entry { SomeCachingSingleton.add(self) }
+      on_exit  { SomeCachingSingleton.remove(self) }
       event :delete,  :transition_to => :deleted
       event :disable, :transition_to => :disabled
     end
@@ -49,7 +50,8 @@ class Item << ActiveRecord::Base
     end
     
     on_transition |old_state, new_state, event, *event_args| do
-      Log.record_transition(old_state, new_state, event, event_args)
+      # e.g. in the case of 'has_many :histories'
+      self.histories.create!(:meta => [old_state, new_state, event, event_args])
     end
     
   end
