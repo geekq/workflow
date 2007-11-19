@@ -64,10 +64,11 @@ module StateMachine
   
   class Machine
     
-    attr_accessor :states, :current_state, :on_transition
+    attr_accessor :states, :current_state, :on_transition, :context
     
     def initialize(states, on_transition, reconstitute_at = nil)
       self.states, self.on_transition = states, on_transition
+      self.context = self
       if reconstitute_at.nil?
         transition(nil, states.first, nil)
       else
@@ -87,7 +88,27 @@ module StateMachine
       end
     end
     
+    def bind_to(another_context)
+      self.context = another_context
+      patch_context(another_context) if another_context != self
+    end
+    
   private
+  
+    def patch_context(context)
+      context.instance_variable_set("@state_machine", self)
+      context.instance_eval do
+        def current_state
+          @state_machine.current_state
+        end
+        alias :method_missing_before_state_machine :method_missing
+        def method_missing(method, *args)
+          @state_machine.send(method, *args)
+        rescue NoMethodError
+          method_missing_before_state_machine(method, *args)
+        end
+      end
+    end
     
     def process_event!(name, *args)
       event = current_state.find_event_by_name(name)
@@ -103,22 +124,22 @@ module StateMachine
     end
     
     def run_on_transition(from, to, event, *args)
-      instance_exec(from, to, event, *args, &on_transition) if on_transition
+      context.instance_exec(from, to, event, *args, &on_transition) if on_transition
     end
     
     def run_action(action, *args)
-      instance_exec(*args, &action) if action
+      context.instance_exec(*args, &action) if action
     end
     
     def run_on_entry(state, prior_state, triggering_event, *args)
       if state.on_entry
-        instance_exec(prior_state, triggering_event, *args, &state.on_entry)
+        context.instance_exec(prior_state, triggering_event, *args, &state.on_entry)
       end
     end
     
     def run_on_exit(state, new_state, triggering_event, *args)
       if state and state.on_exit
-        instance_exec(new_state, triggering_event, *args, &state.on_exit)
+        context.instance_exec(new_state, triggering_event, *args, &state.on_exit)
       end
     end
     

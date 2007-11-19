@@ -176,10 +176,72 @@ describe 'a machine with an on transition hook' do
 end
 
 describe 'binding machines to another context' do
-  it 'should execute actions, on_exit, on_entry and on_transition in context'
-  it 'should have a current_state accessor'
-  it 'should chain-patch method_missing to respond to events'
+  
+  setup do
+    StateMachine.specify do
+      state(:first)  { event(:next, :transitions_to => :second) {|i| record i }}
+      state(:second) { event(:next, :transitions_to => :third)  {|i| record i }}
+      state :third do 
+        event(:next, :transitions_to => :fourth)
+        event(:back, :transitions_to => :second) {|i| record i }
+        on_entry do |prior_state, triggering_event, *event_args|
+          record 'entered :third'
+        end
+        on_exit do |new_state, triggering_event, *event_args|
+          record 'exited :third'
+        end
+      end
+      state :fourth
+      on_transition do |from, to, triggering_event, *args|
+        record "transitioned from #{from.name} to #{to.name}"
+      end
+    end
+    @context = Object.new
+    @context.extend(Recorder)
+    @context.instance_eval do
+      def method_missing(method, *args)
+        "you hit #{method.inspect}"
+      end
+    end
+    @machine = StateMachine.new
+    @machine.bind_to(@context)
+  end
+  
+  it 'should execute event actions in context' do
+    @machine.next(:a)
+    @context.records.should include(:a)
+  end
+  
+  it 'should execute on_entry in context' do
+    @machine.next(:a)
+    @machine.next(:b)
+    @context.records.should include('entered :third')
+  end
+  
+  it 'should execute on_exit in context' do
+    @machine.next(:a)
+    @machine.next(:b)
+    @machine.next(:c)
+    @context.records.should include('exited :third')
+  end
+  
+  it 'should execute on_transition in context' do
+    @machine.next(:a)
+    @context.records.should include('transitioned from first to second')
+  end
+  
+  it 'should have a current_state accessor' do
+    @context.current_state.should == @machine.find_state_by_name(:first)
+  end
+  
+  it 'should chain-patch method_missing to respond to events' do
+    @context.next(:a)
+    @context.x.should == 'you hit :x'
+    @context.current_state.should == @machine.find_state_by_name(:second)
+  end
+  
   it 'should have access to relfection, when we implement it'
+  
 end
 
 #
