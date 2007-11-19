@@ -27,8 +27,12 @@ private
       instance_eval(&states)
     end
     
-    def state(name, &events)
+    def state(name, args = {}, &events)
       (@states ||= []) << name
+      @entry_actions ||= {}
+      @exit_actions ||= {}
+      @entry_actions[name] = args[:on_entry]
+      @exit_actions[name] = args[:on_exit]
       instance_eval(&events) if events
     end
     
@@ -48,17 +52,20 @@ private
     end
     
     def to_specification
-      Specification.new(@states, @events, @initial_state, @config, @actions)
+      Specification.new(@states, @events, @initial_state, @config, 
+                        @actions, @entry_actions, @exit_actions)
     end
     
   end
   
   # describes a Machine and how it should work, can validate itself
   class Specification
-    attr_reader :states, :initial_state
-    def initialize(states, events, initial_state, config, actions)
+    attr_reader :states, :initial_state, :entry_actions, :exit_actions
+    def initialize(states, events, initial_state, config, 
+                   actions, entry_actions, exit_actions)
       @states, @events, @initial_state = states, events, initial_state
       @config, @actions = config, actions
+      @entry_actions, @exit_actions = entry_actions, exit_actions
     end
     def events_for_state(state)
       @events[state]
@@ -94,10 +101,14 @@ private
     def method_missing(event, *args, &block)
       if events_for_state(current_state).include?(event)
         config = @specification.config_for_event_in_state(current_state, event)
+        exit_action = @specification.exit_actions[@current_state]
+        instance_eval(&@specification.action(exit_action)) if exit_action
         @current_state = config[:transition_to]
+        entry_action = @specification.entry_actions[@current_state]
+        instance_eval(&@specification.action(entry_action)) if entry_action
         if config[:trigger]
           if config[:trigger].is_a? Array
-            config[:trigger].each { |n| instance_eval &@specification.action(n) }
+            config[:trigger].each {|n| instance_eval &@specification.action(n)}
           else
             instance_eval &@specification.action(config[:trigger])
           end
