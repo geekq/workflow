@@ -126,7 +126,6 @@ describe 'specifying and instanciating named state machines' do
   
 end
 
-# named machines
 # reflection
 # reconstitution, and should not run exit/entry
 # hooking into all transitionis w/ on_transition 
