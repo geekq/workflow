@@ -33,10 +33,14 @@ describe 'a machine with event actions' do
         event :sell, :transitions_to => :sold do
           record "#{self.class} was sold"
         end
-        state :sold do
-          event :auction, :transitions_to => :for_sale do |reserve|
-            record "#{self.class} w/ reserve of #{reserve}"
-          end
+        event :steal, :transitions_to => :sold do |theif|
+          record "#{self.class} protecting against #{theif}, the theif!"
+          halt!
+        end
+      end
+      state :sold do
+        event :auction, :transitions_to => :for_sale do |reserve|
+          record "#{self.class} w/ reserve of #{reserve}"
         end
       end
     end
@@ -53,6 +57,12 @@ describe 'a machine with event actions' do
     @machine.sell
     @machine.auction(10)
     @machine.records.last.should == 'StateMachine::Machine w/ reserve of 10'
+  end
+  
+  it 'should not transition if action calls halt!' do
+    @machine.steal('nasty man')
+    @machine.records.last.should == "StateMachine::Machine protecting against nasty man, the theif!"
+    @machine.current_state.should == @machine.find_state_by_name(:for_sale)
   end
   
 end
@@ -91,6 +101,7 @@ describe 'a machine with on exit and on entry actions' do
     @machine.records.last.should == [@machine.find_state_by_name(:looking_for_speeders), :photo_taken, :a_photo]
   end
   
+  it 'should not execute on_entry or on_exit on halt!'
 end
 
 describe 'specifying and instanciating named state machines' do
@@ -173,6 +184,7 @@ describe 'a machine with an on transition hook' do
     @machine.records[2].should == [third, second, :back, 3]
   end
   
+  it 'should not execute hook on halt!'
 end
 
 describe 'binding machines to another context' do
@@ -241,7 +253,7 @@ describe 'binding machines to another context' do
   end
   
   it 'should have access to relfection, when we implement it'
-  
+  it 'should be ok using halt!'
 end
 
 #

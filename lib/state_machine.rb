@@ -10,8 +10,8 @@ module StateMachine
       @@specifications[name] = Specification.new(&specification)
     end
     
-    def new(name = :default)
-      @@specifications[name].to_machine
+    def new(name = :default, args = {})
+      @@specifications[name].to_machine(args[:reconstitute_at])
     end
     
     def reconstitute(reconstitute_at = nil, name = :default)
@@ -98,9 +98,10 @@ module StateMachine
     def patch_context(context)
       context.instance_variable_set("@state_machine", self)
       context.instance_eval do
-        def current_state
-          @state_machine.current_state
-        end
+        # not sure whether to keep this?
+        # def current_state
+        #   @state_machine.current_state
+        # end
         alias :method_missing_before_state_machine :method_missing
         def method_missing(method, *args)
           @state_machine.send(method, *args)
@@ -112,9 +113,16 @@ module StateMachine
     
     def process_event!(name, *args)
       event = current_state.find_event_by_name(name)
-      run_on_transition(current_state, find_state_by_name(event.transitions_to), name, *args)
-      transition(current_state, find_state_by_name(event.transitions_to), name, *args)
+      @halt = false
       run_action(event.action, *args)
+      if @halt == false
+        run_on_transition(current_state, find_state_by_name(event.transitions_to), name, *args)
+        transition(current_state, find_state_by_name(event.transitions_to), name, *args)
+      end
+    end
+    
+    def halt!
+      @halt = true
     end
     
     def transition(from, to, name, *args)
