@@ -185,6 +185,7 @@ describe 'a machine with an on transition hook' do
   end
   
   it 'should not execute hook on halt!'
+  it 'should act like a chain so we can go on_transition on_transition...'
 end
 
 describe 'binding machines to another context' do
@@ -253,6 +254,7 @@ describe 'binding machines to another context' do
   end
   
   it 'should have access to relfection, when we implement it'
+  it 'should act like a chain, i.e. so we can go on_exit on_exit...'
   it 'should be ok using halt!'
 end
 

@@ -98,10 +98,6 @@ module StateMachine
     def patch_context(context)
       context.instance_variable_set("@state_machine", self)
       context.instance_eval do
-        # not sure whether to keep this?
-        # def current_state
-        #   @state_machine.current_state
-        # end
         alias :method_missing_before_state_machine :method_missing
         def method_missing(method, *args)
           @state_machine.send(method, *args)
