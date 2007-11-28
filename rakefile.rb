@@ -4,6 +4,7 @@ end
 
 task :run_specs do
   puts `spec --require specs/bootstrap.rb --color --format specdoc specs/*_spec.rb`
+  raise "specs failed" if $?.exitstatus != 0
 end
 
 task :loc do
