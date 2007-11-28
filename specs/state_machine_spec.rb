@@ -50,7 +50,7 @@ describe 'a machine with event actions' do
   
   it 'should run event action in context of machine' do
     @machine.sell
-    @machine.records.last == 'StateMachine::Machine was sold'
+    @machine.records.last.should == 'StateMachine::Machine was sold'
   end
   
   it 'should pass in paramaters in context of machine' do
@@ -253,6 +253,7 @@ describe 'binding machines to another context' do
     @context.current_state.should == @machine.find_state_by_name(:second)
   end
   
+  it 'should support blocks with method missing too!'
   it 'should have access to relfection, when we implement it'
   it 'should act like a chain, i.e. so we can go on_exit on_exit...'
   it 'should be ok using halt!'
