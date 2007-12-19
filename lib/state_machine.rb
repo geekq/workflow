@@ -99,6 +99,20 @@ module StateMachine
       context.instance_variable_set("@state_machine", self)
       context.instance_eval do
         alias :method_missing_before_state_machine :method_missing
+        #
+        # PROBLEM: method_missing in on_transition events
+        # when bound to other context is raising confusing
+        # error messages, so need to rethink how this is
+        # implemented - i.e. should we just check that an
+        # event exists rather than send ANY message to the
+        # machine? so like:
+        #
+        # if @state_machine.has_event? blah
+        #   execute
+        # else
+        #   super ?
+        # end
+        #
         def method_missing(method, *args)
           @state_machine.send(method, *args)
         rescue NoMethodError
