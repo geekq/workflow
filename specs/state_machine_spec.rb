@@ -278,6 +278,7 @@ end
 describe 'reflecting machines' do
   it 'should allow you to intuitively reflect states'
   it 'should allow you to intuitively reflect allowable events in states'
+  it 'should allow attachment of meta data to states and state events'
 end
 
 describe 'plain old quality' do
