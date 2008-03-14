@@ -1,0 +1,29 @@
+Workflow.
+
+What is workflow?
+
+Workflow is a finite state machine inspired API for modelling and interacting with what we tend to refer to as 'workflow'.
+
+A lot of business modelling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible.
+
+We'll demonstrate the API with a real world business case. Let's go!
+
+articles
+are written
+and submitted
+which are proof read
+and either approved for publication
+or rejected for publication
+
+(simple business case example)
+
+(show)
+
+
+
+[integration]
+(manual integration with classes)
+(manual integration with AR)
+(expected automagic integration with classes)
+(expected automagic interaction with AR)
+
