@@ -4,6 +4,8 @@ What is workflow?
 
 Workflow is a finite state machine inspired API for modelling and interacting with what we tend to refer to as 'workflow'.
 
+[explain states, transitions, events and actions (and guards and hooks)]
+
 A lot of business modelling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible.
 
 We'll demonstrate the API with a real world business case. Let's go!
@@ -19,13 +21,13 @@ Let's say we're modelling article submission from journalists. An article is wri
     end
     state :being_reviewed do
       event :accept, :transitions_to => :accepted
-      event :reject, :transitions_to => :accepted
+      event :reject, :transitions_to => :rejected
     end
     state :accepted
     state :rejected
   end
 
-The initial state is :new – in this example that's somewhat meaningless. However, the :submit event :transitions_to => :being_reviewed. So, lets instantiate a machine (workflow? peh peh):
+The initial state is :new – in this example that's somewhat meaningless. (?) However, the :submit event :transitions_to => :being_reviewed. So, lets instantiate an instance of this Workflow:
 
   workflow = Workflow.new('Article Workflow')
   workflow.state # => :new
@@ -35,15 +37,34 @@ Now we can call the submit event, which transitions to the :awaiting_review stat
   workflow.submit
   workflow.state # => :awaiting_approval
   
-...
+Events are actually instance methods on a workflow, and depending on the state you're in, you'll have a different set of events used to transition to other states.
+
+Given this workflow is now :awaiting_approval, we have a :review event, that we call when someone begins to review the article, which puts the workflow into the :being_reviewed state.
+
+Lets say that the business rule is that only one person can review an article at a time – having a state :being_reviewed allows for doing things like checking which articles are being reviewed, and being able to select from a pool of articles that are awaiting review, etc. (rewrite?)
+
+Now lets say another business rule is that we need to keep track of who is currently reviewing what, how do we do this? We'll now introduce the concept of an action by rewriting our :review event.
+
+  event :review, :transitions_to => :being_reviewed do |reviewer|
+    # store the reviewer somewhere for later
+  end
+
+By using Ruby blocks we've now introduced extra code to be fired when an event is called. The block paramaters are treated as method arguments on the event, so, given we have a reference to the reviewer, the event call becomes:
+
+  # we gots a reviewer
+  workflow.reivew(reviewer)
+
+OK, so how do we store the reviewer? What is the scope inside that block? Ah, we'll get to that in a bit. An instance of a workflow isn't as useful as a workflow bound to an instance of another class. We'll introduce you to plain old Class integration and ActiveRecord integration later in this document.
+
+So we've covered events, states, transitions and actions (as Ruby blocks). Now we're going to go over some hooks you have access to in a workflow. These are on_exit, on_entry and on_transition.
 
 ----------
 
-(simple business case example)
-
-(show)
-
-
+* on_entry & on_exit
+* on_transition
+* halt! (guards)
+* reflection
+* meta-reflection
 
 [integration]
 (manual integration with classes)

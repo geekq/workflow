@@ -1,3 +1,9 @@
+#
+#
+# THIS API MAY BE GROSSLY OUT OF DATE
+# 
+#
+
 class Item < ActiveRecord::Base
   
   # include StateMachine::ClassIntegration
