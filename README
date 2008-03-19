@@ -2,15 +2,15 @@ Workflow.
 
 What is workflow?
 
-Workflow is a finite state machine inspired API for modelling and interacting with what we tend to refer to as 'workflow'.
+Workflow is a finite-state-machine-inspired API for modelling and interacting with what we tend to refer to as 'workflow'.
+
+A lot of business modelling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible, using similar terminology as found in state machine theory.
 
 [explain states, transitions, events and actions (and guards and hooks)]
 
-A lot of business modelling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible.
-
 We'll demonstrate the API with a real world business case. Let's go!
 
-Let's say we're modelling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Here is the expression of this workflow using the API:
+Let's say we're modelling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Explaining all that is a pain in the arse. Here is the expression of this workflow using the API:
 
   Workflow.define 'Article Workflow' do
     state :new do
@@ -26,6 +26,8 @@ Let's say we're modelling article submission from journalists. An article is wri
     state :accepted
     state :rejected
   end
+  
+Much better, isn't it!
 
 The initial state is :new – in this example that's somewhat meaningless. (?) However, the :submit event :transitions_to => :being_reviewed. So, lets instantiate an instance of this Workflow:
 
@@ -58,6 +60,40 @@ OK, so how do we store the reviewer? What is the scope inside that block? Ah, we
 
 So we've covered events, states, transitions and actions (as Ruby blocks). Now we're going to go over some hooks you have access to in a workflow. These are on_exit, on_entry and on_transition.
 
+When states transition, they are entered into, and exited out of, we can hook into this and do fancy junk.
+
+# code for both on_exit and on_entry #
+
+Now why don't we just put this code into an action block? Well, you might not have only one event that transitions into a state, you may have multiple events that transition to a particular state, so by using the on_entry and on_exit hooks you're guaranteeing that a certain bit of code is executed, regardless what event fires the transition.
+
+Billy Bob the Manager comes to you and says "I need to know EVERYTHING THAT HAPPENS EVERYWHERE AT ANY TIME FOR EVERYTHING". For whatever reasons you have to record the history of the entire workflow. That's easy using on_transition.
+
+# code for on_transition #
+
+Workflow doesn't try to tell you how to store your log messages, (but we'd suggest using a *splat and storing that somewhere, and keep your log messages flexible).
+
+Finite state machines have the concept of a guard. The idea is that if a certain set of arbitrary conditions are not fulfilled, it will halt the transition from one state to another. We haven't really figured out how to do this, and we don't like the idea of going :guard => Proc.new {}, coz that's a bit lame, so instead we have halt!
+
+The halt! method is the implementation of the guard concept. Let's take a look.
+
+# code for halt! #
+
+Inline with how ActiveRecordDoesThings, halt! also can be called via halt, which makes the event return false, so you can trap it with if workflow.event instead of using a rescue block.
+
+Furthermore, halt! and halt accept an argument, which is the message why the workflow was halted.
+
+# code showing both halted_because on exception + workflow #
+
+We can reflect off the workflow to (attempt) to automate as much as we can. There are two types of reflection in Workflow - reflection and meta-reflection. We'll explain the former first.
+
+# code demonstrating reflection #
+
+Meta-reflection allows you to add further information to your states, events and ? in order to allow you to build whatever interface/controller/etc you require for your application. If reflection were Batman then meta-reflection is Robin, always there to lend a helping hand when Batman just isn't enough.
+
+# code demonstrating meta-reflection #
+
+
+
 ----------
 
 * on_entry & on_exit
@@ -65,6 +101,10 @@ So we've covered events, states, transitions and actions (as Ruby blocks). Now w
 * halt! (guards)
 * reflection
 * meta-reflection
+* ordering of firing of things
+* class integration niceness
+* AR integration niceness
+* method missing caveats and special exception...
 
 [integration]
 (manual integration with classes)
