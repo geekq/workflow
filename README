@@ -37,7 +37,7 @@ The initial state is :new – in this example that's somewhat meaningless. (?) H
 Now we can call the submit event, which transitions to the :awaiting_review state:
 
   workflow.submit
-  workflow.state # => :awaiting_approval
+  workflow.state # => :awaiting_review
   
 Events are actually instance methods on a workflow, and depending on the state you're in, you'll have a different set of events used to transition to other states.
 
@@ -62,13 +62,27 @@ So we've covered events, states, transitions and actions (as Ruby blocks). Now w
 
 When states transition, they are entered into, and exited out of, we can hook into this and do fancy junk.
 
-# code for both on_exit and on_entry #
+  state :being_reviewed do
+    event :accept, :transitions_to => :accepted
+    event :reject, :transitions_to => :rejected
+    on_exit do |new_state, triggering_event, *event_args|
+      # do something related to coming out of :being_reviewed
+    end
+  end
+  
+  state :accepted do
+    on_entry do |prior_state, triggering_event, *event_args|
+      # do something relevant to coming in to :accepted
+    end
+  end
 
 Now why don't we just put this code into an action block? Well, you might not have only one event that transitions into a state, you may have multiple events that transition to a particular state, so by using the on_entry and on_exit hooks you're guaranteeing that a certain bit of code is executed, regardless what event fires the transition.
 
 Billy Bob the Manager comes to you and says "I need to know EVERYTHING THAT HAPPENS EVERYWHERE AT ANY TIME FOR EVERYTHING". For whatever reasons you have to record the history of the entire workflow. That's easy using on_transition.
 
-# code for on_transition #
+  on_transition do |from, to, triggering_event, *event_args|
+    # record everything, or something
+  end
 
 Workflow doesn't try to tell you how to store your log messages, (but we'd suggest using a *splat and storing that somewhere, and keep your log messages flexible).
 
@@ -76,39 +90,94 @@ Finite state machines have the concept of a guard. The idea is that if a certain
 
 The halt! method is the implementation of the guard concept. Let's take a look.
 
-# code for halt! #
+  state :being_reviewed do
+    event :accept, :transitions_to => :accepted do
+      halt if true # does not transition to :accepted
+    end
+  end
 
-Inline with how ActiveRecordDoesThings, halt! also can be called via halt, which makes the event return false, so you can trap it with if workflow.event instead of using a rescue block.
+Inline with how ActiveRecordDoesThings, halt! also can be called via halt, which makes the event return false, so you can trap it with if workflow.event instead of using a rescue block. Using halt returns false.
+
+  # using halt
+  workflow.state  # => :being_reviewed
+  workflow.accept # => false
+  workflow.state  # => :being_reviewed
+  
+  # using halt!
+  workflow.state  # => :being_reviewed
+  begin
+    workflow.accept
+  rescue Workflow::Halted => e
+    # we gots an exception
+  end
+  workflow.state  # => :being_reviewed
 
 Furthermore, halt! and halt accept an argument, which is the message why the workflow was halted.
 
-# code showing both halted_because on exception + workflow #
+  state :being_reviewed do
+    event :accept, :transitions_to => :accepted do
+      halt 'coz I said so!' if true # does not transition to :accepted
+    end
+  end
+
+And the API for, like, getting this message, with both halt and halt!:
+
+  # using halt
+  workflow.state          # => :being_reviewed
+  workflow.accept         # => false
+  workflow.halted_because # => 'coz I said so!'
+  workflow.state          # => :being_reviewed
+
+  # using halt!
+  workflow.state  # => :being_reviewed
+  begin
+    workflow.accept
+  rescue Workflow::Halted => e
+    e.halted_because # => 'coz I said so!' 
+  end
+  workflow.state  # => :being_reviewed
 
 We can reflect off the workflow to (attempt) to automate as much as we can. There are two types of reflection in Workflow - reflection and meta-reflection. We'll explain the former first.
 
-# code demonstrating reflection #
+  workflow.states # => [:new, :awaiting_review, :being_reviewed, :accepted, :rejected]
+  workflow.states(:new).events # => [:submit]
+  workflow.states(:being_reviewed).events # => [:accept, :reject]
+  workflow.states(:being_reviewed).events(:accept).transitions_to # => :accepted
 
-Meta-reflection allows you to add further information to your states, events and ? in order to allow you to build whatever interface/controller/etc you require for your application. If reflection were Batman then meta-reflection is Robin, always there to lend a helping hand when Batman just isn't enough.
+Meta-reflection allows you to add further information to your states, events in order to allow you to build whatever interface/controller/etc you require for your application. If reflection were Batman then meta-reflection is Robin, always there to lend a helping hand when Batman just isn't enough.
 
-# code demonstrating meta-reflection #
+  state :new, :meta => :ui_widget => :radio_buttons do
+    event :submit, :meta => :label => 'Upload...'
+  end
+  
+And as per the last example, getting yo meta is very similar:
 
+  workflow.states(;new).meta # => {:ui_widget => :radio_buttons}
+  workflow.states(:new).meta[:ui_widget] # => :radio_buttons
+  workflow.states(:new).meta.ui_widget # => :radio_buttons
 
+  workflow.states(:new).events(:submit).meta # => {:label => 'Upload...'}
+  workflow.states(:new).events(:submit).meta[:label] # => 'Upload...'
+  workflow.states(:new).events(:submit).meta.label # => 'Upload...'
 
-----------
+The order of which things are fired when an event are as follows:
 
-* on_entry & on_exit
-* on_transition
-* halt! (guards)
-* reflection
-* meta-reflection
-* ordering of firing of things
-* class integration niceness
-* AR integration niceness
-* method missing caveats and special exception...
+  * action
+  * on_transition (if action didn't halt)
+  * on_exit
+  * WORKFLOW STATE CHANGES, i.e. transition
+  * on_entry
+  
+Note that any event arguments are passed by reference, so if you modify action arguments in the action, or any of the hooks, it may affect hooked fired later.
 
-[integration]
-(manual integration with classes)
-(manual integration with AR)
-(expected automagic integration with classes)
-(expected automagic interaction with AR)
+We promised that we'd show you how to integrate workflow with your existing classes and instances, let look.
 
+# code demonstrating class-level integration & instantiation #
+
+And as ActiveRecord is all the rage these days, lets look at it's integration procedures and requirements.
+
+# code demonstrating AR level integration & requirements #
+
+When integrating with other classes, behind the scenes Workflow sets up a Proxy to method missing. A probable common error would be to call an event that doesn't exist, so we catch NoMethodError's and helpfully let you know what available events exist:
+
+# code demonstarting the nice NoMethodError thingo #
