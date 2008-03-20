@@ -6,7 +6,7 @@ Workflow is a finite-state-machine-inspired API for modelling and interacting wi
 
 A lot of business modelling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible, using similar terminology as found in state machine theory.
 
-[explain states, transitions, events and actions (and guards and hooks)]
+#[explain states, transitions, events and actions (and guards and hooks)]#
 
 We'll demonstrate the API with a real world business case. Let's go!
 
@@ -159,6 +159,10 @@ And as per the last example, getting yo meta is very similar:
   workflow.states(:new).events(:submit).meta # => {:label => 'Upload...'}
   workflow.states(:new).events(:submit).meta[:label] # => 'Upload...'
   workflow.states(:new).events(:submit).meta.label # => 'Upload...'
+  
+Thankfully, meta responds to each so you can iterate over your values if you're so inclined.
+
+  workflow.states(:new).meta.each { |key, value| puts key, value }
 
 The order of which things are fired when an event are as follows:
 
@@ -172,12 +176,40 @@ Note that any event arguments are passed by reference, so if you modify action a
 
 We promised that we'd show you how to integrate workflow with your existing classes and instances, let look.
 
-# code demonstrating class-level integration & instantiation #
+  class Article  
+    include Workflow
+    workflow do
+      state :new do
+        event :submit, :transitions_to => :awaiting_review
+      end
+      state :awaiting_review do
+        event :approve, :transitions_to => :approved
+      end
+      state :approved
+      # ...
+    end
+  end
 
-And as ActiveRecord is all the rage these days, lets look at it's integration procedures and requirements.
+  article = Article.new
+  article.state          # => :new
+  article.submit         
+  article.state          # => :awaiting_review
+  article.approve
+  article.state          # => :approved
 
-# code demonstrating AR level integration & requirements #
+And as ActiveRecord is all the rage these days, all you need is a string field on the table called "state", which is used to store the current state. Workflow handles auto-setting of a state after a find, yet it doesn't save a record after a transition (though you could make it do this in on_transition).
+
+  class Article < ActiveRecord::Base
+    include Workflow
+    workflow do
+      # ...
+    end
+  end
 
 When integrating with other classes, behind the scenes Workflow sets up a Proxy to method missing. A probable common error would be to call an event that doesn't exist, so we catch NoMethodError's and helpfully let you know what available events exist:
 
-# code demonstarting the nice NoMethodError thingo #
+# code demonstrating the nice NoMethodError thingo #
+
+And that's about it. A update to the implementation may allow multiple workflows per instance of a class or ActiveRecord, but we haven't figured out if that's required or appropriate.
+
+Ryan Allen, March 2008.
