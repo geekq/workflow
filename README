@@ -6,9 +6,9 @@ Workflow is a finite-state-machine-inspired API for modelling and interacting wi
 
 A lot of business modelling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible, using similar terminology as found in state machine theory.
 
-#[explain states, transitions, events and actions (and guards and hooks)]#
+So, a workflow has a state. It can only be in one state at a time. When a workflow changes state, we call that a transition. Transitions occur on an event, so events cause transitions to occur. Additionally, when an event fires, other random code can be executed, we call those actions. So any given state has a bunch of events, any event in a state causes a transition to another state and potentially causes code to be executed (an action). We can hook into states when they are entered, and exited from, and we can cause transitions to fail (guards), and we can hook in to every transition that occurs ever for whatever reason we can come up with.
 
-We'll demonstrate the API with a real world business case. Let's go!
+Now, all that's a mouthful, but we'll demonstrate the API bit by bit with a real-ish world example.
 
 Let's say we're modelling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Explaining all that is a pain in the arse. Here is the expression of this workflow using the API:
 
@@ -206,10 +206,28 @@ And as ActiveRecord is all the rage these days, all you need is a string field o
     end
   end
 
-When integrating with other classes, behind the scenes Workflow sets up a Proxy to method missing. A probable common error would be to call an event that doesn't exist, so we catch NoMethodError's and helpfully let you know what available events exist:
+When integrating with other classes, behind the scenes, Workflow sets up a Proxy to method missing. A probable common error would be to call an event that doesn't exist, so we catch NoMethodError's and helpfully let you know what available events exist:
 
-# code demonstrating the nice NoMethodError thingo #
-
+  class Article  
+    include Workflow
+    workflow do
+      state :new do
+        event :submit, :transitions_to => :awaiting_review
+      end
+      state :awaiting_review do
+        event :approve, :transitions_to => :approved
+      end
+      state :approved
+      # ...
+    end
+  end
+  
+  article = Article.new
+  article.aaaa
+  NoMethodError: undefined method `aaaa' for #<Article:0xe4e8>, conversely, if you were looking to call an event for its workflow, you're in the :new state, and the available events are [:submit]
+  
+So just incase you screw something up (like I did while testing this library), it'll give you a useful message.
+  
 And that's about it. A update to the implementation may allow multiple workflows per instance of a class or ActiveRecord, but we haven't figured out if that's required or appropriate.
 
 Ryan Allen, March 2008.
