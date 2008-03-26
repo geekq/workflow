@@ -43,6 +43,15 @@ Events are actually instance methods on a workflow, and depending on the state y
 
 Given this workflow is now :awaiting_approval, we have a :review event, that we call when someone begins to review the article, which puts the workflow into the :being_reviewed state.
 
+States can also be queried via predicates for convenience like so:
+
+  workflow = Workflow.new('Article Workflow')
+  workflow.new?             # => true
+  workflow.awaiting_review? # => false  
+  workflow.submit
+  workflow.new?             # => false
+  workflow.awaiting_review? # => true  
+
 Lets say that the business rule is that only one person can review an article at a time – having a state :being_reviewed allows for doing things like checking which articles are being reviewed, and being able to select from a pool of articles that are awaiting review, etc. (rewrite?)
 
 Now lets say another business rule is that we need to keep track of who is currently reviewing what, how do we do this? We'll now introduce the concept of an action by rewriting our :review event.
