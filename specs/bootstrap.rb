@@ -1,4 +1,4 @@
-require "#{File.dirname(__FILE__)}/../state_machine"
+require "#{File.dirname(__FILE__)}/../workflow"
 
 module Recorder
   
