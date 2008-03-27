@@ -7,6 +7,11 @@ task :run_specs do
   raise "specs failed" if $?.exitstatus != 0
 end
 
+task :run_specs_without_specdoc do
+  puts `spec --require specs/bootstrap.rb --color specs/*_spec.rb`
+  raise "specs failed" if $?.exitstatus != 0
+end
+
 task :loc do
   loc, nf, blank = 0, 0, /^\s+?$/
   Dir['**/*.rb'].each do |path|

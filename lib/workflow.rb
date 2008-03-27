@@ -76,6 +76,10 @@ module Workflow
       end
     end
     
+    def state
+      current_state.name
+    end
+    
     def find_state_by_name(name)
       states.detect { |s| s.name == name }
     end
@@ -83,6 +87,8 @@ module Workflow
     def method_missing(name, *args)
       if current_state.has_event?(name)
         process_event!(name, *args)
+      elsif name.to_s[-1].chr == '?' and find_state_by_name(name.to_s[0..-2].to_sym)
+        current_state == find_state_by_name(name.to_s[0..-2].to_sym)
       else
         super
       end

@@ -12,7 +12,7 @@ Now, all that's a mouthful, but we'll demonstrate the API bit by bit with a real
 
 Let's say we're modelling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Explaining all that is a pain in the arse. Here is the expression of this workflow using the API:
 
-  Workflow.define 'Article Workflow' do
+  Workflow.specify 'Article Workflow' do
     state :new do
       event :submit, :transitions_to => :awaiting_review
     end
