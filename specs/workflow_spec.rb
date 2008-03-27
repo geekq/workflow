@@ -1,13 +1,13 @@
 describe 'a very simple machine - two states, one event' do
   
   setup do
-    StateMachine.specify do
+    Workflow.specify do
       state :new do
         event :purchase, :transitions_to => :used
       end
       state :used
     end
-    @machine = StateMachine.new
+    @machine = Workflow.new
   end
 
   it 'should have two states' do
@@ -28,7 +28,7 @@ end
 describe 'a machine with event actions' do
   
   setup do
-    StateMachine.specify do
+    Workflow.specify do
       state :for_sale do
         event :sell, :transitions_to => :sold do
           record "#{self.class} was sold"
@@ -44,24 +44,24 @@ describe 'a machine with event actions' do
         end
       end
     end
-    @machine = StateMachine.new
+    @machine = Workflow.new
     @machine.extend(Recorder)
   end
   
   it 'should run event action in context of machine' do
     @machine.sell
-    @machine.records.last.should == 'StateMachine::Machine was sold'
+    @machine.records.last.should == 'Workflow::Machine was sold'
   end
   
   it 'should pass in paramaters in context of machine' do
     @machine.sell
     @machine.auction(10)
-    @machine.records.last.should == 'StateMachine::Machine w/ reserve of 10'
+    @machine.records.last.should == 'Workflow::Machine w/ reserve of 10'
   end
   
   it 'should not transition if action calls halt!' do
     @machine.steal('nasty man')
-    @machine.records.last.should == "StateMachine::Machine protecting against nasty man, the theif!"
+    @machine.records.last.should == "Workflow::Machine protecting against nasty man, the theif!"
     @machine.current_state.should == @machine.find_state_by_name(:for_sale)
   end
   
@@ -70,7 +70,7 @@ end
 describe 'a machine with on exit and on entry actions' do
   
   setup do
-    StateMachine.specify do
+    Workflow.specify do
       state :looking_for_speeders do
         event :speeding_car_detected, :transitions_to => :taking_photo
       end
@@ -86,7 +86,7 @@ describe 'a machine with on exit and on entry actions' do
         end
       end
     end
-    @machine = StateMachine.new
+    @machine = Workflow.new
     @machine.extend(Recorder)
   end
   
@@ -107,18 +107,18 @@ end
 describe 'specifying and instanciating named state machines' do
   
   setup do
-    StateMachine.specify :alphabet_machine do
+    Workflow.specify :alphabet_machine do
       state :a
       state :b
       state :c
     end
-    StateMachine.specify :number_machine do
+    Workflow.specify :number_machine do
       state :one
       state :two
       state :three
     end
-    @alphabet_machine = StateMachine.new(:alphabet_machine)
-    @number_machine = StateMachine.new(:number_machine)
+    @alphabet_machine = Workflow.new(:alphabet_machine)
+    @number_machine = Workflow.new(:number_machine)
   end
     
   it 'should have states :a, :b, :c for @alphabet_machine' do
@@ -140,12 +140,12 @@ end
 describe 'reconstitution of a machine (say, from a serialised object)' do
   
   setup do
-    StateMachine.specify do
+    Workflow.specify do
       state :first
       state :second
       state :third
     end
-    @machine = StateMachine.reconstitute(:second)
+    @machine = Workflow.reconstitute(:second)
   end
   
   it 'should reconstitute at second' do
@@ -160,7 +160,7 @@ end
 describe 'a machine with an on transition hook' do  
   
   setup do
-    StateMachine.specify do
+    Workflow.specify do
       state(:first)  { event(:next, :transitions_to => :second) { |i| nil } }
       state(:second) { event(:next, :transitions_to => :third)  { |i| nil } }
       state(:third)  { event(:back, :transitions_to => :second) { |i| nil } }
@@ -168,7 +168,7 @@ describe 'a machine with an on transition hook' do
         record [from, to, triggering_event]+event_args
       end
     end
-    @machine = StateMachine.new
+    @machine = Workflow.new
     @machine.extend(Recorder)
   end
   
@@ -191,7 +191,7 @@ end
 describe 'binding machines to another context' do
   
   setup do
-    StateMachine.specify do
+    Workflow.specify do
       state(:first)  { event(:next, :transitions_to => :second) {|i| record i }}
       state(:second) { event(:next, :transitions_to => :third)  {|i| record i }}
       state :third do 
@@ -216,7 +216,7 @@ describe 'binding machines to another context' do
         "you hit #{method.inspect}"
       end
     end
-    @machine = StateMachine.new
+    @machine = Workflow.new
     @machine.bind_to(@context)
   end
   

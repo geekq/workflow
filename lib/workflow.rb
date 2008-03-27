@@ -1,6 +1,6 @@
 %w(rubygems active_support).each { |f| require f }
 
-module StateMachine
+module Workflow
 
   @@specifications = {}
 
