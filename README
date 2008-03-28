@@ -108,9 +108,10 @@ The halt! method is the implementation of the guard concept. Let's take a look.
 Inline with how ActiveRecordDoesThings, halt! also can be called via halt, which makes the event return false, so you can trap it with if workflow.event instead of using a rescue block. Using halt returns false.
 
   # using halt
-  workflow.state  # => :being_reviewed
-  workflow.accept # => false
-  workflow.state  # => :being_reviewed
+  workflow.state   # => :being_reviewed
+  workflow.accept  # => false
+  workflow.halted? # => true
+  workflow.state   # => :being_reviewed
   
   # using halt!
   workflow.state  # => :being_reviewed
@@ -119,7 +120,8 @@ Inline with how ActiveRecordDoesThings, halt! also can be called via halt, which
   rescue Workflow::Halted => e
     # we gots an exception
   end
-  workflow.state  # => :being_reviewed
+  workflow.halted? # => true
+  workflow.state   # => :being_reviewed
 
 Furthermore, halt! and halt accept an argument, which is the message why the workflow was halted.
 
@@ -134,6 +136,7 @@ And the API for, like, getting this message, with both halt and halt!:
   # using halt
   workflow.state          # => :being_reviewed
   workflow.accept         # => false
+  workflow.halted?        # => true
   workflow.halted_because # => 'coz I said so!'
   workflow.state          # => :being_reviewed
 
@@ -144,7 +147,8 @@ And the API for, like, getting this message, with both halt and halt!:
   rescue Workflow::Halted => e
     e.halted_because # => 'coz I said so!' 
   end
-  workflow.state  # => :being_reviewed
+  workflow.halted? # => true
+  workflow.state   # => :being_reviewed
 
 We can reflect off the workflow to (attempt) to automate as much as we can. There are two types of reflection in Workflow - reflection and meta-reflection. We'll explain the former first.
 
