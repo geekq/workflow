@@ -8,20 +8,20 @@ describe 'what is in the README' do
       state :awaiting_review do
         event :review, :transitions_to => :being_reviewed do |reviewer|
           reviewer << 'oi!'
-        end
-        
+        end 
       end
       state :being_reviewed do
         event :accept, :transitions_to => :accepted
         event :reject, :transitions_to => :rejected
         on_exit do |new_state, event_fired, *event_args|
-          $new_state = new_state
-          $event_fired = event_fired 
-          $event_args = event_args
+          $on_exit_new_state = new_state
+          $on_exit_event_fired = event_fired 
+          $on_exit_event_args = event_args
         end
       end
       state :accepted do
-        
+        # event(:delete)  { |msg| halt  msg }
+        # event(:delete!) { |msg| halt! msg }
       end
       state :rejected
     end
@@ -52,20 +52,48 @@ describe 'what is in the README' do
     @reviewer.should == 'oi!'
   end
   
+  it 'should be like, cool with on_entry' # do
+    # @workflow.submit
+    # @workflow.review('')
+    # @workflow.reject('coz i said so')
+    # $on_exit_new_state.should == :rejected
+    # $on_exit_event_fired.should == :reject
+    # $on_exit_event_args.should == ['coz i said so']
+  # end
+  
   it 'should be like, cool with on_exit'
-  it 'should be like, cool with on_entry'
   it 'should be like, cool with on_transition'
-  it 'should halt'
-  it 'should halt!'
-  it 'halts with messages'
-  it 'halts! with messages'
+  
+  it 'should halt' do
+    @workflow = Workflow.reconstitute(:accepted, 'Article Workflow')
+    @workflow.delete('coz i said so').should == false
+    @workflow.halted?.should == true
+    @workflow.state.should == :accepted
+    @workflow.halted_because.should == 'coz i said so'
+  end
+  
+  it 'should halt!' do
+    raise
+  end
+  
+  it 'halts with messages' do
+    raise
+  end
+  
+  it 'halts! with messages' do
+    raise
+  end
+  
   it 'reflects states'
   it 'reflects events of a state'
   it 'reflects transitions_to of a state'
+  
   it 'has meta relfection on states'
   it 'has meta relfection on events'
+  
   it 'can iterate over state meta'
   it 'can iterate over event meta'
+  
   it 'orders firing like action -> on_transition -> on_exit -> TRANSITION -> on_entry'
 
   describe 'class integration' do
@@ -80,5 +108,7 @@ describe 'what is in the README' do
     it 'serializes state on_transition ?'
     it 'reconsitutes from state on find ?'
   end
+  
+  it 'provides helpful extra info in NoMethodError'
   
 end
