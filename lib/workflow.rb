@@ -35,8 +35,9 @@ module Workflow
     
   private
   
-    def state(name, &events_and_etc)
-      self.states << State.new(name)
+    def state(name, meta = {:meta => {}}, &events_and_etc)
+      # meta[:meta] to keep the API consistent..., gah
+      self.states << State.new(name, meta[:meta])
       instance_eval(&events_and_etc) if events_and_etc
     end
     
@@ -45,7 +46,7 @@ module Workflow
     end
     
     def event(name, args = {}, &action)
-      scoped_state.add_event Event.new(name, args, &action)
+      scoped_state.add_event Event.new(name, args[:transitions_to], (args[:meta] or {}), &action)
     end
     
     def on_entry(&proc)
@@ -202,12 +203,13 @@ module Workflow
   
   class State
     
-    attr_accessor :name, :events, :on_entry, :on_exit
+    attr_accessor :name, :events, :meta, :on_entry, :on_exit
     
-    def initialize(name)
-      @name, @events = name, []
+    def initialize(name, meta = {})
+      @name, @events, @meta = name, [], meta
     end
     
+    # this could probably go away
     def has_event?(name)
       !!events(name)
     end
@@ -228,10 +230,10 @@ module Workflow
   
   class Event
     
-    attr_accessor :name, :transitions_to, :action
+    attr_accessor :name, :transitions_to, :meta, :action
     
-    def initialize(name, args, &action)
-      @name, @transitions_to, @action = name, args[:transitions_to], action
+    def initialize(name, transitions_to, meta = {}, &action)
+      @name, @transitions_to, @meta, @action = name, transitions_to, meta, action
     end
     
   end

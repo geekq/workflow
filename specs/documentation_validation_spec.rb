@@ -1,17 +1,17 @@
-describe 'The README API:' do
+describe 'As described in README,' do
   
   setup do
     Workflow.specify 'Article Workflow' do
       state :new do
         event :submit, :transitions_to => :awaiting_review
       end
-      state :awaiting_review do
+      state :awaiting_review, :meta => {:one => 1} do
         event :review, :transitions_to => :being_reviewed do |reviewer|
           reviewer << 'oi!'
         end 
       end
       state :being_reviewed do
-        event :accept, :transitions_to => :accepted
+        event :accept, :transitions_to => :accepted, :meta => {:two, 2}
         event :reject, :transitions_to => :rejected
         on_exit do |new_state, event_fired, *event_args|
           $on_exit_new_state = new_state
@@ -144,10 +144,37 @@ describe 'The README API:' do
       @workflow.states(:new).events(:submit).transitions_to.should == :awaiting_review
     end
     
-    it 'meta-reflects on a state'
-    it 'meta-reflects on an event'
-    it 'iterates over state meta'
-    it 'iterates over event meta'
+    describe 'metadata' do
+
+      describe 'of a state' do
+
+        it 'works like a hash' do
+          @workflow.states(:awaiting_review).meta.should == {:one => 1}
+        end
+
+        it 'initializes as an empty hash if not specified' do
+          @workflow.states(:new).meta.should == {}
+        end
+
+        it 'behaves like an object'
+
+      end
+
+      describe 'of an event' do
+
+        it 'works like a hash' do
+          @workflow.states(:being_reviewed).events(:accept).meta.should == {:two => 2}
+        end
+
+        it 'initializes as an empty hash if not specified' do
+          @workflow.states(:new).events(:submit).meta.should == {}
+        end
+
+        it 'behaves like an object'
+
+      end
+
+    end
     
   end
     
