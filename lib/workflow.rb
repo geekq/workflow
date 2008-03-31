@@ -72,7 +72,7 @@ module Workflow
       if reconstitute_at.nil?
         transition(nil, states.first, nil)
       else
-        self.current_state = find_state_by_name(reconstitute_at)
+        self.current_state = states(reconstitute_at)
       end
     end
     
@@ -80,15 +80,19 @@ module Workflow
       current_state.name
     end
     
-    def find_state_by_name(name)
-      states.detect { |s| s.name == name }
+    def states(name = nil)
+      if name
+        @states.detect { |s| s.name == name }
+      else
+        @states.collect { |s| s.name }
+      end
     end
     
     def method_missing(name, *args)
       if current_state.has_event?(name)
         process_event!(name, *args)
-      elsif name.to_s[-1].chr == '?' and find_state_by_name(name.to_s[0..-2].to_sym)
-        current_state == find_state_by_name(name.to_s[0..-2].to_sym)
+      elsif name.to_s[-1].chr == '?' and states(name.to_s[0..-2].to_sym)
+        current_state == states(name.to_s[0..-2].to_sym)
       else
         super
       end
@@ -150,8 +154,8 @@ module Workflow
           false
         end
       else
-        run_on_transition(current_state, find_state_by_name(event.transitions_to), name, *args)
-        transition(current_state, find_state_by_name(event.transitions_to), name, *args)
+        run_on_transition(current_state, states(event.transitions_to), name, *args)
+        transition(current_state, states(event.transitions_to), name, *args)
         return_value
       end
     end

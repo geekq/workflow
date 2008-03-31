@@ -130,17 +130,31 @@ describe 'The README API:' do
     
   end
   
-  it 'reflects states'
-  it 'reflects events of a state'
-  it 'reflects transitions_to of a state'
+  describe 'reflection' do
   
-  it 'has meta relfection on states'
-  it 'has meta relfection on events'
-  
-  it 'can iterate over state meta'
-  it 'can iterate over event meta'
-  
-  it 'fire order: action -> on_transition -> on_exit -> TRANSITION -> on_entry'
+    it 'reflects states' do
+      @workflow.states.should == [:new, :awaiting_review, :being_reviewed, :accepted, :rejected]
+    end
+    
+    it 'reflects events of a state' do
+      @workflow.states(:being_reviewed).events.should == [:accept, :reject]
+    end
+    
+    it 'reflects transitions_to of an event' do
+      @workflow.states(:new).events(:submit).transitions_to.should == :awaiting_review
+    end
+    
+    it 'meta-reflects on a state'
+    it 'meta-reflects on an event'
+    it 'iterates over state meta'
+    it 'iterates over event meta'
+    
+  end
+    
+  it 'fires action -> on_transition -> on_exit -> TRANSITION -> on_entry'
+  it 'provides helpful extra info in NoMethodError'
+
+  # :)
 
   describe 'class integration' do
     it 'has a meta method called workflow'
@@ -154,7 +168,5 @@ describe 'The README API:' do
     it 'serializes state on_transition ?'
     it 'reconsitutes from state on find ?'
   end
-  
-  it 'provides helpful extra info in NoMethodError'
   
 end

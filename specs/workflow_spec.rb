@@ -15,12 +15,12 @@ describe 'a very simple workflow - two states, one event' do
   end
 
   it 'should have the first state as the initial state' do
-    @workflow.current_state.should == @workflow.find_state_by_name(:new)
+    @workflow.current_state.should == @workflow.states(:new)
   end
   
   it 'should transition to used when purchase even called' do
     @workflow.purchase
-    @workflow.current_state.should == @workflow.find_state_by_name(:used)
+    @workflow.current_state.should == @workflow.states(:used)
   end
     
 end
@@ -62,7 +62,7 @@ describe 'a workflow with event actions' do
   it 'should not transition if action calls halt!' do
     @workflow.steal('nasty man')
     @workflow.records.last.should == "Workflow::Machine protecting against nasty man, the theif!"
-    @workflow.current_state.should == @workflow.find_state_by_name(:for_sale)
+    @workflow.current_state.should == @workflow.states(:for_sale)
   end
   
 end
@@ -92,13 +92,13 @@ describe 'a workflow with on exit and on entry actions' do
   
   it 'should trigger on_entry for taking_photo' do
     @workflow.speeding_car_detected
-    @workflow.records.last.should == [@workflow.find_state_by_name(:looking_for_speeders), :speeding_car_detected]
+    @workflow.records.last.should == [@workflow.states(:looking_for_speeders), :speeding_car_detected]
   end
   
   it 'should trigger on_exit for taking_photo' do
     @workflow.speeding_car_detected
     @workflow.photo_taken(:a_photo)
-    @workflow.records.last.should == [@workflow.find_state_by_name(:looking_for_speeders), :photo_taken, :a_photo]
+    @workflow.records.last.should == [@workflow.states(:looking_for_speeders), :photo_taken, :a_photo]
   end
   
   it 'should not execute on_entry or on_exit on halt'
@@ -122,17 +122,11 @@ describe 'specifying and instanciating named state workflows' do
   end
     
   it 'should have states :a, :b, :c for @alphabet_workflow' do
-    a = @alphabet_workflow.find_state_by_name(:a)
-    b = @alphabet_workflow.find_state_by_name(:b)
-    c = @alphabet_workflow.find_state_by_name(:c)
-    @alphabet_workflow.states.should == [a, b, c]
+    @alphabet_workflow.states.should == [:a, :b, :c]
   end
   
   it 'should have states :one, :two, :three for @number_workflow' do
-    one = @number_workflow.find_state_by_name(:one)
-    two = @number_workflow.find_state_by_name(:two)
-    three = @number_workflow.find_state_by_name(:three)
-    @number_workflow.states.should == [one, two, three]
+    @number_workflow.states.should == [:one, :two, :three]
   end
   
 end
@@ -149,7 +143,7 @@ describe 'reconstitution of a workflow (say, from a serialised object)' do
   end
   
   it 'should reconstitute at second' do
-    @workflow.current_state.should == @workflow.find_state_by_name(:second)
+    @workflow.current_state.should == @workflow.states(:second)
   end
   
   it 'should not execute on_entry when reconsituting a workflow'
@@ -176,9 +170,9 @@ describe 'a workflow with an on transition hook' do
     @workflow.next(1) # => to :second
     @workflow.next(2) # => to :third
     @workflow.back(3) # => back to :second
-    first = @workflow.find_state_by_name(:first)
-    second = @workflow.find_state_by_name(:second)
-    third = @workflow.find_state_by_name(:third)
+    first = @workflow.states(:first)
+    second = @workflow.states(:second)
+    third = @workflow.states(:third)
     @workflow.records[0].should == [first, second, :next, 1]
     @workflow.records[1].should == [second, third, :next, 2]
     @workflow.records[2].should == [third, second, :back, 3]
@@ -244,13 +238,13 @@ describe 'binding workflowss to another context' do
   end
   
   it 'should have a current_state accessor' do
-    @context.current_state.should == @workflow.find_state_by_name(:first)
+    @context.current_state.should == @workflow.states(:first)
   end
   
   it 'should chain-patch method_missing to respond to events' do
     @context.next(:a)
     @context.x.should == 'you hit :x'
-    @context.current_state.should == @workflow.find_state_by_name(:second)
+    @context.current_state.should == @workflow.states(:second)
   end
   
   it 'should support blocks with method missing too!'
