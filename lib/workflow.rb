@@ -45,7 +45,7 @@ module Workflow
     end
     
     def event(name, args = {}, &action)
-      scoped_state.events << Event.new(name, args, &action)
+      scoped_state.add_event Event.new(name, args, &action)
     end
     
     def on_entry(&proc)
@@ -140,7 +140,7 @@ module Workflow
     end
     
     def process_event!(name, *args)
-      event = current_state.find_event_by_name(name)
+      event = current_state.events(name)
       @halted_because = nil
       @halted = false
       @raise_exception_on_halt = false
@@ -209,11 +209,19 @@ module Workflow
     end
     
     def has_event?(name)
-      !!find_event_by_name(name)
+      !!events(name)
     end
     
-    def find_event_by_name(name)
-      events.detect { |e| e.name == name }
+    def events(name = nil)
+      if name
+        @events.detect { |e| e.name == name }
+      else
+        @events.collect { |e| e.name }
+      end
+    end
+    
+    def add_event(event)
+      @events << event
     end
     
   end
