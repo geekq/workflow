@@ -35,7 +35,7 @@ describe 'a workflow with event actions' do
         end
         event :steal, :transitions_to => :sold do |theif|
           record "#{self.class} protecting against #{theif}, the theif!"
-          halt!
+          halt
         end
       end
       state :sold do
@@ -101,7 +101,7 @@ describe 'a workflow with on exit and on entry actions' do
     @workflow.records.last.should == [@workflow.find_state_by_name(:looking_for_speeders), :photo_taken, :a_photo]
   end
   
-  it 'should not execute on_entry or on_exit on halt!'
+  it 'should not execute on_entry or on_exit on halt'
 end
 
 describe 'specifying and instanciating named state workflows' do
@@ -184,7 +184,7 @@ describe 'a workflow with an on transition hook' do
     @workflow.records[2].should == [third, second, :back, 3]
   end
   
-  it 'should not execute hook on halt!'
+  it 'should not execute hook on halt'
   it 'should act like a chain so we can go on_transition on_transition...'
 end
 
@@ -254,9 +254,9 @@ describe 'binding workflowss to another context' do
   end
   
   it 'should support blocks with method missing too!'
-  it 'should have access to relfection, when we implement it'
+  # it 'should have access to relfection, when we implement it'
   it 'should act like a chain, i.e. so we can go on_exit on_exit...'
-  it 'should be ok using halt!'
+  # it 'should be ok using halt!'
 end
 
 #
@@ -275,15 +275,15 @@ describe 'active record integration mixin' do
   it 'should handle serializing '
 end
 
-describe 'reflecting workflows' do
-  it 'should allow you to intuitively reflect states'
-  it 'should allow you to intuitively reflect allowable events in states'
-  it 'should allow attachment of meta data to states and state events'
-end
+# describe 'reflecting workflows' do
+  # it 'should allow you to intuitively reflect states'
+  # it 'should allow you to intuitively reflect allowable events in states'
+  # it 'should allow attachment of meta data to states and state events'
+# end
 
 describe 'plain old quality' do
   it 'should not use active support\'s instance_eval'
-  it 'should have more DRY method args, y\'know?'
+  it 'should have more DRY method args, y\'know? (wtf does this mean?)'
 end
 
 describe 'more sophisticated error handling' do

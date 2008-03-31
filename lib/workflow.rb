@@ -99,6 +99,14 @@ module Workflow
       patch_context(another_context) if another_context != self
     end
     
+    def halted?
+      @halted
+    end
+    
+    def halted_because
+      @halted_because
+    end
+    
   private
   
     def patch_context(context)
@@ -129,18 +137,37 @@ module Workflow
     
     def process_event!(name, *args)
       event = current_state.find_event_by_name(name)
-      @halt = false
-      run_action(event.action, *args)
-      if @halt == false
+      @halted_because = nil
+      @halted = false
+      @raise_exception_on_halt = false
+      # i don't think we've tested that the return value is
+      # what the action returns... so yeah, test it, at some point.
+      return_value = run_action(event.action, *args)
+      if @halted
+        if @raise_exception_on_halt
+          raise Halted.new(@halted_because)
+        else
+          false
+        end
+      else
         run_on_transition(current_state, find_state_by_name(event.transitions_to), name, *args)
         transition(current_state, find_state_by_name(event.transitions_to), name, *args)
+        return_value
       end
     end
     
-    def halt!
-      @halt = true
+    def halt(msg = nil)
+      @halted_because = msg
+      @halted = true
+      @raise_exception_on_halt = false
     end
     
+    def halt!(msg = nil)
+      @halted_because = msg
+      @halted = true
+      @raise_exception_on_halt = true
+    end
+        
     def transition(from, to, name, *args)
       run_on_exit(from, to, name, *args)
       self.current_state = to
@@ -193,6 +220,17 @@ module Workflow
     
     def initialize(name, args, &action)
       @name, @transitions_to, @action = name, args[:transitions_to], action
+    end
+    
+  end
+  
+  class Halted < Exception
+    
+    attr_reader :halted_because
+    
+    def initialize(msg = nil)
+      @halted_because = msg
+      super msg
     end
     
   end

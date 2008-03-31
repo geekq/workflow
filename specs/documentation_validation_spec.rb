@@ -1,4 +1,4 @@
-describe 'what is in the README' do
+describe 'The README API:' do
   
   setup do
     Workflow.specify 'Article Workflow' do
@@ -20,8 +20,8 @@ describe 'what is in the README' do
         end
       end
       state :accepted do
-        # event(:delete)  { |msg| halt  msg }
-        # event(:delete!) { |msg| halt! msg }
+        event(:delete)  { |msg| halt  msg }
+        event(:delete!) { |msg| halt! msg }
       end
       state :rejected
     end
@@ -64,24 +64,70 @@ describe 'what is in the README' do
   it 'should be like, cool with on_exit'
   it 'should be like, cool with on_transition'
   
-  it 'should halt' do
-    @workflow = Workflow.reconstitute(:accepted, 'Article Workflow')
-    @workflow.delete('coz i said so').should == false
-    @workflow.halted?.should == true
-    @workflow.state.should == :accepted
-    @workflow.halted_because.should == 'coz i said so'
-  end
-  
-  it 'should halt!' do
-    raise
-  end
-  
-  it 'halts with messages' do
-    raise
-  end
-  
-  it 'halts! with messages' do
-    raise
+  describe 'halting' do
+    
+    before do
+      @workflow = Workflow.reconstitute(:accepted, 'Article Workflow')
+      @halted_because = 'i said so'      
+    end
+    
+    describe 'with #halt' do
+      
+      before do
+        @return_value = @workflow.delete(@halted_because)
+      end
+      
+      it 'returns false from the event' do
+        @return_value.should == false
+      end
+      
+      it 'has halted?' do
+        @workflow.halted?.should == true
+      end
+      
+      it 'should not transition' do
+        @workflow.state.should == :accepted
+      end
+      
+      it 'has a message on Workflow#halted_because' do
+        @workflow.halted_because.should == @halted_because
+      end
+      
+    end
+    
+    describe 'with #halt!' do
+      
+      before do
+        begin
+          @exception_raised = nil
+          @return_value = @workflow.delete!(@halted_because)
+        rescue Workflow::Halted => e
+          @exception_raised = e
+        end
+      end
+      
+      it 'raises a Workflow::Halted exception' do
+        @exception_raised.should be_kind_of(Workflow::Halted)
+      end
+      
+      it 'has halted?' do
+        @workflow.halted?.should == true
+      end
+      
+      it 'should not transition' do
+        @workflow.state.should == :accepted
+      end
+      
+      it 'has a message on Workflow#halted_because' do
+        @workflow.halted_because.should == @halted_because
+      end
+      
+      it 'has a message on Workflow::Halted#halted_because' do
+        @exception_raised.halted_because.should == @halted_because
+      end
+      
+    end
+    
   end
   
   it 'reflects states'
@@ -94,7 +140,7 @@ describe 'what is in the README' do
   it 'can iterate over state meta'
   it 'can iterate over event meta'
   
-  it 'orders firing like action -> on_transition -> on_exit -> TRANSITION -> on_entry'
+  it 'fire order: action -> on_transition -> on_exit -> TRANSITION -> on_entry'
 
   describe 'class integration' do
     it 'has a meta method called workflow'
