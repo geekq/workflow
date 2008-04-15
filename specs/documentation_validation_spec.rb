@@ -196,4 +196,10 @@ describe 'As described in README,' do
     it 'reconsitutes from state on find ?'
   end
   
+  describe 'blatting' do
+    it 'can introduce new states'
+    it 'can introduce new events in states'
+    it 'can overwrite transitions_to in existing events'
+  end
+  
 end

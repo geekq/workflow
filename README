@@ -240,6 +240,41 @@ When integrating with other classes, behind the scenes, Workflow sets up a Proxy
   NoMethodError: undefined method `aaaa' for #<Article:0xe4e8>, conversely, if you were looking to call an event for its workflow, you're in the :new state, and the available events are [:submit]
   
 So just incase you screw something up (like I did while testing this library), it'll give you a useful message.
+
+You can blatter existing workflows, by simply opening them up again (similar to how Ruby works!).
+
+  Workflow.specify 'Blatter' do
+    state :opened do
+      event :close, :transitions_to => :closed
+    end
+    state :closed
+  end
+  
+  workflow = Workflow.new('Blatter')
+  workflow.close
+  workflow.state # => :closed
+  workflow.open  # => raises a (nice) NoMethodError exception!
+  
+  Workflow.specify 'Blatter' do
+    state :closed do
+      event :open, :transitions_to => :opened
+    end
+  end
+  
+  workflow.open
+  workflow.state # => :opened
+
+  Workflow.specify 'Blatter' do
+    state :open do
+      event :close, :transitions_to => :jammed # the door is now faulty :)
+    end
+    state :jammed
+  end
+  
+  workflow.close
+  workflow.state # => :jammed
+
+Why can we do this? Well, we needed it for our production app, so there.
   
 And that's about it. A update to the implementation may allow multiple workflows per instance of a class or ActiveRecord, but we haven't figured out if that's required or appropriate.
 
