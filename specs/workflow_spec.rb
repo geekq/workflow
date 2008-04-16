@@ -1,3 +1,5 @@
+require "#{File.dirname(__FILE__)}/bootstrap"
+
 describe 'a very simple workflow - two states, one event' do
   
   setup do
@@ -15,12 +17,12 @@ describe 'a very simple workflow - two states, one event' do
   end
 
   it 'should have the first state as the initial state' do
-    @workflow.current_state.should == @workflow.states(:new)
+    @workflow.state.should == :new
   end
   
   it 'should transition to used when purchase even called' do
     @workflow.purchase
-    @workflow.current_state.should == @workflow.states(:used)
+    @workflow.state.should == :used
   end
     
 end
@@ -62,7 +64,7 @@ describe 'a workflow with event actions' do
   it 'should not transition if action calls halt!' do
     @workflow.steal('nasty man')
     @workflow.records.last.should == "Workflow::Machine protecting against nasty man, the theif!"
-    @workflow.current_state.should == @workflow.states(:for_sale)
+    @workflow.state.should == :for_sale
   end
   
 end
@@ -92,13 +94,13 @@ describe 'a workflow with on exit and on entry actions' do
   
   it 'should trigger on_entry for taking_photo' do
     @workflow.speeding_car_detected
-    @workflow.records.last.should == [@workflow.states(:looking_for_speeders), :speeding_car_detected]
+    @workflow.records.last.should == [:looking_for_speeders, :speeding_car_detected]
   end
   
   it 'should trigger on_exit for taking_photo' do
     @workflow.speeding_car_detected
     @workflow.photo_taken(:a_photo)
-    @workflow.records.last.should == [@workflow.states(:looking_for_speeders), :photo_taken, :a_photo]
+    @workflow.records.last.should == [:looking_for_speeders, :photo_taken, :a_photo]
   end
   
   it 'should not execute on_entry or on_exit on halt'
@@ -143,7 +145,7 @@ describe 'reconstitution of a workflow (say, from a serialised object)' do
   end
   
   it 'should reconstitute at second' do
-    @workflow.current_state.should == @workflow.states(:second)
+    @workflow.state.should == :second
   end
   
   it 'should not execute on_entry when reconsituting a workflow'
@@ -170,12 +172,9 @@ describe 'a workflow with an on transition hook' do
     @workflow.next(1) # => to :second
     @workflow.next(2) # => to :third
     @workflow.back(3) # => back to :second
-    first = @workflow.states(:first)
-    second = @workflow.states(:second)
-    third = @workflow.states(:third)
-    @workflow.records[0].should == [first, second, :next, 1]
-    @workflow.records[1].should == [second, third, :next, 2]
-    @workflow.records[2].should == [third, second, :back, 3]
+    @workflow.records[0].should == [:first, :second, :next, 1]
+    @workflow.records[1].should == [:second, :third, :next, 2]
+    @workflow.records[2].should == [:third, :second, :back, 3]
   end
   
   it 'should not execute hook on halt'
@@ -215,36 +214,41 @@ describe 'binding workflowss to another context' do
   end
   
   it 'should execute event actions in context' do
-    @workflow.next(:a)
+    @context.next(:a)
     @context.records.should include(:a)
   end
   
   it 'should execute on_entry in context' do
-    @workflow.next(:a)
-    @workflow.next(:b)
+    @context.next(:a)
+    @context.next(:b)
+    puts Recorder.inspect
     @context.records.should include('entered :third')
   end
   
   it 'should execute on_exit in context' do
-    @workflow.next(:a)
-    @workflow.next(:b)
-    @workflow.next(:c)
+    @context.next(:a)
+    @context.next(:b)
+    @context.next(:c)
     @context.records.should include('exited :third')
   end
   
   it 'should execute on_transition in context' do
-    @workflow.next(:a)
+    @context.next(:a)
     @context.records.should include('transitioned from first to second')
   end
   
-  it 'should have a current_state accessor' do
+  it 'should have a current_state accessor, that maps to a State object' do
     @context.current_state.should == @workflow.states(:first)
+  end
+  
+  it 'should have a state accessor, that maps to an :symbol' do
+    @context.state.should == :first
   end
   
   it 'should chain-patch method_missing to respond to events' do
     @context.next(:a)
     @context.x.should == 'you hit :x'
-    @context.current_state.should == @workflow.states(:second)
+    @context.state.should == :second
   end
   
   it 'should support blocks with method missing too!'

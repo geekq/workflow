@@ -1,3 +1,5 @@
+require "#{File.dirname(__FILE__)}/bootstrap"
+
 describe 'As described in README,' do
   
   setup do
@@ -17,15 +19,30 @@ describe 'As described in README,' do
           $on_exit_new_state = new_state
           $on_exit_event_fired = event_fired 
           $on_exit_event_args = event_args
-        end
+        end        
       end
       state :accepted do
         event(:delete)  { |msg| halt  msg }
         event(:delete!) { |msg| halt! msg }
       end
-      state :rejected
+      state :rejected do
+        on_entry do |old_state, event_fired, *event_args|
+          $on_entry_old_state = old_state
+          $on_entry_event_fired = event_fired 
+          $on_entry_event_args = event_args
+        end
+      end
+      on_transition do |old_state, new_state, triggering_event, *event_args|
+        $on_transition_old_state = old_state
+        $on_transition_new_state = new_state
+        $on_transition_triggering_event = triggering_event
+        $on_transition_event_args = event_args
+      end
     end
     @workflow = Workflow.new('Article Workflow')
+    # @object = Object.new
+    # @workflow.bind_to(@object)
+    # @workflow = @object
   end
   
   it 'has a default state of :new' do
@@ -51,18 +68,36 @@ describe 'As described in README,' do
     @workflow.review(@reviewer)
     @reviewer.should == 'oi!'
   end
+
+  it 'should be like, cool with on_entry' do
+    @workflow.submit
+    @workflow.review('')
+    @workflow.reject('coz i said so')
+    $on_entry_old_state.should == :being_reviewed
+    $on_entry_event_fired.should == :reject
+    $on_entry_event_args.should == ['coz i said so']
+  end
+
+  it 'should be like, cool with on_exit' do
+    @workflow.submit
+    @workflow.review('')
+    @workflow.reject('coz i said so')
+    $on_exit_new_state.should == :rejected
+    $on_exit_event_fired.should == :reject
+    $on_exit_event_args.should == ['coz i said so']
+  end
   
-  it 'should be like, cool with on_entry' # do
-    # @workflow.submit
-    # @workflow.review('')
-    # @workflow.reject('coz i said so')
-    # $on_exit_new_state.should == :rejected
-    # $on_exit_event_fired.should == :reject
-    # $on_exit_event_args.should == ['coz i said so']
-  # end
+  it 'should have old_state as nil on initial transition' do
+    @workflow.submit(1,2,3)
+    $on_transition_old_state.should == :new
+    $on_transition_new_state.should == :awaiting_review
+    $on_transition_triggering_event.should == :submit
+    $on_transition_event_args.should == [1,2,3]
+  end
   
-  it 'should be like, cool with on_exit'
-  it 'should be like, cool with on_transition'
+  it 'should be like, cool with on_transition' do
+    
+  end
   
   describe 'halting' do
     
@@ -178,7 +213,10 @@ describe 'As described in README,' do
     
   end
     
-  it 'fires action -> on_transition -> on_exit -> TRANSITION -> on_entry'
+  it 'fires action -> on_transition -> on_exit -> TRANSITION -> on_entry' do
+    true.should == false
+  end
+  
   it 'provides helpful extra info in NoMethodError'
 
   # :)

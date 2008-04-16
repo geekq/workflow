@@ -77,8 +77,12 @@ module Workflow
       end
     end
     
-    def state
-      current_state.name
+    def state(fetch = nil)
+      if fetch
+        states(fetch)
+      else
+        current_state.name
+      end
     end
     
     def states(name = nil)
@@ -115,9 +119,9 @@ module Workflow
   private
   
     def patch_context(context)
-      context.instance_variable_set("@state_machine", self)
+      context.instance_variable_set("@workflow", self)
       context.instance_eval do
-        alias :method_missing_before_state_machine :method_missing
+        alias :method_missing_before_workflow :method_missing
         #
         # PROBLEM: method_missing in on_transition events
         # when bound to other context is raising confusing
@@ -126,16 +130,16 @@ module Workflow
         # event exists rather than send ANY message to the
         # machine? so like:
         #
-        # if @state_machine.has_event? blah
+        # if @workflow.state.events(ref_to_sym)
         #   execute
         # else
         #   super ?
         # end
         #
         def method_missing(method, *args)
-          @state_machine.send(method, *args)
+          @workflow.send(method, *args)
         rescue NoMethodError
-          method_missing_before_state_machine(method, *args)
+          method_missing_before_workflow(method, *args)
         end
       end
     end
@@ -180,7 +184,7 @@ module Workflow
     end
     
     def run_on_transition(from, to, event, *args)
-      context.instance_exec(from, to, event, *args, &on_transition) if on_transition
+      context.instance_exec(from.name, to.name, event, *args, &on_transition) if on_transition
     end
     
     def run_action(action, *args)
@@ -189,13 +193,13 @@ module Workflow
     
     def run_on_entry(state, prior_state, triggering_event, *args)
       if state.on_entry
-        context.instance_exec(prior_state, triggering_event, *args, &state.on_entry)
+        context.instance_exec(prior_state.name, triggering_event, *args, &state.on_entry)
       end
     end
     
     def run_on_exit(state, new_state, triggering_event, *args)
       if state and state.on_exit
-        context.instance_exec(new_state, triggering_event, *args, &state.on_exit)
+        context.instance_exec(new_state.name, triggering_event, *args, &state.on_exit)
       end
     end
     
