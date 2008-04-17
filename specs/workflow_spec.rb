@@ -199,7 +199,6 @@ describe 'binding workflows to another context' do
       end
       state :fourth
       on_transition do |from, to, triggering_event, *args|
-        puts 'oh hai i is in on_transition'
         begin
           record "transitioned from #{from} to #{to}"
         rescue
@@ -208,7 +207,6 @@ describe 'binding workflows to another context' do
           # coz it said from.name, to.name, lame lame lame (pls fix me ok?)
           raise "#{$!.inspect}"
         end
-        puts 'oh hai i am liek done'
       end
     end
     @context = Object.new
@@ -240,7 +238,6 @@ describe 'binding workflows to another context' do
   it 'should execute on_entry in context' do
     @context.next(:a)
     @context.next(:b)
-    # puts Recorder.records[@context].inspect
     @context.records.should include('entered :third')
   end
   
