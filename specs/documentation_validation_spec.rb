@@ -103,13 +103,13 @@ describe 'As described in README,' do
     
     before do
       @workflow = Workflow.reconstitute(:accepted, 'Article Workflow')
-      @halted_because = 'i said so'      
+      @reason = 'i said so'      
     end
     
     describe 'with #halt' do
       
       before do
-        @return_value = @workflow.delete(@halted_because)
+        @return_value = @workflow.delete(@reason)
       end
       
       it 'returns false from the event' do
@@ -125,7 +125,7 @@ describe 'As described in README,' do
       end
       
       it 'has a message on Workflow#halted_because' do
-        @workflow.halted_because.should == @halted_because
+        @workflow.halted_because.should == @reason
       end
       
     end
@@ -135,7 +135,7 @@ describe 'As described in README,' do
       before do
         begin
           @exception_raised = nil
-          @return_value = @workflow.delete!(@halted_because)
+          @return_value = @workflow.delete!(@reason)
         rescue Workflow::Halted => e
           @exception_raised = e
         end
@@ -154,11 +154,11 @@ describe 'As described in README,' do
       end
       
       it 'has a message on Workflow#halted_because' do
-        @workflow.halted_because.should == @halted_because
+        @workflow.halted_because.should == @reason
       end
       
       it 'has a message on Workflow::Halted#halted_because' do
-        @exception_raised.halted_because.should == @halted_because
+        @exception_raised.halted_because.should == @reason
       end
       
     end
