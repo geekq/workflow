@@ -295,8 +295,16 @@ describe 'As described in README,' do
   end
   
   describe 'AR integration' do
-    it 'serializes state on_transition ?'
-    it 'reconsitutes from state on find ?'
+    before do
+      # setup junk for our @ar mock
+    end
+    it 'should save to a field called state by default'
+    [:state, :workflow_state, :something_random].each do |field|
+      it "should initialize in default state if #{field} is null"
+      it "should reconstitute in state if #{field} is not null"
+      it "should raise exception if value in #{field} is not a valid state"
+      it "should serialize out to #{field} before save"
+    end
   end
   
   describe 'blatting' do
