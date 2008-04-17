@@ -132,13 +132,13 @@ describe 'As described in README,' do
         begin
           @exception_raised = nil
           @return_value = @workflow.delete!(@reason)
-        rescue Workflow::Halted => e
+        rescue Workflow::Instance::TransitionHalted => e
           @exception_raised = e
         end
       end
       
       it 'raises a Workflow::Halted exception' do
-        @exception_raised.should be_kind_of(Workflow::Halted)
+        @exception_raised.should be_kind_of(Workflow::Instance::TransitionHalted)
       end
       
       it 'has halted?' do

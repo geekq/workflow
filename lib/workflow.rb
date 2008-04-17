@@ -82,6 +82,17 @@ module Workflow
   
   class Instance
     
+    class TransitionHalted < Exception
+
+      attr_reader :halted_because
+
+      def initialize(msg = nil)
+        @halted_because = msg
+        super msg
+      end
+
+    end
+    
     attr_accessor :states, :current_state, :on_transition, :context
     
     def initialize(states, on_transition, reconstitute_at = nil)
@@ -171,7 +182,7 @@ module Workflow
       return_value = run_action(event.action, *args)
       if @halted
         if @raise_exception_on_halt
-          raise Halted.new(@halted_because)
+          raise TransitionHalted.new(@halted_because)
         else
           false
         end
@@ -182,14 +193,14 @@ module Workflow
       end
     end
     
-    def halt(msg = nil)
-      @halted_because = msg
+    def halt(reason = nil)
+      @halted_because = reason
       @halted = true
       @raise_exception_on_halt = false
     end
     
-    def halt!(msg = nil)
-      @halted_because = msg
+    def halt!(reason = nil)
+      @halted_because = reason
       @halted = true
       @raise_exception_on_halt = true
     end
@@ -254,15 +265,4 @@ module Workflow
     
   end
   
-  class Halted < Exception
-    
-    attr_reader :halted_because
-    
-    def initialize(msg = nil)
-      @halted_because = msg
-      super msg
-    end
-    
-  end
-
 end
