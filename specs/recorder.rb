@@ -3,7 +3,6 @@ module Recorder
   @@records = {}
   
   def record(n)
-    puts "OH I I'M IN UR RECORDER #{n}"
     initialize_records unless records_initialized?
     @@records[self] << n
   end
