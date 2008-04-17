@@ -87,16 +87,12 @@ describe 'As described in README,' do
     $on_exit_event_args.should == ['coz i said so']
   end
   
-  it 'should have old_state as nil on initial transition' do
+  it 'should be like, cool with on_transition' do
     @workflow.submit(1,2,3)
     $on_transition_old_state.should == :new
     $on_transition_new_state.should == :awaiting_review
     $on_transition_triggering_event.should == :submit
     $on_transition_event_args.should == [1,2,3]
-  end
-  
-  it 'should be like, cool with on_transition' do
-    
   end
   
   describe 'halting' do
@@ -180,6 +176,12 @@ describe 'As described in README,' do
     end
     
     describe 'metadata' do
+      
+      describe 'of an instance' do
+        it 'works like a hash'
+        it 'initializes as an empty hash if not specified'
+        it 'behaves like an object'
+      end
 
       describe 'of a state' do
 
@@ -214,7 +216,20 @@ describe 'As described in README,' do
   end
     
   it 'fires action -> on_transition -> on_exit -> TRANSITION -> on_entry' do
-    true.should == false
+    Workflow.specify 'Strictly Ordering' do
+      state :start do
+        event(:go!, :transitions_to => :finish) { $order << :action }
+        on_exit { $order << :on_exit }
+      end
+      state :finish do
+        on_entry { $order << :on_entry }
+      end
+      on_transition { $order << :on_transition }
+    end
+    $order = []
+    @workflow = Workflow.new('Strictly Ordering')
+    @workflow.go!
+    $order.should == [:action, :on_transition, :on_exit, :on_entry]
   end
   
   it 'provides helpful extra info in NoMethodError'

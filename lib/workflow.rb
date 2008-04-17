@@ -184,7 +184,6 @@ module Workflow
     end
     
     def run_on_transition(from, to, event, *args)
-      # THIS BUNKS UP
       context.instance_exec(from.name, to.name, event, *args, &on_transition) if on_transition
     end
     
