@@ -233,15 +233,58 @@ describe 'As described in README,' do
   end
   
   it 'provides helpful extra info in NoMethodError'
+  it 'tests NoMethodError extensively, with like, stuff and contexts OKOK?!!1'
 
   # :)
 
   describe 'class integration' do
-    it 'has a meta method called workflow'
-    it 'has a workflow method on the instances'
-    it 'proxies states to the workflow'
-    it 'proxies events to the workflow'
-    it 'has the instance as the action scope'
+    
+    before do
+      GotWorkflow = Class.new; GotWorkflow.class_eval do
+        include Workflow
+        workflow do
+          state :first do
+            event :forward, :transitions_to => :second
+          end
+          state :second do
+            event :forward, :transitions_to => :third
+            event :backward, :transitions_to => :first
+          end
+          state :third do
+            event :backward, :transitions_to => :second
+          end
+        end
+      end
+      @got_workflow = GotWorkflow.new
+    end
+
+    it 'has a workflow' do
+      @got_workflow.workflow.should be_kind_of(Workflow::Instance)
+    end
+    
+    it 'is bound to the workflow context, which implies scope and etc...' do
+      @got_workflow.workflow.context.should == @got_workflow
+    end
+    
+    it 'has a method missing proxy, and proxies' do
+      @got_workflow.workflow.should_receive(:state)
+      @got_workflow.state
+    end
+    
+    it 'test it kinda like integration style, lols' do
+      @got_workflow.states.should == [:first, :second, :third]
+      @got_workflow.states(:second).events.should == [:forward, :backward]
+      @got_workflow.state.should == :first
+      @got_workflow.forward
+      @got_workflow.state.should == :second
+      @got_workflow.forward
+      @got_workflow.state.should == :third
+      @got_workflow.backward
+      @got_workflow.state.should == :second
+      @got_workflow.backward
+      @got_workflow.state.should == :first
+    end
+    
   end
   
   describe 'AR integration' do

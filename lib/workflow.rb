@@ -11,11 +11,28 @@ module Workflow
     end
     
     def new(name = :default, args = {})
-      @@specifications[name].to_machine(args[:reconstitute_at])
+      @@specifications[name].to_instance(args[:reconstitute_at])
     end
     
     def reconstitute(reconstitute_at = nil, name = :default)
-      @@specifications[name].to_machine(reconstitute_at)
+      @@specifications[name].to_instance(reconstitute_at)
+    end
+    
+    def append_features(receiver)
+      receiver.instance_eval do
+        def workflow(&specification)
+          Workflow.specify(self, &specification)
+        end
+      end
+      receiver.class_eval do
+        alias_method :initialize_before_workflow, :initialize
+        attr_reader :workflow
+        def initialize(*args, &block)
+          initialize_before_workflow
+          @workflow = Workflow.new(self.class)
+          @workflow.bind_to(self)
+        end
+      end
     end
     
   end
@@ -29,8 +46,8 @@ module Workflow
       instance_eval(&specification)
     end
     
-    def to_machine(reconstitute_at = nil)
-      Machine.new(states, @on_transition, reconstitute_at)
+    def to_instance(reconstitute_at = nil)
+      Instance.new(states, @on_transition, reconstitute_at)
     end
     
   private
@@ -63,7 +80,7 @@ module Workflow
     
   end
   
-  class Machine
+  class Instance
     
     attr_accessor :states, :current_state, :on_transition, :context
     

@@ -52,18 +52,18 @@ describe 'a workflow with event actions' do
   
   it 'should run event action in context of workflow' do
     @workflow.sell
-    @workflow.records.last.should == 'Workflow::Machine was sold'
+    @workflow.records.last.should == 'Workflow::Instance was sold'
   end
   
   it 'should pass in paramaters in context of workflow' do
     @workflow.sell
     @workflow.auction(10)
-    @workflow.records.last.should == 'Workflow::Machine w/ reserve of 10'
+    @workflow.records.last.should == 'Workflow::Instance w/ reserve of 10'
   end
   
   it 'should not transition if action calls halt!' do
     @workflow.steal('nasty man')
-    @workflow.records.last.should == "Workflow::Machine protecting against nasty man, the theif!"
+    @workflow.records.last.should == "Workflow::Instance protecting against nasty man, the theif!"
     @workflow.state.should == :for_sale
   end
   
