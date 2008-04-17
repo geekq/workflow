@@ -94,7 +94,7 @@ module Workflow
     end
     
     def method_missing(name, *args)
-      if current_state.has_event?(name)
+      if current_state.events(name)
         process_event!(name, *args)
       elsif name.to_s[-1].chr == '?' and states(name.to_s[0..-2].to_sym)
         current_state == states(name.to_s[0..-2].to_sym)
@@ -184,6 +184,7 @@ module Workflow
     end
     
     def run_on_transition(from, to, event, *args)
+      # THIS BUNKS UP
       context.instance_exec(from.name, to.name, event, *args, &on_transition) if on_transition
     end
     
@@ -211,11 +212,6 @@ module Workflow
     
     def initialize(name, meta = {})
       @name, @events, @meta = name, [], meta
-    end
-    
-    # this could probably go away
-    def has_event?(name)
-      !!events(name)
     end
     
     def events(name = nil)

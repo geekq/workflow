@@ -181,7 +181,7 @@ describe 'a workflow with an on transition hook' do
   it 'should act like a chain so we can go on_transition on_transition...'
 end
 
-describe 'binding workflowss to another context' do
+describe 'binding workflows to another context' do
   
   setup do
     Workflow.specify do
@@ -199,7 +199,16 @@ describe 'binding workflowss to another context' do
       end
       state :fourth
       on_transition do |from, to, triggering_event, *args|
-        record "transitioned from #{from.name} to #{to.name}"
+        puts 'oh hai i is in on_transition'
+        begin
+          record "transitioned from #{from} to #{to}"
+        rescue
+          # ok ok shit fuck cunt arse motherfucker, nomethoderror
+          # reraising on our behalfs were casing this to bunk up
+          # coz it said from.name, to.name, lame lame lame (pls fix me ok?)
+          raise "#{$!.inspect}"
+        end
+        puts 'oh hai i am liek done'
       end
     end
     @context = Object.new
@@ -213,6 +222,16 @@ describe 'binding workflowss to another context' do
     @workflow.bind_to(@context)
   end
   
+  it 'should just damn go from state to state' do
+    @context.state.should == :first
+    @context.next(nil)
+    @context.state.should == :second
+    @context.next(nil)
+    @context.state.should == :third
+    @context.next(nil)
+    @context.state.should == :fourth
+  end
+  
   it 'should execute event actions in context' do
     @context.next(:a)
     @context.records.should include(:a)
@@ -221,7 +240,7 @@ describe 'binding workflowss to another context' do
   it 'should execute on_entry in context' do
     @context.next(:a)
     @context.next(:b)
-    puts Recorder.inspect
+    # puts Recorder.records[@context].inspect
     @context.records.should include('entered :third')
   end
   
@@ -280,6 +299,7 @@ end
 # end
 
 describe 'plain old quality' do
+  it 'HANDLES NOMETHODERROR FOR ONLY THE PROXIED OBJECTS FFS!!! (see swearing above)'
   it 'should not use active support\'s instance_eval'
   it 'should have more DRY method args, y\'know? (wtf does this mean?)'
 end
