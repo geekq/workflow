@@ -3,7 +3,7 @@ require "#{File.dirname(__FILE__)}/bootstrap"
 describe 'As described in README,' do
   
   setup do
-    Workflow.specify 'Article Workflow' do
+    Workflow.specify 'Article Workflow', :meta => {:is_for => :articles_duh} do
       state :new do
         event :submit, :transitions_to => :awaiting_review
       end
@@ -40,9 +40,7 @@ describe 'As described in README,' do
       end
     end
     @workflow = Workflow.new('Article Workflow')
-    # @object = Object.new
-    # @workflow.bind_to(@object)
-    # @workflow = @object
+    # @object = Object.new; @workflow.bind_to(@object); @workflow = @object
   end
   
   it 'has a default state of :new' do
@@ -178,9 +176,18 @@ describe 'As described in README,' do
     describe 'metadata' do
       
       describe 'of an instance' do
-        it 'works like a hash'
-        it 'initializes as an empty hash if not specified'
+        
+        it 'works like a hash' do
+          @workflow.meta.should == {:is_for => :articles_duh}
+        end
+        
+        it 'initializes as an empty hash if not specified' do
+          Workflow.specify('Empty!') { state :just_this_one }
+          Workflow.new('Empty!').meta.should == {}
+        end
+        
         it 'behaves like an object'
+        
       end
 
       describe 'of a state' do

@@ -6,8 +6,8 @@ module Workflow
 
   class << self
     
-    def specify(name = :default, &specification)
-      @@specifications[name] = Specification.new(&specification)
+    def specify(name = :default, meta = {:meta => {}}, &specification)
+      @@specifications[name] = Specification.new(meta[:meta], &specification)
     end
     
     def new(name = :default, args = {})
@@ -39,15 +39,16 @@ module Workflow
   
   class Specification
     
-    attr_accessor :states, :on_transition
+    attr_accessor :states, :meta, :on_transition
     
-    def initialize(&specification)
-      self.states = []
+    def initialize(meta = {}, &specification)
+      @states = []
+      @meta = meta
       instance_eval(&specification)
     end
     
     def to_instance(reconstitute_at = nil)
-      Instance.new(states, @on_transition, reconstitute_at)
+      Instance.new(states, @on_transition, @meta, reconstitute_at)
     end
     
   private
@@ -93,11 +94,11 @@ module Workflow
 
     end
     
-    attr_accessor :states, :current_state, :on_transition, :context
+    attr_accessor :states, :meta, :current_state, :on_transition, :context
     
-    def initialize(states, on_transition, reconstitute_at = nil)
-      self.states, self.on_transition = states, on_transition
-      self.context = self
+    def initialize(states, on_transition, meta = {}, reconstitute_at = nil)
+      @states, @on_transition, @meta = states, on_transition, meta
+      @context = self
       if reconstitute_at.nil?
         transition(nil, states.first, nil)
       else
