@@ -348,15 +348,19 @@ describe 'As described in README,' do
       @item.save
       @item.workflow_state.should == 'first'
     end
-      
+        
     it 'correctly reconsitutes a workflow after find' do
       @item = Item.new
       @item.save
-      # futz it so we got no confusion with query caching or identity maps meh
+      # heh, futz it baby!
       @item.connection.execute("update items set workflow_state = 'second' where id = #{@item.id}")
       @item = Item.find(@item.id)
       @item.state.should == :second
     end
+    
+    it 'behaves well with override of initialize'
+    it 'behaves well with existing before_safe methods'
+    it 'can use a different field for serializing the current state to'
     
     # it 'should save to a field called state by default'
     # [:state, :workflow_state, :something_random].each do |field|
@@ -365,6 +369,7 @@ describe 'As described in README,' do
     #   it "should raise exception if value in #{field} is not a valid state"
     #   it "should serialize out to #{field} before save"
     # end
+    
   end
   
   describe 'blatting' do
