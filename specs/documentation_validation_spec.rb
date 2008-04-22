@@ -294,17 +294,77 @@ describe 'As described in README,' do
     
   end
   
+  # on initialize, we have to make sure we've either:
+  #
+  #   a) reconsisited a instance if the state is set
+  #   b) created a new instance if the state is not set
+  #
+  # before_save, we serialise the state to the state field
+  # 
   describe 'AR integration' do
+    
     before do
-      # setup junk for our @ar mock
+      require 'rubygems'
+      require 'activerecord'
+      @database = './test.sqlite3'
+      File.delete(@database) if File.exist?(@database)
+      ActiveRecord::Base.establish_connection(:adapter  => 'sqlite3', 
+                                              :database => @database)
+      ActiveRecord::Migration.verbose = false
+      ActiveRecord::Schema.define(:version => 1) do
+        create_table 'items', :force => true do |t|
+          t.string 'workflow_state'
+        end
+      end
+      if not defined?(Item)
+        class Item < ActiveRecord::Base
+          include Workflow
+          workflow do
+            state :first do
+              event :next, :transitions_to => :second
+            end
+            state :second do
+              event :next, :transitions_to => :third
+            end
+            state :third
+          end
+        end
+      end
     end
-    it 'should save to a field called state by default'
-    [:state, :workflow_state, :something_random].each do |field|
-      it "should initialize in default state if #{field} is null"
-      it "should reconstitute in state if #{field} is not null"
-      it "should raise exception if value in #{field} is not a valid state"
-      it "should serialize out to #{field} before save"
+    
+    after do
+      @database = './test.sqlite3'
+      File.delete(@database) if File.exist?(@database)
     end
+    
+    it 'default_values_are_what_we_expect' do
+      @item = Item.new
+      @item.state.should == :first
+      @item.workflow.should be_kind_of(Workflow::Instance)
+    end
+
+    it 'serializes current state to a field on ' do
+      @item = Item.new
+      @item.save
+      @item.workflow_state.should == 'first'
+    end
+      
+    it 'correctly reconsitutes a workflow after find' do
+      @item = Item.new
+      @item.save
+      # futz it so we got no confusion with query caching or identity maps meh
+      @item.connection.execute("update items set workflow_state = 'second' where id = #{@item.id}")
+      @item = Item.find(@item.id)
+      @item.state.should == :second
+    end
+    
+    # it 'should save to a field called state by default'
+    # [:state, :workflow_state, :something_random].each do |field|
+    #   it "should initialize in default state if #{field} is null"
+    #   it "should reconstitute in state if #{field} is not null"
+    #   it "should raise exception if value in #{field} is not a valid state"
+    #   it "should serialize out to #{field} before save"
+    # end
   end
   
   describe 'blatting' do

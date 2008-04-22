@@ -28,7 +28,7 @@ module Workflow
         alias_method :initialize_before_workflow, :initialize
         attr_reader :workflow
         def initialize(*args, &block)
-          initialize_before_workflow
+          initialize_before_workflow(*args, &block)
           @workflow = Workflow.new(self.class)
           @workflow.bind_to(self)
         end
