@@ -19,18 +19,42 @@ module Workflow
     end
     
     def append_features(receiver)
+      # add a meta method
       receiver.instance_eval do
         def workflow(&specification)
           Workflow.specify(self, &specification)
         end
       end
-      receiver.class_eval do
-        alias_method :initialize_before_workflow, :initialize
-        attr_reader :workflow
-        def initialize(*args, &block)
-          initialize_before_workflow(*args, &block)
-          @workflow = Workflow.new(self.class)
-          @workflow.bind_to(self)
+      if receiver.superclass.to_s == 'ActiveRecord::Base'
+        # active record gets this style of integration
+        receiver.class_eval do
+          alias_method :initialize_before_workflow, :initialize
+          attr_accessor :workflow
+          def initialize(attributes = nil)
+            initialize_before_workflow(attributes)
+            @workflow = Workflow.new(self.class)
+            @workflow.bind_to(self)
+          end
+          def after_find
+            @workflow = Workflow.reconstitute(workflow_state.to_sym, self.class)
+            @workflow.bind_to(self)
+          end
+          alias_method :before_save_before_workflow, :before_save
+          def before_save
+            before_save_before_workflow
+            self.workflow_state = @workflow.state.to_s
+          end
+        end
+      else
+        # anything else gets this style of integration
+        receiver.class_eval do
+          alias_method :initialize_before_workflow, :initialize
+          attr_reader :workflow
+          def initialize(*args, &block)
+            initialize_before_workflow(*args, &block)
+            @workflow = Workflow.new(self.class)
+            @workflow.bind_to(self)
+          end
         end
       end
     end
