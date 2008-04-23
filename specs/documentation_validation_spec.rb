@@ -19,7 +19,7 @@ describe 'As described in README,' do
           $on_exit_new_state = new_state
           $on_exit_event_fired = event_fired 
           $on_exit_event_args = event_args
-        end        
+        end
       end
       state :accepted do
         event(:delete)  { |msg| halt  msg }
@@ -42,6 +42,8 @@ describe 'As described in README,' do
     @workflow = Workflow.new('Article Workflow')
     # @object = Object.new; @workflow.bind_to(@object); @workflow = @object
   end
+  
+  after { Workflow.reset! }
   
   it 'has a default state of :new' do
     @workflow.state.should == :new
@@ -247,8 +249,11 @@ describe 'As described in README,' do
   describe 'class integration' do
     
     before do
-      GotWorkflow = Class.new; GotWorkflow.class_eval do
-        include Workflow
+      unless defined?(GotWorkflow)
+        GotWorkflow = Class.new 
+        GotWorkflow.class_eval { include Workflow }
+      end
+      GotWorkflow.class_eval do
         workflow do
           state :first do
             event :forward, :transitions_to => :second
@@ -317,17 +322,17 @@ describe 'As described in README,' do
         end
       end
       if not defined?(Item)
-        class Item < ActiveRecord::Base
-          include Workflow
-          workflow do
-            state :first do
-              event :next, :transitions_to => :second
-            end
-            state :second do
-              event :next, :transitions_to => :third
-            end
-            state :third
+        class Item < ActiveRecord::Base; include Workflow; end 
+      end
+      Item.class_eval do
+        workflow do
+          state :first do
+            event :next, :transitions_to => :second
           end
+          state :second do
+            event :next, :transitions_to => :third
+          end
+          state :third
         end
       end
     end
@@ -373,12 +378,68 @@ describe 'As described in README,' do
   end
   
   describe 'blatting' do
-    it 'can introduce new states'
-    it 'can introduce new events in states'
+    
+    before do
+      Workflow.specify 'blatting' do
+        state :first do
+          event :next, :transitions_to => :second
+          on_exit { |*args| } 
+        end
+        state :second do
+          event :next, :transitions_to => :third
+          on_entry { |*args| } 
+        end
+        state :third
+        on_transition { |*args| } 
+      end
+    end
+    
+    def workflow
+      Workflow.new('blatting')
+    end
+    
+    def blat(&with)
+      Workflow.specify('blatting', &with)
+    end
+    
+    it 'can introduce new states' do
+      workflow.states.should == [:first, :second, :third]
+      blat { state :fourth }
+      workflow.states.should == [:first, :second, :third, :fourth]
+    end
+    
+    # it 'can introduce new events in states' do
+    #   workflow.states(:third).events == []
+    #   blat { state(:third) { event :previous, :transitions_to => :second } }
+    #   workflow.states(:third).events.should == [:previous]
+    # end
+    
     it 'can overwrite transitions_to in existing events'
     it 'can override on_entry hooks'
     it 'can override on_exit hooks'
     it 'can override on_transition hooks'
+    
+    it 'merges instance meta'
+    it 'merges state meta'
+    it 'merges event meta'
   end
   
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

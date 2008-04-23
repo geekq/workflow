@@ -7,7 +7,15 @@ module Workflow
   class << self
     
     def specify(name = :default, meta = {:meta => {}}, &specification)
-      @@specifications[name] = Specification.new(meta[:meta], &specification)
+      if @@specifications[name]
+        @@specifications[name].blat(meta[:meta], &specification)
+      else
+        @@specifications[name] = Specification.new(meta[:meta], &specification)
+      end
+    end
+    
+    def reset!
+      @@specifications = {}
     end
     
     def new(name = :default, args = {})
@@ -76,6 +84,10 @@ module Workflow
     
     def to_instance(reconstitute_at = nil)
       Instance.new(states, @on_transition, @meta, reconstitute_at)
+    end
+    
+    def blat(meta = {}, &specification)
+      instance_eval(&specification)
     end
     
   private
