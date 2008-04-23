@@ -376,6 +376,9 @@ describe 'As described in README,' do
     it 'can introduce new states'
     it 'can introduce new events in states'
     it 'can overwrite transitions_to in existing events'
+    it 'can override on_entry hooks'
+    it 'can override on_exit hooks'
+    it 'can override on_transition hooks'
   end
   
 end

@@ -18,6 +18,9 @@ module Workflow
       @@specifications[name].to_instance(reconstitute_at)
     end
     
+    # this method should be split up into Workflow::Integrator
+    # utility sub-classes, with an ActiveRecordIntegrator and a
+    # ClassIntegrator... that both respond to integrate! :)
     def append_features(receiver)
       # add a meta method
       receiver.instance_eval do
