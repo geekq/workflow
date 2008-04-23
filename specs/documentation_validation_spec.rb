@@ -363,9 +363,9 @@ describe 'As described in README,' do
       @item.state.should == :second
     end
     
-    it 'behaves well with override of initialize'
-    it 'behaves well with existing before_safe methods'
-    it 'can use a different field for serializing the current state to'
+    it 'behaves well with the override of initialize'
+    it 'behaves well with any existing before_save methods'
+    it 'can use a custom field for serializing the current state to'
     
     # it 'should save to a field called state by default'
     # [:state, :workflow_state, :something_random].each do |field|
@@ -377,7 +377,7 @@ describe 'As described in README,' do
     
   end
   
-  describe 'blatting' do
+  describe 'blatting (overriding of existing specs)' do
     
     before do
       Workflow.specify 'blatting' do
@@ -386,10 +386,13 @@ describe 'As described in README,' do
           on_exit { |*args| } 
         end
         state :second do
+          event :prevous, :transitions_to => :first
           event :next, :transitions_to => :third
           on_entry { |*args| } 
         end
-        state :third
+        state :third do
+          event :prevous, :transitions_to => :second
+        end
         on_transition { |*args| } 
       end
     end
@@ -408,32 +411,24 @@ describe 'As described in README,' do
       workflow.states.should == [:first, :second, :third, :fourth]
     end
     
-    # it 'can introduce new events in states' do
-    #   workflow.states(:third).events == []
-    #   blat { state(:third) { event :previous, :transitions_to => :second } }
-    #   workflow.states(:third).events.should == [:previous]
-    # end
+    it 'can introduce new events in states' do
+      workflow.states(:third).events == [:previous]
+      blat { state(:third) { event :next, :transitions_to => :first } }
+      workflow.states(:third).events.should == [:previous, :next]
+    end
     
-    it 'can overwrite transitions_to in existing events'
-    it 'can override on_entry hooks'
-    it 'can override on_exit hooks'
-    it 'can override on_transition hooks'
+    it 'can change transitions_to in existing events'
+    it 'can replace on_entry hooks'
+    it 'can replace on_exit hooks'
+    it 'can replace on_transition hooks'
     
     it 'merges instance meta'
     it 'merges state meta'
     it 'merges event meta'
+    
   end
   
 end
-
-
-
-
-
-
-
-
-
 
 
 
