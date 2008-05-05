@@ -380,20 +380,21 @@ describe 'As described in README,' do
   describe 'blatting (overriding of existing specs)' do
     
     before do
+      $on_entry, $on_exit, $on_transition = nil, nil, []
       Workflow.specify 'blatting' do
         state :first do
           event :next, :transitions_to => :second
-          on_exit { |*args| } 
+          on_exit { |*args| $on_exit = :before } 
         end
         state :second do
-          event :prevous, :transitions_to => :first
+          event :previous, :transitions_to => :first
           event :next, :transitions_to => :third
-          on_entry { |*args| } 
+          on_entry { |*args| $on_entry = :before } 
         end
         state :third do
           event :previous, :transitions_to => :second
         end
-        on_transition { |*args| } 
+        on_transition { |*args| $on_transition << :hey! } 
       end
       @workflow = Workflow.new('blatting')
     end
@@ -420,9 +421,33 @@ describe 'As described in README,' do
       @workflow.state(:third).events(:previous).transitions_to.should == :first
     end
     
-    it 'can replace on_entry hooks'
-    it 'can replace on_exit hooks'
-    it 'can replace on_transition hooks'
+    it 'can replace on_entry hooks' do
+      @workflow.next
+      $on_exit.should == :before
+      @workflow.previous
+      blat { state(:first) { on_exit { |*args| $on_exit = :after } } }
+      @workflow.next
+      $on_exit.should == :after
+    end
+    
+    it 'can replace on_exit hooks' do
+      @workflow.next
+      $on_entry.should == :before
+      blat { state(:second) { on_entry { |*args| $on_entry = :after } } }
+      @workflow.next
+      @workflow.previous
+      $on_entry.should == :after
+    end
+    
+    it 'can replace on_transition hooks' do
+      $on_transition.should == []
+      @workflow.next
+      @workflow.next
+      $on_transition.should == [:hey!, :hey!]
+      blat { on_transition { |*args| $on_transition << :yo_momma! } }
+      @workflow.previous
+      $on_transition.should == [:hey!, :hey!, :yo_momma!]
+    end
     
     it 'merges instance meta'
     it 'merges state meta'
