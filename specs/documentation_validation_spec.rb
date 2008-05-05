@@ -391,14 +391,11 @@ describe 'As described in README,' do
           on_entry { |*args| } 
         end
         state :third do
-          event :prevous, :transitions_to => :second
+          event :previous, :transitions_to => :second
         end
         on_transition { |*args| } 
       end
-    end
-    
-    def workflow
-      Workflow.new('blatting')
+      @workflow = Workflow.new('blatting')
     end
     
     def blat(&with)
@@ -406,18 +403,23 @@ describe 'As described in README,' do
     end
     
     it 'can introduce new states' do
-      workflow.states.should == [:first, :second, :third]
+      @workflow.states.should == [:first, :second, :third]
       blat { state :fourth }
-      workflow.states.should == [:first, :second, :third, :fourth]
+      @workflow.states.should == [:first, :second, :third, :fourth]
     end
     
     it 'can introduce new events in states' do
-      workflow.states(:third).events == [:previous]
+      @workflow.states(:third).events == [:previous]
       blat { state(:third) { event :next, :transitions_to => :first } }
-      workflow.states(:third).events.should == [:previous, :next]
+      @workflow.states(:third).events.should == [:previous, :next]
     end
     
-    it 'can change transitions_to in existing events'
+    it 'can change transitions_to in existing events' do
+      @workflow.state(:third).events(:previous).transitions_to.should == :second
+      blat { state state(:third) { event :previous, :transitions_to => :first } }
+      @workflow.state(:third).events(:previous).transitions_to.should == :first
+    end
+    
     it 'can replace on_entry hooks'
     it 'can replace on_exit hooks'
     it 'can replace on_transition hooks'
@@ -425,16 +427,7 @@ describe 'As described in README,' do
     it 'merges instance meta'
     it 'merges state meta'
     it 'merges event meta'
-    
+
   end
   
 end
-
-
-
-
-
-
-
-
-

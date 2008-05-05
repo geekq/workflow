@@ -94,11 +94,7 @@ module Workflow
   
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
-      if states(name)
-        states(name) += State.new(name, meta[:meta])
-      else
-        @states << State.new(name, meta[:meta])
-      end
+      self.states << State.new(name, meta[:meta])
       instance_eval(&events_and_etc) if events_and_etc
     end
     
