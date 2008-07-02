@@ -165,7 +165,7 @@ Meta-reflection allows you to add further information to your states, events in 
   
 And as per the last example, getting yo meta is very similar:
 
-  workflow.states(;new).meta # => {:ui_widget => :radio_buttons}
+  workflow.states(:new).meta # => {:ui_widget => :radio_buttons}
   workflow.states(:new).meta[:ui_widget] # => :radio_buttons
   workflow.states(:new).meta.ui_widget # => :radio_buttons
 
