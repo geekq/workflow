@@ -1,6 +1,6 @@
-Workflow
+= Workflow
 
-What is workflow?
+=== What is workflow?
 
 Workflow is a finite-state-machine-inspired API for modeling and interacting with what we tend to refer to as 'workflow'.
 
