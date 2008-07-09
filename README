@@ -1,16 +1,16 @@
-Workflow.
+Workflow
 
 What is workflow?
 
-Workflow is a finite-state-machine-inspired API for modelling and interacting with what we tend to refer to as 'workflow'.
+Workflow is a finite-state-machine-inspired API for modeling and interacting with what we tend to refer to as 'workflow'.
 
-A lot of business modelling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible, using similar terminology as found in state machine theory.
+A lot of business modeling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible, using similar terminology as found in state machine theory.
 
 So, a workflow has a state. It can only be in one state at a time. When a workflow changes state, we call that a transition. Transitions occur on an event, so events cause transitions to occur. Additionally, when an event fires, other random code can be executed, we call those actions. So any given state has a bunch of events, any event in a state causes a transition to another state and potentially causes code to be executed (an action). We can hook into states when they are entered, and exited from, and we can cause transitions to fail (guards), and we can hook in to every transition that occurs ever for whatever reason we can come up with.
 
 Now, all that's a mouthful, but we'll demonstrate the API bit by bit with a real-ish world example.
 
-Let's say we're modelling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Explaining all that is a pain in the arse. Here is the expression of this workflow using the API:
+Let's say we're modeling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Explaining all that is a pain in the arse. Here is the expression of this workflow using the API:
 
   Workflow.specify 'Article Workflow' do
     state :new do
@@ -60,7 +60,7 @@ Now lets say another business rule is that we need to keep track of who is curre
     # store the reviewer somewhere for later
   end
 
-By using Ruby blocks we've now introduced extra code to be fired when an event is called. The block paramaters are treated as method arguments on the event, so, given we have a reference to the reviewer, the event call becomes:
+By using Ruby blocks we've now introduced extra code to be fired when an event is called. The block parameters are treated as method arguments on the event, so, given we have a reference to the reviewer, the event call becomes:
 
   # we gots a reviewer
   workflow.reivew(reviewer)
@@ -165,7 +165,7 @@ Meta-reflection allows you to add further information to your states, events in 
   
 And as per the last example, getting yo meta is very similar:
 
-  workflow.states(;new).meta # => {:ui_widget => :radio_buttons}
+  workflow.states(:new).meta # => {:ui_widget => :radio_buttons}
   workflow.states(:new).meta[:ui_widget] # => :radio_buttons
   workflow.states(:new).meta.ui_widget # => :radio_buttons
 
@@ -210,7 +210,7 @@ We promised that we'd show you how to integrate workflow with your existing clas
   article.approve
   article.state          # => :approved
 
-And as ActiveRecord is all the rage these days, all you need is a string field on the table called "state", which is used to store the current state. Workflow handles auto-setting of a state after a find, yet it doesn't save a record after a transition (though you could make it do this in on_transition).
+And as ActiveRecord is all the rage these days, all you need is a string field on the table called "workflow_state", which is used to store the current state. Workflow handles auto-setting of a state after a find, yet it doesn't save a record after a transition (though you could make it do this in on_transition).
 
   class Article < ActiveRecord::Base
     include Workflow
