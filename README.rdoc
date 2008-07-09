@@ -29,19 +29,19 @@ Let's say we're modeling article submission from journalists. An article is writ
   
 Much better, isn't it!
 
-The initial state is :new – in this example that's somewhat meaningless. (?) However, the :submit event :transitions_to => :being_reviewed. So, lets instantiate an instance of this Workflow:
+The initial state is +:new+ – in this example that's somewhat meaningless. (?) However, the +:submit+ event <tt>:transitions_to => :being_reviewed</tt>. So, lets instantiate an instance of this Workflow:
 
   workflow = Workflow.new('Article Workflow')
   workflow.state # => :new
   
-Now we can call the submit event, which transitions to the :awaiting_review state:
+Now we can call the submit event, which transitions to the +:awaiting_review+ state:
 
   workflow.submit
   workflow.state # => :awaiting_review
   
 Events are actually instance methods on a workflow, and depending on the state you're in, you'll have a different set of events used to transition to other states.
 
-Given this workflow is now :awaiting_approval, we have a :review event, that we call when someone begins to review the article, which puts the workflow into the :being_reviewed state.
+Given this workflow is now :awaiting_approval, we have a :review event, that we call when someone begins to review the article, which puts the workflow into the +:being_reviewed+ state.
 
 States can also be queried via predicates for convenience like so:
 
@@ -52,9 +52,9 @@ States can also be queried via predicates for convenience like so:
   workflow.new?             # => false
   workflow.awaiting_review? # => true  
 
-Lets say that the business rule is that only one person can review an article at a time – having a state :being_reviewed allows for doing things like checking which articles are being reviewed, and being able to select from a pool of articles that are awaiting review, etc. (rewrite?)
+Lets say that the business rule is that only one person can review an article at a time – having a state +:being_reviewed+ allows for doing things like checking which articles are being reviewed, and being able to select from a pool of articles that are awaiting review, etc. (rewrite?)
 
-Now lets say another business rule is that we need to keep track of who is currently reviewing what, how do we do this? We'll now introduce the concept of an action by rewriting our :review event.
+Now lets say another business rule is that we need to keep track of who is currently reviewing what, how do we do this? We'll now introduce the concept of an action by rewriting our +:review+ event.
 
   event :review, :transitions_to => :being_reviewed do |reviewer|
     # store the reviewer somewhere for later
@@ -95,9 +95,9 @@ Billy Bob the Manager comes to you and says "I need to know EVERYTHING THAT HAPP
 
 Workflow doesn't try to tell you how to store your log messages, (but we'd suggest using a *splat and storing that somewhere, and keep your log messages flexible).
 
-Finite state machines have the concept of a guard. The idea is that if a certain set of arbitrary conditions are not fulfilled, it will halt the transition from one state to another. We haven't really figured out how to do this, and we don't like the idea of going :guard => Proc.new {}, coz that's a bit lame, so instead we have halt!
+Finite state machines have the concept of a guard. The idea is that if a certain set of arbitrary conditions are not fulfilled, it will halt the transition from one state to another. We haven't really figured out how to do this, and we don't like the idea of going <tt>:guard => Proc.new {}</tt>, coz that's a bit lame, so instead we have +halt!+
 
-The halt! method is the implementation of the guard concept. Let's take a look.
+The +halt!+ method is the implementation of the guard concept. Let's take a look.
 
   state :being_reviewed do
     event :accept, :transitions_to => :accepted do
@@ -105,7 +105,7 @@ The halt! method is the implementation of the guard concept. Let's take a look.
     end
   end
 
-Inline with how ActiveRecordDoesThings, halt! also can be called via halt, which makes the event return false, so you can trap it with if workflow.event instead of using a rescue block. Using halt returns false.
+Inline with how ActiveRecord does things, +halt!+ also can be called via +halt+, which makes the event return false, so you can trap it with if workflow.event instead of using a rescue block. Using halt returns false.
 
   # using halt
   workflow.state   # => :being_reviewed
@@ -123,7 +123,7 @@ Inline with how ActiveRecordDoesThings, halt! also can be called via halt, which
   workflow.halted? # => true
   workflow.state   # => :being_reviewed
 
-Furthermore, halt! and halt accept an argument, which is the message why the workflow was halted.
+Furthermore, +halt!+ and +halt+ accept an argument, which is the message why the workflow was halted.
 
   state :being_reviewed do
     event :accept, :transitions_to => :accepted do
@@ -131,7 +131,7 @@ Furthermore, halt! and halt accept an argument, which is the message why the wor
     end
   end
 
-And the API for, like, getting this message, with both halt and halt!:
+And the API for, like, getting this message, with both +halt+ and +halt!+:
 
   # using halt
   workflow.state          # => :being_reviewed
@@ -219,7 +219,7 @@ And as ActiveRecord is all the rage these days, all you need is a string field o
     end
   end
 
-When integrating with other classes, behind the scenes, Workflow sets up a Proxy to method missing. A probable common error would be to call an event that doesn't exist, so we catch NoMethodError's and helpfully let you know what available events exist:
+When integrating with other classes, behind the scenes, Workflow sets up a Proxy to method missing. A probable common error would be to call an event that doesn't exist, so we catch +NoMethodError+'s and helpfully let you know what available events exist:
 
   class Article  
     include Workflow
