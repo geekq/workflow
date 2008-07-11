@@ -363,6 +363,15 @@ describe 'As described in README,' do
       @item.state.should == :second
     end
     
+    it 'default to first state if workflow_state is nil in the database' do
+      @item = Item.new
+      @item.next # go to second
+      @item.save
+      @item.connection.execute("update items set workflow_state = null where id = #{@item.id}")
+      @item = Item.find(@item.id)
+      @item.workflow.state.should == :first
+    end
+    
     it 'behaves well with the override of initialize'
     it 'behaves well with any existing before_save methods'
     it 'can use a custom field for serializing the current state to'
