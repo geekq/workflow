@@ -17,13 +17,26 @@ module Workflow
     def reset!
       @@specifications = {}
     end
+
+  private
+
+    def find_spec_for(klass) # it could either be a symbol, or a class, man, urgh.
+      target = klass 
+      while @@specifications[target].nil? and target != Object
+        target = target.superclass
+      end
+      puts target
+      @@specifications[target]
+    end
+
+  public
     
     def new(name = :default, args = {})
-      @@specifications[name].to_instance(args[:reconstitute_at])
+      find_spec_for(name).to_instance(args[:reconstitute_at])
     end
     
     def reconstitute(reconstitute_at = nil, name = :default)
-      @@specifications[name].to_instance(reconstitute_at)
+      find_spec_for(name).to_instance(reconstitute_at)
     end
     
     # this method should be split up into Workflow::Integrator
