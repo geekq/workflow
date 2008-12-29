@@ -1,5 +1,13 @@
 = Workflow
 
+=== New Mailing List!
+
+Hi! We've now got a mailing list to talk about Workflow, and that's good! Come visit and post your problems or ideas or anything!!!
+
+  http://groups.google.com/group/ruby-workflow
+
+See you there!
+
 === What is workflow?
 
 Workflow is a finite-state-machine-inspired API for modeling and interacting with what we tend to refer to as 'workflow'.
