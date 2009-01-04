@@ -25,7 +25,6 @@ module Workflow
       while @@specifications[target].nil? and target != Object
         target = target.superclass
       end
-      puts target
       @@specifications[target]
     end
 
