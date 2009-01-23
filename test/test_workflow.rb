@@ -75,8 +75,4 @@ class WorkflowTest < Test::Unit::TestCase
     assert_equal 'shipped', o.read_attribute(:workflow_state)
   end
 
-  test 'truth' do
-    assert true
-  end
-
 end

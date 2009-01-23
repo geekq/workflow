@@ -18,7 +18,7 @@ module Workflow
       @@specifications = {}
     end
 
-  private
+    private
 
     def find_spec_for(klass) # it could either be a symbol, or a class, man, urgh.
       target = klass 
@@ -28,7 +28,7 @@ module Workflow
       @@specifications[target]
     end
 
-  public
+    public
     
     def new(name = :default, args = {})
       find_spec_for(name).to_instance(args[:reconstitute_at])
@@ -36,57 +36,6 @@ module Workflow
     
     def reconstitute(reconstitute_at = nil, name = :default)
       find_spec_for(name).to_instance(reconstitute_at)
-    end
-    
-    # this method should be split up into Workflow::Integrator
-    # utility sub-classes, with an ActiveRecordIntegrator and a
-    # ClassIntegrator... that both respond to integrate! :)
-    def append_features(receiver)
-      # add a meta method
-      receiver.instance_eval do
-        def workflow(&specification)
-          Workflow.specify(self, &specification)
-        end
-      end
-      # this should check the inheritance tree, as subclassed models
-      # won't return ActiveRecord::Base, they'll return something else
-      # despite being inherited from AR::Base...
-      if receiver.superclass.to_s == 'ActiveRecord::Base'
-        # active record gets this style of integration
-        receiver.class_eval do
-          alias_method :initialize_before_workflow, :initialize
-          attr_accessor :workflow
-          def initialize(attributes = nil)
-            initialize_before_workflow(attributes)
-            @workflow = Workflow.new(self.class)
-            @workflow.bind_to(self)
-          end
-          def after_find
-            @workflow = if workflow_state.nil?
-              Workflow.new(self.class)
-            else
-              Workflow.reconstitute(workflow_state.to_sym, self.class)
-            end
-            @workflow.bind_to(self)
-          end
-          alias_method :before_save_before_workflow, :before_save
-          def before_save
-            before_save_before_workflow
-            self.workflow_state = @workflow.state.to_s
-          end
-        end
-      else
-        # anything else gets this style of integration
-        receiver.class_eval do
-          alias_method :initialize_before_workflow, :initialize
-          attr_reader :workflow
-          def initialize(*args, &block)
-            initialize_before_workflow(*args, &block)
-            @workflow = Workflow.new(self.class)
-            @workflow.bind_to(self)
-          end
-        end
-      end
     end
     
   end
@@ -109,7 +58,7 @@ module Workflow
       instance_eval(&specification)
     end
     
-  private
+    private
   
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
@@ -203,7 +152,7 @@ module Workflow
       @halted_because
     end
     
-  private
+    private
   
     def patch_context(context)
       context.instance_variable_set("@workflow", self)
@@ -324,4 +273,53 @@ module Workflow
     
   end
   
+  module ActiveRecordClassMethods
+    def workflow(&specification)
+      Workflow.specify(self, &specification)
+    end
+  end
+
+  module ActiveRecordInstanceMethods
+#    alias_method :initialize_before_workflow, :initialize
+#    attr_accessor :workflow
+#    def initialize(attributes = nil)
+#      initialize_before_workflow(attributes)
+#      @workflow = Workflow.new(self.class)
+#      @workflow.bind_to(self)
+#    end
+#    def after_find
+#      @workflow = if workflow_state.nil?
+#        Workflow.new(self.class)
+#      else
+#        Workflow.reconstitute(workflow_state.to_sym, self.class)
+#      end
+#      @workflow.bind_to(self)
+#    end
+#    alias_method :before_save_before_workflow, :before_save
+#    def before_save
+#      before_save_before_workflow
+#      self.workflow_state = @workflow.state.to_s
+#    end
+  end
+
+  module NonActiveRecordClassMethods
+#    alias_method :initialize_before_workflow, :initialize
+#    attr_reader :workflow
+#    def initialize(*args, &block)
+#      initialize_before_workflow(*args, &block)
+#      @workflow = Workflow.new(self.class)
+#      @workflow.bind_to(self)
+#    end
+  end
+
+  def self.included(klass)
+    puts "Included in #{klass}"
+    if klass < ActiveRecord::Base
+      puts "EXTENDING"
+      klass.send :attr_accessor, :workflow
+      klass.send :include, ActiveRecordInstanceMethods
+      klass.extend ActiveRecordClassMethods
+    end
+  end
+
 end
