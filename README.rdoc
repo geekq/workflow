@@ -1,4 +1,30 @@
-= Workflow
+= Motivation for the fork
+
+Why to overflow the world with yet another fork for the workflow library?
+
+Well, while the workflow definition API of the original library is nice,
+the implementation of the ActiveRecord integration and the remaining API
+are awful.
+
+The problems, that I am going to fix:
+
+* replace the extensive usage of method_missing with a simple generation
+  of needed functions like `my_state?` and `my_event`.
+* do not use ActiveRecord hooks leading to the divergence of `workflow_state`
+  table attribute and wokflow.current_state
+* fix all the warnings and usage of obsolete API
+* fix the API. For example the states() function returns a state object
+  or a string array! While somebody could find the usage like
+  `states(states.first)` or bidirectional connection between the model
+  class and Workflow::Instance (the bind_to, @context spagetty ) funny,
+  it leads to a maintanence nightmare and
+  the usage is difficult to explain to the new team members.
+* The messy and fuzzy API is probably partially caused by RSpec driven
+  development. While RSpec can be useful for gathering and mapping business
+  requirements, it is IMHO totally unsuitable for driving a clean, explicit,
+  orthogonal API. So I am going to switch to plain old unit tests too.
+
+= Original readme
 
 === New Mailing List!
 
