@@ -11,21 +11,21 @@ class << Test::Unit::TestCase
   end
 end
 
-class WorkflowTest < Test::Unit::TestCase
-
-  class Order < ActiveRecord::Base
-    include Workflow
-    workflow do
-      state :submitted do
-        event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
-        end
+class Order < ActiveRecord::Base
+  include Workflow
+  workflow do
+    state :submitted do
+      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
       end
-      state :accepted do
-        event :ship, :transitions_to => :shipped
-      end
-      state :shipped
     end
+    state :accepted do
+      event :ship, :transitions_to => :shipped
+    end
+    state :shipped
   end
+end
+
+class WorkflowTest < Test::Unit::TestCase
 
   def exec(sql)
     ActiveRecord::Base.connection.execute sql
@@ -47,17 +47,36 @@ class WorkflowTest < Test::Unit::TestCase
     exec "INSERT INTO orders(title, workflow_state) VALUES('some order', 'accepted')"
   end
 
-  test 'persisting workflow_state in the db' do
-    o = Order.find_by_title('some order')
-    assert_equal 'accepted', o.read_attribute(:workflow_state)
+  def teardown
+    ActiveRecord::Base.connection.disconnect!
+  end
+
+  def assert_state(title, expected_state)
+    o = Order.find_by_title(title)
+    assert_equal expected_state, o.read_attribute(:workflow_state)
+    o
+  end
+
+  test 'immediatly save the new workflow_state on state machine transition' do
+    o = assert_state 'some order', 'accepted'
+    o.ship
+    assert_state 'some order', 'shipped'
+  end
+
+  test 'persist workflow_state in the db and reload' do
+    o = assert_state 'some order', 'accepted'
     assert_equal :accepted, o.workflow.current_state.name
     o.ship
     o.save!
 
-    o2 = Order.find_by_title('some order')
-    assert_equal 'shipped', o2.read_attribute(:workflow_state)
+    assert_state 'some order', 'shipped'
 
     o.reload
     assert_equal 'shipped', o.read_attribute(:workflow_state)
   end
+
+  test 'truth' do
+    assert true
+  end
+
 end
