@@ -274,9 +274,12 @@ module Workflow
   end
   
   module ActiveRecordClassMethods
+    attr_reader :workflow_spec
+
     def workflow(&specification)
-      Workflow.specify(self, &specification)
+      @workflow_spec = Specification.new(Hash.new, &specification)
     end
+
   end
 
   module ActiveRecordInstanceMethods

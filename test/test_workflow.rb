@@ -7,7 +7,11 @@ class << Test::Unit::TestCase
   def test(name, &block)
     test_name = :"test_#{name.gsub(' ','_')}"
     raise ArgumentError, "#{test_name} is already defined" if self.instance_methods.include? test_name.to_s
-    define_method test_name, &block
+    if block
+      define_method test_name, &block
+    else
+      puts "PENDING: #{name}"
+    end
   end
 end
 
@@ -36,13 +40,15 @@ class WorkflowTest < Test::Unit::TestCase
       :adapter => "sqlite3",
       :database  => ":memory:" #"tmp/test"
     )
-
-    ActiveRecord::Schema.define do
-      create_table :orders do |t|
-        t.string :title, :null => false
-        t.string :workflow_state
+    
+    ActiveRecord::Base.silence {
+      ActiveRecord::Schema.define do
+        create_table :orders do |t|
+          t.string :title, :null => false
+          t.string :workflow_state
+        end
       end
-    end
+    }
 
     exec "INSERT INTO orders(title, workflow_state) VALUES('some order', 'accepted')"
   end
@@ -75,4 +81,12 @@ class WorkflowTest < Test::Unit::TestCase
     assert_equal 'shipped', o.read_attribute(:workflow_state)
   end
 
+  test 'access workflow specification' do
+    assert_equal 3, Order.workflow_spec.states.length
+  end
+
+  test 'current state object' do
+    assert_equal 'accepted', o.current_state.to_s
+    assert_equal 1, o.current_state.events.length
+  end
 end
