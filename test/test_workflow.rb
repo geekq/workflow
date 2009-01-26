@@ -71,7 +71,7 @@ class WorkflowTest < Test::Unit::TestCase
 
   test 'persist workflow_state in the db and reload' do
     o = assert_state 'some order', 'accepted'
-    assert_equal :accepted, o.workflow.current_state.name
+    assert_equal :accepted, o.current_state.name
     o.ship
     o.save!
 
@@ -86,6 +86,7 @@ class WorkflowTest < Test::Unit::TestCase
   end
 
   test 'current state object' do
+    o = assert_state 'some order', 'accepted'
     assert_equal 'accepted', o.current_state.to_s
     assert_equal 1, o.current_state.events.length
   end

@@ -42,10 +42,10 @@ module Workflow
   
   class Specification
     
-    attr_accessor :states, :meta, :on_transition
+    attr_accessor :states, :initial_state, :meta, :on_transition
     
     def initialize(meta = {}, &specification)
-      @states = []
+      @states = Hash.new
       @meta = meta
       instance_eval(&specification)
     end
@@ -62,7 +62,10 @@ module Workflow
   
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
-      self.states << State.new(name, meta[:meta])
+      new_state = State.new(name, meta[:meta])
+      @initial_state = new_state if @states.empty?
+      @states[name.to_sym] = new_state
+      @scoped_state = new_state
       instance_eval(&events_and_etc) if events_and_etc
     end
     
@@ -71,21 +74,16 @@ module Workflow
     end
     
     def event(name, args = {}, &action)
-      scoped_state.add_event Event.new(name, args[:transitions_to], (args[:meta] or {}), &action)
+      @scoped_state.add_event Event.new(name, args[:transitions_to], (args[:meta] or {}), &action)
     end
     
     def on_entry(&proc)
-      scoped_state.on_entry = proc
+      @scoped_state.on_entry = proc
     end
     
     def on_exit(&proc)
-      scoped_state.on_exit = proc
-    end
-    
-    def scoped_state
-      states.last
-    end
-    
+      @scoped_state.on_exit = proc
+    end    
   end
   
   class Instance
@@ -260,7 +258,10 @@ module Workflow
     def add_event(event)
       @events << event
     end
-    
+
+    def to_s
+      "#{name}"
+    end
   end
   
   class Event
@@ -283,36 +284,39 @@ module Workflow
   end
 
   module ActiveRecordInstanceMethods
-#    alias_method :initialize_before_workflow, :initialize
-#    attr_accessor :workflow
-#    def initialize(attributes = nil)
-#      initialize_before_workflow(attributes)
-#      @workflow = Workflow.new(self.class)
-#      @workflow.bind_to(self)
-#    end
-#    def after_find
-#      @workflow = if workflow_state.nil?
-#        Workflow.new(self.class)
-#      else
-#        Workflow.reconstitute(workflow_state.to_sym, self.class)
-#      end
-#      @workflow.bind_to(self)
-#    end
-#    alias_method :before_save_before_workflow, :before_save
-#    def before_save
-#      before_save_before_workflow
-#      self.workflow_state = @workflow.state.to_s
-#    end
+    #    alias_method :initialize_before_workflow, :initialize
+    #    attr_accessor :workflow
+    #    def initialize(attributes = nil)
+    #      initialize_before_workflow(attributes)
+    #      @workflow = Workflow.new(self.class)
+    #      @workflow.bind_to(self)
+    #    end
+    #    def after_find
+    #      @workflow = if workflow_state.nil?
+    #        Workflow.new(self.class)
+    #      else
+    #        Workflow.reconstitute(workflow_state.to_sym, self.class)
+    #      end
+    #      @workflow.bind_to(self)
+    #    end
+    #    alias_method :before_save_before_workflow, :before_save
+    #    def before_save
+    #      before_save_before_workflow
+    #      self.workflow_state = @workflow.state.to_s
+    #    end
+    def current_state
+      self.class.workflow_spec.states[read_attribute(:workflow_state).to_sym]
+    end
   end
 
   module NonActiveRecordClassMethods
-#    alias_method :initialize_before_workflow, :initialize
-#    attr_reader :workflow
-#    def initialize(*args, &block)
-#      initialize_before_workflow(*args, &block)
-#      @workflow = Workflow.new(self.class)
-#      @workflow.bind_to(self)
-#    end
+    #    alias_method :initialize_before_workflow, :initialize
+    #    attr_reader :workflow
+    #    def initialize(*args, &block)
+    #      initialize_before_workflow(*args, &block)
+    #      @workflow = Workflow.new(self.class)
+    #      @workflow.bind_to(self)
+    #    end
   end
 
   def self.included(klass)
