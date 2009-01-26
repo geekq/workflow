@@ -5,6 +5,7 @@ require 'active_record'
 require 'sqlite3'
 $VERBOSE = old_verbose
 require 'workflow'
+require 'mocha'
 #require 'ruby-debug'
 
 ActiveRecord::Migration.verbose = false
@@ -100,26 +101,53 @@ class WorkflowTest < Test::Unit::TestCase
 
   test 'on_transition invoked'
 
-  test 'on_entry invoked' do
+  test 'on_entry and on_exit invoked' do
     c = Class.new
+    callbacks = mock()
+    callbacks.expects(:my_on_exit_new).once
+    callbacks.expects(:my_on_entry_old).once
     c.class_eval do
-      attr_accessor :persistent_workflow_state
       include Workflow
       workflow do
         state :new do
           event :age, :transitions_to => :old
         end
+        on_exit do
+          callbacks.my_on_exit_new
+        end
         state :old
+        on_entry do
+          callbacks.my_on_entry_old
+        end
+        on_exit do
+          fail "wrong on_exit executed"
+        end
       end
     end
 
     o = c.new
     assert_equal 'new', o.current_state.to_s
+    o.age
   end
 
-  test 'on_exit invoked'
+  test 'access event meta information' do
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow do
+        state :main, :meta => {:importance => 8}
+        state :supplemental, :meta => {:importance => 1}
+      end
+    end
+    assert_equal 1, c.workflow_spec.states[:supplemental].meta[:importance]
+  end
 
-  test 'access event meta information'
-
-  test 'initial state'
+  test 'initial state' do
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow { state :one; state :two }
+    end
+    assert_equal 'one', c.new.current_state.to_s
+  end
 end

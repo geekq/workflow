@@ -192,7 +192,7 @@ module Workflow
     #
     # Default ActiveRecord implementation uses a 'workflow_state' database column.
     def load_workflow_state
-      instance_variable_get :@workflow_state
+      @workflow_state if instance_variable_defined? :@workflow_state
     end
 
     def persist_workflow_state(new_value)
