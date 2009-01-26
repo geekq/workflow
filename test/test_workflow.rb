@@ -90,4 +90,8 @@ class WorkflowTest < Test::Unit::TestCase
     assert_equal 'accepted', o.current_state.to_s
     assert_equal 1, o.current_state.events.length
   end
+
+  test 'on_transition'
+  test 'on_entry'
+  test 'on_exit'
 end
