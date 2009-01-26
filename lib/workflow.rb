@@ -24,12 +24,9 @@ module Workflow
       instance_eval(&events_and_etc) if events_and_etc
     end
     
-    def on_transition(&proc)
-      @on_transition = proc
-    end
-    
     def event(name, args = {}, &action)
-      @scoped_state.add_event Event.new(name, args[:transitions_to], (args[:meta] or {}), &action)
+      @scoped_state.events[name.to_sym] =
+        Event.new(name, args[:transitions_to], (args[:meta] or {}), &action)
     end
     
     def on_entry(&proc)
@@ -161,10 +158,6 @@ module Workflow
       @name, @events, @meta = name, Hash.new, meta
     end
     
-    def add_event(event)
-      @events[event.name.to_sym] = event
-    end
-
     def to_s
       "#{name}"
     end
@@ -189,7 +182,7 @@ module Workflow
         state.events.values.each do |event|
           module_eval do
             define_method event.name do
-              puts "TODO: STATE TRANSITION"
+              puts "TODO: run callbacks on state transition"
               update_attribute :workflow_state, event.transitions_to.to_s
             end
           end
