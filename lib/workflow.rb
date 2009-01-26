@@ -244,19 +244,11 @@ module Workflow
     attr_accessor :name, :events, :meta, :on_entry, :on_exit
     
     def initialize(name, meta = {})
-      @name, @events, @meta = name, [], meta
-    end
-    
-    def events(name = nil)
-      if name
-        @events.detect { |e| e.name == name }
-      else
-        @events.collect { |e| e.name }
-      end
+      @name, @events, @meta = name, Hash.new, meta
     end
     
     def add_event(event)
-      @events << event
+      @events[event.name.to_sym] = event
     end
 
     def to_s
@@ -279,6 +271,16 @@ module Workflow
 
     def workflow(&specification)
       @workflow_spec = Specification.new(Hash.new, &specification)
+      @workflow_spec.states.values.each do |state|
+        state.events.values.each do |event|
+          module_eval do
+            define_method event.name do
+              puts "TODO: STATE TRANSITION"
+              update_attribute :workflow_state, event.transitions_to.to_s
+            end
+          end
+        end
+      end
     end
 
   end
