@@ -1,45 +1,8 @@
-%w(rubygems active_support).each { |f| require f }
+require 'rubygems'
+require 'active_support'
 
 module Workflow
-
-  @@specifications = {}
-
-  class << self
-    
-    def specify(name = :default, meta = {:meta => {}}, &specification)
-      if @@specifications[name]
-        @@specifications[name].blat(meta[:meta], &specification)
-      else
-        @@specifications[name] = Specification.new(meta[:meta], &specification)
-      end
-    end
-    
-    def reset!
-      @@specifications = {}
-    end
-
-    private
-
-    def find_spec_for(klass) # it could either be a symbol, or a class, man, urgh.
-      target = klass 
-      while @@specifications[target].nil? and target != Object
-        target = target.superclass
-      end
-      @@specifications[target]
-    end
-
-    public
-    
-    def new(name = :default, args = {})
-      find_spec_for(name).to_instance(args[:reconstitute_at])
-    end
-    
-    def reconstitute(reconstitute_at = nil, name = :default)
-      find_spec_for(name).to_instance(reconstitute_at)
-    end
-    
-  end
-  
+ 
   class Specification
     
     attr_accessor :states, :initial_state, :meta, :on_transition
@@ -47,14 +10,6 @@ module Workflow
     def initialize(meta = {}, &specification)
       @states = Hash.new
       @meta = meta
-      instance_eval(&specification)
-    end
-    
-    def to_instance(reconstitute_at = nil)
-      Instance.new(states, @on_transition, @meta, reconstitute_at)
-    end
-    
-    def blat(meta = {}, &specification)
       instance_eval(&specification)
     end
     
@@ -126,22 +81,7 @@ module Workflow
         @states.collect { |s| s.name }
       end
     end
-    
-    def method_missing(name, *args)
-      if current_state.events(name)
-        process_event!(name, *args)
-      elsif name.to_s[-1].chr == '?' and states(name.to_s[0..-2].to_sym)
-        current_state == states(name.to_s[0..-2].to_sym)
-      else
-        super
-      end
-    end
-    
-    def bind_to(another_context)
-      self.context = another_context
-      patch_context(another_context) if another_context != self
-    end
-    
+       
     def halted?
       @halted
     end
@@ -152,32 +92,6 @@ module Workflow
     
     private
   
-    def patch_context(context)
-      context.instance_variable_set("@workflow", self)
-      context.instance_eval do
-        alias :method_missing_before_workflow :method_missing
-        #
-        # PROBLEM: method_missing in on_transition events
-        # when bound to other context is raising confusing
-        # error messages, so need to rethink how this is
-        # implemented - i.e. should we just check that an
-        # event exists rather than send ANY message to the
-        # machine? so like:
-        #
-        # if @workflow.state.events(ref_to_sym)
-        #   execute
-        # else
-        #   super ?
-        # end
-        #
-        def method_missing(method, *args)
-          @workflow.send(method, *args)
-        rescue NoMethodError
-          method_missing_before_workflow(method, *args)
-        end
-      end
-    end
-    
     def process_event!(name, *args)
       event = current_state.events(name)
       @halted_because = nil
