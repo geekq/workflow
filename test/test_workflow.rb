@@ -1,7 +1,13 @@
 require 'rubygems'
 require 'test/unit'
+old_verbose, $VERBOSE = $VERBOSE, nil
 require 'active_record'
+require 'sqlite3'
+$VERBOSE = old_verbose
 require 'workflow'
+#require 'ruby-debug'
+
+ActiveRecord::Migration.verbose = false
 
 class << Test::Unit::TestCase
   def test(name, &block)
@@ -36,21 +42,22 @@ class WorkflowTest < Test::Unit::TestCase
   end
 
   def setup
+    old_verbose, $VERBOSE = $VERBOSE, nil # eliminate sqlite3 warning. TODO: delete as soon as sqlite-ruby is fixed
     ActiveRecord::Base.establish_connection(
       :adapter => "sqlite3",
       :database  => ":memory:" #"tmp/test"
     )
+    ActiveRecord::Base.connection.reconnect! # eliminate ActiveRecord warning. TODO: delete as soon as ActiveRecord is fixed
     
-    ActiveRecord::Base.silence {
-      ActiveRecord::Schema.define do
-        create_table :orders do |t|
-          t.string :title, :null => false
-          t.string :workflow_state
-        end
+    ActiveRecord::Schema.define do
+      create_table :orders do |t|
+        t.string :title, :null => false
+        t.string :workflow_state
       end
-    }
+    end
 
     exec "INSERT INTO orders(title, workflow_state) VALUES('some order', 'accepted')"
+    $VERBOSE = old_verbose
   end
 
   def teardown
