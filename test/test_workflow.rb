@@ -98,7 +98,28 @@ class WorkflowTest < Test::Unit::TestCase
     assert_equal 1, o.current_state.events.length
   end
 
-  test 'on_transition'
-  test 'on_entry'
-  test 'on_exit'
+  test 'on_transition invoked'
+
+  test 'on_entry invoked' do
+    c = Class.new
+    c.class_eval do
+      attr_accessor :persistent_workflow_state
+      include Workflow
+      workflow do
+        state :new do
+          event :age, :transitions_to => :old
+        end
+        state :old
+      end
+    end
+
+    o = c.new
+    assert_equal 'new', o.current_state.to_s
+  end
+
+  test 'on_exit invoked'
+
+  test 'access event meta information'
+
+  test 'initial state'
 end

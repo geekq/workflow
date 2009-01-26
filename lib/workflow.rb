@@ -72,7 +72,7 @@ module Workflow
     
   end
   
-  module ActiveRecordClassMethods
+  module WorkflowClassMethods
     attr_reader :workflow_spec
 
     def workflow(&specification)
@@ -90,7 +90,7 @@ module Workflow
 
   end
 
-  module ActiveRecordInstanceMethods
+  module WorkflowInstanceMethods
     #    alias_method :initialize_before_workflow, :initialize
     #    attr_accessor :workflow
     #    def initialize(attributes = nil)
@@ -112,7 +112,7 @@ module Workflow
     #      self.workflow_state = @workflow.state.to_s
     #    end
     def current_state
-      spec.states[read_attribute(:workflow_state).to_sym]
+      spec.states[load_workflow_state] || spec.initial_state
     end
 
     def halted?
@@ -164,28 +164,56 @@ module Workflow
 
     def transition(from, to, name, *args)
       run_on_exit(from, to, name, *args)
-      update_attribute :workflow_state, to.to_s
+      persist_workflow_state to.to_s
       run_on_entry(to, from, name, *args)
     end
 
     def run_on_transition(from, to, event, *args)
-      context.instance_exec(from.name, to.name, event, *args, &spec.on_transition) if spec.on_transition
+      instance_exec(from.name, to.name, event, *args, &spec.on_transition) if spec.on_transition
     end
 
     def run_action(action, *args)
-      context.instance_exec(*args, &action) if action
+      instance_exec(*args, &action) if action
     end
 
-    def run_on_entry(state, prior_state, triggering_event, *args)
-      if state.on_entry
-        context.instance_exec(prior_state.name, triggering_event, *args, &state.on_entry)
-      end
+    def run_on_entry(state, prior_state, triggering_event, *args)     
+      instance_exec(prior_state.name, triggering_event, *args, &state.on_entry) if state.on_entry
     end
 
     def run_on_exit(state, new_state, triggering_event, *args)
-      if state and state.on_exit
-        context.instance_exec(new_state.name, triggering_event, *args, &state.on_exit)
-      end
+      instance_exec(new_state.name, triggering_event, *args, &state.on_exit) if state and state.on_exit
+    end
+
+    # load_workflow_state and persist_workflow_state
+    # can be overriden to handle the persistence of the workflow state.
+    #
+    # Default (non ActiveRecord) implementation stores the current state
+    # in a variable.
+    #
+    # Default ActiveRecord implementation uses a 'workflow_state' database column.
+    def load_workflow_state
+      instance_variable_get :@workflow_state
+    end
+
+    def persist_workflow_state(new_value)
+      @workflow_state = new_value
+    end
+  end
+
+  module ActiveRecordInstanceMethods
+    # TODO: explain motivation
+    def after_initialize_with_workflow_state_persistence
+      write_attribute :workflow_state, current_state.to_s
+    end
+
+    def load_workflow_state
+      read_attribute(:workflow_state).to_sym
+    end
+
+    # On transition the new workflow state is immediately saved in the
+    # database.
+    def persist_workflow_state(new_value)
+      update_attribute :workflow_state, new_value
     end
   end
 
@@ -200,13 +228,10 @@ module Workflow
   end
 
   def self.included(klass)
-    puts "Included in #{klass}"
+    klass.send :include, WorkflowInstanceMethods
+    klass.extend WorkflowClassMethods
     if klass < ActiveRecord::Base
-      puts "EXTENDING"
-      klass.send :attr_accessor, :workflow
       klass.send :include, ActiveRecordInstanceMethods
-      klass.extend ActiveRecordClassMethods
     end
   end
-
 end
