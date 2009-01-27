@@ -150,4 +150,15 @@ class WorkflowTest < Test::Unit::TestCase
     end
     assert_equal 'one', c.new.current_state.to_s
   end
+
+  test 'question methods for state' do
+    
+  end
+
+  test 'correct exception for event, that is not allowed in current state' do
+    o = assert_state 'some order', 'accepted'
+    assert_raise Workflow::NoTransitionAllowed do
+      o.accept
+    end
+  end
 end

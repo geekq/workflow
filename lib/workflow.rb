@@ -49,6 +49,8 @@ module Workflow
 
   end
 
+  class NoTransitionAllowed < Exception; end
+
   class State
     
     attr_accessor :name, :events, :meta, :on_entry, :on_exit
@@ -131,6 +133,9 @@ module Workflow
 
     def process_event!(name, *args)
       event = current_state.events[name.to_sym]
+      raise NoTransitionAllowed.new(
+        "There is no event #{name.to_sym} defined for the #{current_state} state") \
+        if event.nil?
       @halted_because = nil
       @halted = false
       @raise_exception_on_halt = false
