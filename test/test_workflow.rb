@@ -152,7 +152,9 @@ class WorkflowTest < Test::Unit::TestCase
   end
 
   test 'question methods for state' do
-    
+    o = assert_state 'some order', 'accepted'
+    assert o.accepted?
+    assert !o.shipped?
   end
 
   test 'correct exception for event, that is not allowed in current state' do
@@ -161,4 +163,6 @@ class WorkflowTest < Test::Unit::TestCase
       o.accept
     end
   end
+
+  test 'multiple events with the same name and different arguments lists from different states'
 end

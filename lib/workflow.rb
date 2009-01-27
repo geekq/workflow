@@ -80,10 +80,18 @@ module Workflow
     def workflow(&specification)
       @workflow_spec = Specification.new(Hash.new, &specification)
       @workflow_spec.states.values.each do |state|
+        state_name = state.name
+        module_eval do
+          define_method "#{state_name}?" do
+            state_name == current_state.name
+          end
+        end
+
         state.events.values.each do |event|
+          event_name = event.name
           module_eval do
-            define_method event.name do |*args|
-              process_event!(event.name, *args)
+            define_method event_name do |*args|
+              process_event!(event_name, *args)
             end
           end
         end
