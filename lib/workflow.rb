@@ -132,7 +132,7 @@ module Workflow
       @raise_exception_on_halt = false
       # i don't think we've tested that the return value is
       # what the action returns... so yeah, test it, at some point.
-      return_value = run_action(event.action, *args)
+      return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
       if @halted
         if @raise_exception_on_halt
           raise TransitionHalted.new(@halted_because)
@@ -176,6 +176,10 @@ module Workflow
 
     def run_action(action, *args)
       instance_exec(*args, &action) if action
+    end
+
+    def run_action_callback(action_name, *args)
+      self.send action_name.to_sym, *args if self.respond_to?(action_name.to_sym)
     end
 
     def run_on_entry(state, prior_state, triggering_event, *args)     

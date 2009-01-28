@@ -192,13 +192,13 @@ class WorkflowTest < Test::Unit::TestCase
   test 'multiple events with the same name and different arguments lists from different states'
 
   test 'implicit transition callback' do
-    callbacks = mock()
-    callbacks.expects(:my_tran).once # this is validated at the end
+    args = mock()
+    args.expects(:my_tran).once # this is validated at the end
     c = Class.new
     c.class_eval do
       include Workflow
-      def my_transition
-        callbacks.my_tran
+      def my_transition(args)
+        args.my_tran
       end
       workflow do
         state :one do
@@ -207,6 +207,6 @@ class WorkflowTest < Test::Unit::TestCase
         state :two
       end
     end
-    c.new.my_transition!
+    c.new.my_transition!(args)
   end
 end
