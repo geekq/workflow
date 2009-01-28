@@ -5,7 +5,7 @@ module Workflow
  
   class Specification
     
-    attr_accessor :states, :initial_state, :meta, :on_transition
+    attr_accessor :states, :initial_state, :meta, :on_transition_proc
     
     def initialize(meta = {}, &specification)
       @states = Hash.new
@@ -35,7 +35,11 @@ module Workflow
     
     def on_exit(&proc)
       @scoped_state.on_exit = proc
-    end    
+    end
+
+    def on_transition(&proc)
+      @on_transition_proc = proc
+    end
   end
   
   class TransitionHalted < Exception
@@ -61,6 +65,10 @@ module Workflow
     
     def to_s
       "#{name}"
+    end
+
+    def to_sym
+      name.to_sym
     end
   end
   
@@ -100,7 +108,7 @@ module Workflow
   end
 
   module WorkflowInstanceMethods
-    def current_state
+    def current_state 
       loaded_state = load_workflow_state
       res = spec.states[loaded_state.to_sym] if loaded_state
       res || spec.initial_state
@@ -163,7 +171,7 @@ module Workflow
     end
 
     def run_on_transition(from, to, event, *args)
-      instance_exec(from.name, to.name, event, *args, &spec.on_transition) if spec.on_transition
+      instance_exec(from.name, to.name, event, *args, &spec.on_transition_proc) if spec.on_transition_proc
     end
 
     def run_action(action, *args)

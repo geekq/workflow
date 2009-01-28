@@ -99,8 +99,6 @@ class WorkflowTest < Test::Unit::TestCase
     assert_equal 1, o.current_state.events.length
   end
 
-  test 'on_transition invoked'
-
   test 'on_entry and on_exit invoked' do
     c = Class.new
     callbacks = mock()
@@ -128,6 +126,26 @@ class WorkflowTest < Test::Unit::TestCase
     o = c.new
     assert_equal 'new', o.current_state.to_s
     o.age
+  end
+
+  test 'on_transition invoked' do
+    callbacks = mock()
+    callbacks.expects(:on_tran).once # this is validated at the end
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow do
+        state :one do
+          event :increment, :transitions_to => :two
+        end
+        state :two
+        on_transition do |from, to, triggering_event, *event_args|
+          callbacks.on_tran
+        end
+      end
+    end
+    assert_not_nil c.workflow_spec.on_transition_proc
+    c.new.increment
   end
 
   test 'access event meta information' do
