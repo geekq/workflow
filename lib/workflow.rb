@@ -97,30 +97,9 @@ module Workflow
         end
       end
     end
-
   end
 
   module WorkflowInstanceMethods
-    #    alias_method :initialize_before_workflow, :initialize
-    #    attr_accessor :workflow
-    #    def initialize(attributes = nil)
-    #      initialize_before_workflow(attributes)
-    #      @workflow = Workflow.new(self.class)
-    #      @workflow.bind_to(self)
-    #    end
-    #    def after_find
-    #      @workflow = if workflow_state.nil?
-    #        Workflow.new(self.class)
-    #      else
-    #        Workflow.reconstitute(workflow_state.to_sym, self.class)
-    #      end
-    #      @workflow.bind_to(self)
-    #    end
-    #    alias_method :before_save_before_workflow, :before_save
-    #    def before_save
-    #      before_save_before_workflow
-    #      self.workflow_state = @workflow.state.to_s
-    #    end
     def current_state
       spec.states[load_workflow_state] || spec.initial_state
     end
@@ -228,16 +207,6 @@ module Workflow
     def persist_workflow_state(new_value)
       update_attribute :workflow_state, new_value
     end
-  end
-
-  module NonActiveRecordClassMethods
-    #    alias_method :initialize_before_workflow, :initialize
-    #    attr_reader :workflow
-    #    def initialize(*args, &block)
-    #      initialize_before_workflow(*args, &block)
-    #      @workflow = Workflow.new(self.class)
-    #      @workflow.bind_to(self)
-    #    end
   end
 
   def self.included(klass)
