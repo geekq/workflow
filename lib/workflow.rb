@@ -98,7 +98,7 @@ module Workflow
         state.events.values.each do |event|
           event_name = event.name
           module_eval do
-            define_method event_name do |*args|
+            define_method "#{event_name}!".to_sym do |*args|
               process_event!(event_name, *args)
             end
           end
@@ -120,12 +120,6 @@ module Workflow
 
     def halted_because
       @halted_because
-    end
-
-    private
-
-    def spec
-      self.class.workflow_spec
     end
 
     def process_event!(name, *args)
@@ -150,6 +144,12 @@ module Workflow
         transition(current_state, spec.states[event.transitions_to], name, *args)
         return_value
       end
+    end
+
+    private
+
+    def spec
+      self.class.workflow_spec
     end
 
     def halt(reason = nil)

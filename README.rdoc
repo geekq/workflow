@@ -26,6 +26,18 @@ The problems, that I am going to fix:
   orthogonal API. So I am also going to switch to plain old unit tests.
 * use update_attribute to immediately save the new state to the database
 
+* we've noticed, that mixing the list of events and states with the blocks 
+  invoked for particular transitions leads to a bumpy and poorly readable code
+  due to a deep nesting. We tried and dismissed using lambdas. And desided to
+  invoke an optional user defined callback method with the same name as 
+  the event (convention over configuration)
+      
+      event :my_transition, :transitions_to => other_state
+
+  defines a transition method `my_transition!` and invokes user defined callback 
+  function `my_transition` (name without exclamation mark). The old way - using
+  a block or a combination of both is also possible.
+
 = Original readme
 
 === New Mailing List!

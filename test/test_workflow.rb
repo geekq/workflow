@@ -73,14 +73,14 @@ class WorkflowTest < Test::Unit::TestCase
 
   test 'immediatly save the new workflow_state on state machine transition' do
     o = assert_state 'some order', 'accepted'
-    o.ship
+    o.ship!
     assert_state 'some order', 'shipped'
   end
 
   test 'persist workflow_state in the db and reload' do
     o = assert_state 'some order', 'accepted'
     assert_equal :accepted, o.current_state.name
-    o.ship
+    o.ship!
     o.save!
 
     assert_state 'some order', 'shipped'
@@ -125,7 +125,7 @@ class WorkflowTest < Test::Unit::TestCase
 
     o = c.new
     assert_equal 'new', o.current_state.to_s
-    o.age
+    o.age!
   end
 
   test 'on_transition invoked' do
@@ -145,7 +145,7 @@ class WorkflowTest < Test::Unit::TestCase
       end
     end
     assert_not_nil c.workflow_spec.on_transition_proc
-    c.new.increment
+    c.new.increment!
   end
 
   test 'access event meta information' do
@@ -185,9 +185,28 @@ class WorkflowTest < Test::Unit::TestCase
   test 'correct exception for event, that is not allowed in current state' do
     o = assert_state 'some order', 'accepted'
     assert_raise Workflow::NoTransitionAllowed do
-      o.accept
+      o.accept!
     end
   end
 
   test 'multiple events with the same name and different arguments lists from different states'
+
+  test 'implicit transition callback' do
+    callbacks = mock()
+    callbacks.expects(:my_tran).once # this is validated at the end
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      def my_transition
+        callbacks.my_tran
+      end
+      workflow do
+        state :one do
+          event :my_transition, :transitions_to => :two
+        end
+        state :two
+      end
+    end
+    c.new.my_transition!
+  end
 end
