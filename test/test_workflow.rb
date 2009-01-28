@@ -151,6 +151,13 @@ class WorkflowTest < Test::Unit::TestCase
     assert_equal 'one', c.new.current_state.to_s
   end
 
+  test 'nil as initial state' do
+    exec "INSERT INTO orders(title, workflow_state) VALUES('nil state', NULL)"
+    o = Order.find_by_title('nil state')
+    assert o.submitted?, 'if workflow_state is nil, the initial state should be assumed'
+    assert !o.shipped?
+  end
+
   test 'question methods for state' do
     o = assert_state 'some order', 'accepted'
     assert o.accepted?

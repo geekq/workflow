@@ -101,7 +101,9 @@ module Workflow
 
   module WorkflowInstanceMethods
     def current_state
-      spec.states[load_workflow_state] || spec.initial_state
+      loaded_state = load_workflow_state
+      res = spec.states[loaded_state.to_sym] if loaded_state
+      res || spec.initial_state
     end
 
     def halted?
@@ -199,7 +201,7 @@ module Workflow
     end
 
     def load_workflow_state
-      read_attribute(:workflow_state).to_sym
+      read_attribute(:workflow_state)
     end
 
     # On transition the new workflow state is immediately saved in the
