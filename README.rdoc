@@ -54,6 +54,10 @@ are very problematic.
 * Eliminated bidirectional connection between the model
   class and Workflow::Instance - the bind_to, @context, @workflow.
 
+* Only one file with 240 lines of code and no interdependencies between classes.
+  As little meta programming as needed - not as much as possible. ;-)
+  So you can easily extend or modify it to suit your needs.
+
 Author: Vladimir Dobriakov, http://www.innoq.com/blog/vd, http://blog.geekq.net/
 Parts copyright 2009 Vodafone
 Based on the work of Ryan Allen

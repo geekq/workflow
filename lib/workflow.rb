@@ -130,8 +130,6 @@ module Workflow
       @halted_because = nil
       @halted = false
       @raise_exception_on_halt = false
-      # i don't think we've tested that the return value is
-      # what the action returns... so yeah, test it, at some point.
       return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
       if @halted
         if @raise_exception_on_halt
@@ -207,11 +205,6 @@ module Workflow
   end
 
   module ActiveRecordInstanceMethods
-    # TODO: explain motivation
-    def after_initialize_with_workflow_state_persistence
-      write_attribute :workflow_state, current_state.to_s
-    end
-
     def load_workflow_state
       read_attribute(:workflow_state)
     end
@@ -221,6 +214,17 @@ module Workflow
     def persist_workflow_state(new_value)
       update_attribute :workflow_state, new_value
     end
+
+    private
+
+    # Motivation: even if NULL is stored in the workflow_state database column,
+    # the current_state is correctly recognized in the Ruby code. The problem
+    # arises when you want to SELECT records filtering by the value of initial
+    # state. That's why it is important to save the string with the name of the
+    # initial state in all the new records.
+    def write_initial_state
+      write_attribute :workflow_state, current_state.to_s
+    end
   end
 
   def self.included(klass)
@@ -228,6 +232,7 @@ module Workflow
     klass.extend WorkflowClassMethods
     if klass < ActiveRecord::Base
       klass.send :include, ActiveRecordInstanceMethods
+      klass.before_validation :write_initial_state
     end
   end
 end

@@ -34,6 +34,7 @@ class Order < ActiveRecord::Base
     end
     state :shipped
   end
+  
 end
 
 class WorkflowTest < Test::Unit::TestCase
@@ -174,6 +175,11 @@ class WorkflowTest < Test::Unit::TestCase
     o = Order.find_by_title('nil state')
     assert o.submitted?, 'if workflow_state is nil, the initial state should be assumed'
     assert !o.shipped?
+  end
+
+  test 'initial state immediately set as ActiveRecord attribute for new objects' do
+    o = Order.create(:title => 'new object')
+    assert_equal 'submitted', o.read_attribute(:workflow_state)
   end
 
   test 'question methods for state' do
