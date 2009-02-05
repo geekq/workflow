@@ -1,5 +1,0 @@
-[ ] change state field to something configurable...
-[ ] or leave it out? (i.e. so just go workflow.state or workflow.current_state)
-[x] make predicate querying of states, i.e. new? == true if state == :new
-[ ] ... should states be objects, or should they be symbols?
-[ ] refactor the tests, then the library :)

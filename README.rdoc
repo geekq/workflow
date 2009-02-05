@@ -6,37 +6,58 @@ Well, while the workflow definition API of the original library is nice,
 the implementation of the ActiveRecord integration and the remaining API
 are very problematic.
 
-The problems, that I am going to fix:
+== API improvements
 
-* replace the extensive usage of method_missing with a simple generation
-  of needed functions like `my_state?` and `my_event`.
-* do not use ActiveRecord hooks leading to the divergence of `workflow_state`
-  table attribute and wokflow.current_state
-* fix all the warnings and usage of obsolete API
-* fix the API. For example the states() function returns a state object
+* Fixed fuzzy API. For example, the states() function returned a state object
   or an array of strings, depending on function parameters!
   While somebody could find the usage like `states(states.first)` funny,
   it leads to a maintanence nightmare and the usage is difficult to explain
   to the new team members.
-* bidirectional connection between the model
-  class and Workflow::Instance - the bind_to, @context, @workflow spagetty.
-* The messy and fuzzy API is probably partially caused by RSpec driven
-  development. While RSpec can be useful for gathering and mapping business
-  requirements, it is IMHO totally unsuitable for driving a clean, explicit,
-  orthogonal API. So I am also going to switch to plain old unit tests.
-* use update_attribute to immediately save the new state to the database
 
-* we've noticed, that mixing the list of events and states with the blocks 
+* When we activate the state transition, we typically do not make any other
+  changes to the attributes of the entity. So by default the event
+  invokation now immediately saves the new state to the database.
+  `update_attribute` is used for implementation. This can be overriden 
+  with the `persist_workflow_state` method.
+
+* We've noticed, that mixing the list of events and states with the blocks
   invoked for particular transitions leads to a bumpy and poorly readable code
-  due to a deep nesting. We tried and dismissed using lambdas. And desided to
-  invoke an optional user defined callback method with the same name as 
-  the event (convention over configuration)
+  due to a deep nesting. We tried (and dismissed) lambdas for this. Eventually
+  we desided to invoke an optional user defined callback method with the same
+  name as the event (convention over configuration)
       
       event :my_transition, :transitions_to => other_state
 
   defines a transition method `my_transition!` and invokes user defined callback 
-  function `my_transition` (name without exclamation mark). The old way - using
+  function `my_transition` (with no exclamation mark). The old way - using
   a block or a combination of both is also possible.
+
+
+== Implementation improvements
+
+* Replaced the extensive usage of method_missing with a simple generation
+  of needed functions like `my_state?` and `my_event`.
+
+* Do not use ActiveRecord hooks leading to the divergence of `workflow_state`
+  table attribute and wokflow.current_state.
+
+* Fixed all the warnings and usage of obsolete API.
+
+* The messy and fuzzy API is probably partially caused by RSpec driven
+  development. While RSpec can be useful for gathering and mapping business
+  requirements, it is IMHO totally unsuitable for driving a clean, explicit,
+  orthogonal API. If I say `state` in the natural language or in a RSpec, it is
+  not clear, what I mean - a string, a symbol, an object of class State, a hash?
+  This(?) led to this fuzzy API.
+  So I switched to the plain old unit tests.
+
+* Eliminated bidirectional connection between the model
+  class and Workflow::Instance - the bind_to, @context, @workflow.
+
+Author: Vladimir Dobriakov, http://www.innoq.com/blog/vd, http://blog.geekq.net/
+Parts copyright 2009 Vodafone
+Based on the work of Ryan Allen
+
 
 = Original readme
 
