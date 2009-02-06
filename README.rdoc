@@ -32,11 +32,21 @@ are very problematic.
   function `my_transition` (with no exclamation mark). The old way - using
   a block or a combination of both is also possible.
 
+* In the API the workflow specification is clearly separated from the object
+  state. The former is accessible through the class method
+  `MyEntityClass.workflow_spec` (including all the meta data) and the latter
+  is integrated in the instance of the my_entity, e.g. my_entity.current_state
+  or my_entity.my_event!
+
 
 == Implementation improvements
 
 * Replaced the extensive usage of method_missing with a simple generation
-  of needed functions like `my_state?` and `my_event`.
+  of needed functions like `my_state?` and `my_event`. Advantages:
+
+  * shorter and more meaningful stack during debugging
+  * public_methods shows the methods
+  * autocompletion in irb works
 
 * Do not use ActiveRecord hooks leading to the divergence of `workflow_state`
   table attribute and wokflow.current_state.
@@ -59,8 +69,10 @@ are very problematic.
   So you can easily extend or modify it to suit your needs.
 
 Author: Vladimir Dobriakov, http://www.innoq.com/blog/vd, http://blog.geekq.net/
+
 Parts copyright 2009 Vodafone
-Based on the work of Ryan Allen
+
+Based on the work of Ryan Allen and Scott Barron
 
 
 = Original readme
