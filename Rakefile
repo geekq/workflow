@@ -10,20 +10,21 @@ Rake::TestTask.new do |t|
   t.warning = true
 end
 
-PKG_VERSION = "1.0.0"
+PKG_VERSION = "0.1"
 PKG_FILES = FileList[
   'LICENSE',
+  'README.rdoc',
   'Rakefile',
   'lib/**/*.rb',
   'test/**/test_*.rb'
 ]
 
 spec = Gem::Specification.new do |s|
-  s.name = "geekQ-workflow"
+  s.name = "workflow"
   s.version = PKG_VERSION
   s.author = "Vladimir Dobriakov"
   s.email = "vladimir@geekq.net"
-  s.homepage = "http://www.geekQ.net/"
+  s.homepage = "http://blog.geekQ.net/"
   s.platform = Gem::Platform::RUBY
   s.summary = "A replacement for acts_as_state_machine."
   s.files = PKG_FILES.to_a
