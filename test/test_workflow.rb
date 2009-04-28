@@ -215,4 +215,11 @@ class WorkflowTest < Test::Unit::TestCase
     end
     c.new.my_transition!(args)
   end
+
+  test 'STI' do
+    class BigOrder < Order
+    end
+    bo = BigOrder.new
+    bo.accepted?
+  end
 end
