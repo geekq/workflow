@@ -147,7 +147,13 @@ module Workflow
     private
 
     def spec
-      self.class.workflow_spec
+      c = self.class
+      # using a simple loop instead of class_inheritable_accessor to avoid 
+      # dependency on Rails' ActiveSupport
+      until c.workflow_spec || !(c.include? Workflow)
+        c = c.superclass
+      end
+      c.workflow_spec
     end
 
     def halt(reason = nil)

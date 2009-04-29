@@ -216,10 +216,37 @@ class WorkflowTest < Test::Unit::TestCase
     c.new.my_transition!(args)
   end
 
-  test 'STI' do
+  test 'Single table inheritance (STI)' do
     class BigOrder < Order
     end
+
     bo = BigOrder.new
-    bo.accepted?
+    assert bo.submitted?
+    assert !bo.accepted?
+  end
+
+  test 'Two-level inheritance' do
+    class BigOrder < Order
+    end
+
+    class EvenBiggerOrder < BigOrder
+    end
+
+    assert EvenBiggerOrder.new.submitted?
+  end
+
+  test 'Iheritance with workflow definition override' do
+    class BigOrder < Order
+    end
+
+    class SpecialBigOrder < BigOrder
+      workflow do
+        state :start_big
+      end
+    end
+
+    special = SpecialBigOrder.new
+    assert_equal 'start_big', special.current_state.to_s
   end
 end
+
