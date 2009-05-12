@@ -81,13 +81,13 @@ Rails application.
 
 Credit: Michael (rockrep)
 
-*  Accessing workflow specification
+* Accessing workflow specification
   - (old) <tt>my_instance.workflow</tt>
   - (new) <tt>MyClass.workflow_spec</tt>
 
 * Accessing states, events, meta, e.g.
   - (old) <tt>my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag]</tt>
-  - (new) <tt>MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag]</tt>
+  - (new) <tt>\MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag]</tt>
 
 * Causing state transitions
   - (old) <tt>my_instance.workflow.my_event</tt>
