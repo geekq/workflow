@@ -82,16 +82,16 @@ Rails application.
 Credit: Michael (rockrep)
 
 *  Accessing workflow specification
-  - (old) +my_instance.workflow+
-  - (new) +MyClass.workflow_spec+
+  - (old) <tt>my_instance.workflow</tt>
+  - (new) <tt>MyClass.workflow_spec</tt>
 
 * Accessing states, events, meta, e.g.
-  - (old) +my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag]+
-  - (new) +MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag]+
+  - (old) <tt>my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag]</tt>
+  - (new) <tt>MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag]</tt>
 
 * Causing state transitions
-  - (old) +my_instance.workflow.my_event+
-  - (new) +my_instance.my_event!+
+  - (old) <tt>my_instance.workflow.my_event</tt>
+  - (new) <tt>my_instance.my_event!</tt>
 
 * when using both a block and a callback method for an event, the block executes prior to the callback
 
