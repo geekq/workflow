@@ -71,10 +71,29 @@ are very problematic.
 
 == Installation
 
-You can just download the lib/workflow.rb and put it in the lib folder of your 
+    gem install workflow
+
+Alternatively you can just download the lib/workflow.rb and put it in the lib folder of your 
 Rails application.
 
-Later I'll probable create a gem.
+
+== Migration from the original Ryan's library
+
+Credit: Michael (rockrep)
+
+*  Accessing workflow specification
+  * (old) my_instance.workflow
+  * (new) MyClass.workflow_spec
+
+* Accessing states, events, meta, e.g.
+  * (old) my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag]
+  * (new) MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag]
+
+* Causing state transitions
+  * (old) my_instance.workflow.my_event
+  * (new) my_instance.my_event!
+
+* when using both a block and a callback method for an event, the block executes prior to the callback
 
 
 == About
@@ -87,6 +106,12 @@ Based on the work of Ryan Allen and Scott Barron
 
 
 = Original readme
+
+Disclaimer: my fork is not 100% API compatible to the original library by Ryan.
+I'll update/merge the readme as soon as posssible.
+In the mean time please use the original readme in conjunction with
+the API changes and migration hints listed above.
+
 
 === New Mailing List!
 
