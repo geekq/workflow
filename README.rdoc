@@ -82,16 +82,16 @@ Rails application.
 Credit: Michael (rockrep)
 
 * Accessing workflow specification
-  - (old) <tt>my_instance.workflow</tt>
-  - (new) <tt>MyClass.workflow_spec</tt>
+  my_instance.workflow # old
+  MyClass.workflow_spec # new
 
 * Accessing states, events, meta, e.g.
-  - (old) <tt>my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag]</tt>
-  - (new) <tt>\MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag]</tt>
+  my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag] # old
+  MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag] # new
 
 * Causing state transitions
-  - (old) <tt>my_instance.workflow.my_event</tt>
-  - (new) <tt>my_instance.my_event!</tt>
+  my_instance.workflow.my_event # old
+  my_instance.my_event! # new
 
 * when using both a block and a callback method for an event, the block executes prior to the callback
 
@@ -133,34 +133,49 @@ Now, all that's a mouthful, but we'll demonstrate the API bit by bit with a real
 
 Let's say we're modeling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Explaining all that is a pain in the arse. Here is the expression of this workflow using the API:
 
-  Workflow.specify 'Article Workflow' do
-    state :new do
-      event :submit, :transitions_to => :awaiting_review
+
+  class Article
+    include Workflow
+    workflow do
+      state :new do
+        event :submit, :transitions_to => :awaiting_review
+      end
+      state :awaiting_review do
+        event :review, :transitions_to => :being_reviewed
+      end
+      state :being_reviewed do
+        event :accept, :transitions_to => :accepted
+        event :reject, :transitions_to => :rejected
+      end
+      state :accepted
+      state :rejected
     end
-    state :awaiting_review do
-      event :review, :transitions_to => :being_reviewed
-    end
-    state :being_reviewed do
-      event :accept, :transitions_to => :accepted
-      event :reject, :transitions_to => :rejected
-    end
-    state :accepted
-    state :rejected
   end
-  
+
 Much better, isn't it!
 
-The initial state is <tt>:new</tt> – in this example that's somewhat meaningless. (?) However, the <tt>:submit</tt> event <tt>:transitions_to => :being_reviewed</tt>. So, lets instantiate an instance of this Workflow:
+Let's create an article instance and check in which state it is:
 
-  workflow = Workflow.new('Article Workflow')
-  workflow.state # => :new
-  
+  article = Article.new
+  article.accepted? # => false
+  article.new? # => true
+
+You can also access the whole +current_state+ object including the list of possible events and other meta information:
+
+  article.current_state 
+  => #<Workflow::State:0x7f1e3d6731f0 @events={
+    :submit=>#<Workflow::Event:0x7f1e3d6730d8 @action=nil, 
+      @transitions_to=:awaiting_review, @name=:submit, @meta={}>}, 
+    name:new, meta{}
+
 Now we can call the submit event, which transitions to the <tt>:awaiting_review</tt> state:
 
-  workflow.submit
-  workflow.state # => :awaiting_review
+  article.submit!
+  article.awaiting_review? # => true
   
 Events are actually instance methods on a workflow, and depending on the state you're in, you'll have a different set of events used to transition to other states.
+
+TODO - continue editing
 
 Given this workflow is now <tt>:awaiting_approval</tt>, we have a <tt>:review</tt> event, that we call when someone begins to review the article, which puts the workflow into the <tt>:being_reviewed</tt> state.
 

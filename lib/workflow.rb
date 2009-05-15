@@ -236,9 +236,11 @@ module Workflow
   def self.included(klass)
     klass.send :include, WorkflowInstanceMethods
     klass.extend WorkflowClassMethods
-    if klass < ActiveRecord::Base
+    if Object.const_defined?(:ActiveRecord)
+      if klass < ActiveRecord::Base
       klass.send :include, ActiveRecordInstanceMethods
       klass.before_validation :write_initial_state
+      end
     end
   end
 end
