@@ -1,5 +1,5 @@
-require 'rubygems'
-require 'test/unit'
+require File.join(File.dirname(__FILE__), 'test_helper')
+
 old_verbose, $VERBOSE = $VERBOSE, nil
 require 'active_record'
 require 'sqlite3'
@@ -9,18 +9,6 @@ require 'mocha'
 #require 'ruby-debug'
 
 ActiveRecord::Migration.verbose = false
-
-class << Test::Unit::TestCase
-  def test(name, &block)
-    test_name = :"test_#{name.gsub(' ','_')}"
-    raise ArgumentError, "#{test_name} is already defined" if self.instance_methods.include? test_name.to_s
-    if block
-      define_method test_name, &block
-    else
-      puts "PENDING: #{name}"
-    end
-  end
-end
 
 class Order < ActiveRecord::Base
   include Workflow
@@ -37,7 +25,7 @@ class Order < ActiveRecord::Base
   
 end
 
-class WorkflowTest < Test::Unit::TestCase
+class MainTest < Test::Unit::TestCase
 
   def exec(sql)
     ActiveRecord::Base.connection.execute sql
