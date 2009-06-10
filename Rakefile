@@ -13,7 +13,7 @@ end
 
 PKG_VERSION = "0.2.0"
 PKG_FILES = FileList[
-  'LICENSE',
+  'MIT-LICENSE',
   'README.rdoc',
   'Rakefile',
   'lib/**/*.rb',
@@ -34,7 +34,7 @@ end
 
 Rake::RDocTask.new do |rdoc|
   rdoc.main = "README"
-  rdoc.rdoc_files.include("README", "lib/**/*.rb")
+  rdoc.rdoc_files.include("README.rdoc", "lib/**/*.rb")
   rdoc.options << "-S"
 end
 
