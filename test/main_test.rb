@@ -236,5 +236,19 @@ class MainTest < Test::Unit::TestCase
     special = SpecialBigOrder.new
     assert_equal 'start_big', special.current_state.to_s
   end
+
+  test 'Better error message for missing target state' do
+    class Problem
+      include Workflow
+      workflow do
+        state :initial do
+          event :solve, :transitions_to => :solved
+        end
+      end
+    end
+    assert_raise Workflow::WorkflowError do
+      Problem.new.solve!
+    end
+  end
 end
 

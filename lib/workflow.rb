@@ -55,6 +55,8 @@ module Workflow
 
   class NoTransitionAllowed < Exception; end
 
+  class WorkflowError < Exception; end
+
   class State
     
     attr_accessor :name, :events, :meta, :on_entry, :on_exit
@@ -138,6 +140,7 @@ module Workflow
           false
         end
       else
+        check_transition(event)
         run_on_transition(current_state, spec.states[event.transitions_to], name, *args)
         transition(current_state, spec.states[event.transitions_to], name, *args)
         return_value
@@ -145,6 +148,16 @@ module Workflow
     end
 
     private
+
+    def check_transition(event)
+      # Create a meaningful error message instead of 
+      # "undefined method `on_entry' for nil:NilClass"
+      # Reported by Kyle Burton
+      if !spec.states[event.transitions_to]
+        raise WorkflowError.new("Event[#{event.name}]'s " + 
+            "transitions_to[#{event.transitions_to}] is not a declared state.")
+      end
+    end
 
     def spec
       c = self.class
