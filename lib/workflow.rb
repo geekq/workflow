@@ -200,11 +200,23 @@ module Workflow
     end
 
     def run_on_entry(state, prior_state, triggering_event, *args)     
-      instance_exec(prior_state.name, triggering_event, *args, &state.on_entry) if state.on_entry
+      if state.on_entry
+        instance_exec(prior_state.name, triggering_event, *args, &state.on_entry) 
+      else
+        hook_name = "on_#{state}_entry"
+        self.send hook_name, prior_state, triggering_event, *args if self.respond_to? hook_name
+      end
     end
 
     def run_on_exit(state, new_state, triggering_event, *args)
-      instance_exec(new_state.name, triggering_event, *args, &state.on_exit) if state and state.on_exit
+      if state
+        if state.on_exit
+          instance_exec(new_state.name, triggering_event, *args, &state.on_exit)
+        else
+          hook_name = "on_#{state}_exit"
+          self.send hook_name, new_state, triggering_event, *args if self.respond_to? hook_name
+        end
+      end
     end
 
     # load_workflow_state and persist_workflow_state

@@ -11,7 +11,7 @@ Rake::TestTask.new do |t|
   t.pattern = 'test/*_test.rb'
 end
 
-PKG_VERSION = "0.2.0"
+PKG_VERSION = "0.3.0"
 PKG_FILES = FileList[
   'MIT-LICENSE',
   'README.rdoc',

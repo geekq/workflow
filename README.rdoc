@@ -108,6 +108,38 @@ Based on the work of Ryan Allen and Scott Barron
 
 Licensed under MIT license, see the MIT-LICENSE file.
 
+
+== New in the version 0.3.0
+
+Intermixing of transition graph definition (states, transitions)
+on the one side and implementation of the actions on the other side
+for a bigger state machine can introduce clutter.
+
+To reduce this clutter it is now possible to use state entry- and 
+exit- hooks defined through a naming convention. For example, if there
+is a state :pending, then instead of using a
+block:
+
+    state :pending do
+      on_entry do
+        # your implementation here
+      end
+    end
+
+you can hook in by defining method 
+
+def on_pending_exit(new_state, event, *args)
+  # your implementation here
+end
+
+anywhere in your class. You can also use a simpler function signature
+like `def on_pending_exit(*args)` if your are not interested in arguments -
+`def on_pending_exit()` with an empty list would not work.
+
+If both a function with a name according to naming convention and the 
+on_entry/on_exit block are given, then only on_entry/on_exit block is used.
+
+
 = Original readme
 
 Disclaimer: my fork is not 100% API compatible to the original library by Ryan.

@@ -250,5 +250,55 @@ class MainTest < Test::Unit::TestCase
       Problem.new.solve!
     end
   end
+
+  # Intermixing of transition graph definition (states, transitions)
+  # on the one side and implementation of the actions on the other side
+  # for a bigger state machine can introduce clutter.
+  # 
+  # To reduce this clutter it is now possible to use state entry- and 
+  # exit- hooks defined through a naming convention. For example, if there
+  # is a state :pending, then you can hook in by defining method 
+  # `def on_pending_exit(new_state, event, *args)` instead of using a
+  # block:
+  #
+  #     state :pending do
+  #       on_entry do
+  #         # your implementation here
+  #       end
+  #     end
+  #
+  # If both a function with a name according to naming convention and the 
+  # on_entry/on_exit block are given, then only on_entry/on_exit block is used.
+  test 'on_entry and on_exit hooks in separate methods' do 
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      attr_reader :history
+      def initialize
+        @history = []
+      end
+      workflow do
+        state :new do
+          event :next, :transitions_to => :next_state
+        end
+        state :next_state
+      end
+
+      def on_next_state_entry(prior_state, event, *args)
+        @history << "on_next_state_entry #{event} #{prior_state} ->"
+      end
+
+      def on_new_exit(new_state, event, *args)
+        @history << "on_new_exit #{event} -> #{new_state}"
+      end
+    end
+
+    o = c.new
+    assert_equal 'new', o.current_state.to_s
+    assert_equal [], o.history
+    o.next!
+    assert_equal ['on_new_exit next -> next_state', 'on_next_state_entry next new ->'], o.history
+
+  end 
 end
 
