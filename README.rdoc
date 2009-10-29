@@ -128,13 +128,14 @@ block:
 
 you can hook in by defining method 
 
-def on_pending_exit(new_state, event, *args)
-  # your implementation here
-end
+    def on_pending_exit(new_state, event, *args)
+      # your implementation here
+    end
 
 anywhere in your class. You can also use a simpler function signature
-like `def on_pending_exit(*args)` if your are not interested in arguments -
-`def on_pending_exit()` with an empty list would not work.
+like `def on_pending_exit(*args)` if your are not interested in
+arguments.  Please note: `def on_pending_exit()` with an empty list
+would not work.
 
 If both a function with a name according to naming convention and the 
 on_entry/on_exit block are given, then only on_entry/on_exit block is used.
