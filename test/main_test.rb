@@ -300,5 +300,9 @@ class MainTest < Test::Unit::TestCase
     assert_equal ['on_new_exit next -> next_state', 'on_next_state_entry next new ->'], o.history
 
   end 
+
+  test 'diagram generation' do
+    Workflow::create_workflow_diagram(Order, 'doc')
+  end
 end
 
