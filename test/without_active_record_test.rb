@@ -23,9 +23,6 @@ class WithoutWorkflowTest < Test::Unit::TestCase
   def test_readme_example_article
     article = Article.new
     assert article.new?
-    puts article.current_state
-    puts article.current_state.inspect
-    puts article.current_state.name
   end
 end
 

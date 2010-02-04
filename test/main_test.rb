@@ -299,7 +299,14 @@ class MainTest < Test::Unit::TestCase
   end
 
   test 'diagram generation' do
+    begin
+    $stdout = StringIO.new('', 'w')
     Workflow::create_workflow_diagram(Order, 'doc')
+    assert_match(/open.+\.pdf/, $stdout.string,
+                 'PDF should be generate and a hint be given to the user.')
+  ensure
+    $stdout = STDOUT
+  end
   end
 end
 
