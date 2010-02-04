@@ -1,9 +1,8 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-old_verbose, $VERBOSE = $VERBOSE, nil
+$VERBOSE = false
 require 'active_record'
 require 'sqlite3'
-$VERBOSE = old_verbose
 require 'workflow'
 require 'mocha'
 #require 'ruby-debug'
@@ -22,7 +21,7 @@ class Order < ActiveRecord::Base
     end
     state :shipped
   end
-  
+
 end
 
 class MainTest < Test::Unit::TestCase
@@ -32,13 +31,12 @@ class MainTest < Test::Unit::TestCase
   end
 
   def setup
-    old_verbose, $VERBOSE = $VERBOSE, nil # eliminate sqlite3 warning. TODO: delete as soon as sqlite-ruby is fixed
     ActiveRecord::Base.establish_connection(
       :adapter => "sqlite3",
       :database  => ":memory:" #"tmp/test"
     )
     ActiveRecord::Base.connection.reconnect! # eliminate ActiveRecord warning. TODO: delete as soon as ActiveRecord is fixed
-    
+
     ActiveRecord::Schema.define do
       create_table :orders do |t|
         t.string :title, :null => false
@@ -47,7 +45,6 @@ class MainTest < Test::Unit::TestCase
     end
 
     exec "INSERT INTO orders(title, workflow_state) VALUES('some order', 'accepted')"
-    $VERBOSE = old_verbose
   end
 
   def teardown
@@ -254,10 +251,10 @@ class MainTest < Test::Unit::TestCase
   # Intermixing of transition graph definition (states, transitions)
   # on the one side and implementation of the actions on the other side
   # for a bigger state machine can introduce clutter.
-  # 
-  # To reduce this clutter it is now possible to use state entry- and 
+  #
+  # To reduce this clutter it is now possible to use state entry- and
   # exit- hooks defined through a naming convention. For example, if there
-  # is a state :pending, then you can hook in by defining method 
+  # is a state :pending, then you can hook in by defining method
   # `def on_pending_exit(new_state, event, *args)` instead of using a
   # block:
   #
@@ -267,9 +264,9 @@ class MainTest < Test::Unit::TestCase
   #       end
   #     end
   #
-  # If both a function with a name according to naming convention and the 
+  # If both a function with a name according to naming convention and the
   # on_entry/on_exit block are given, then only on_entry/on_exit block is used.
-  test 'on_entry and on_exit hooks in separate methods' do 
+  test 'on_entry and on_exit hooks in separate methods' do
     c = Class.new
     c.class_eval do
       include Workflow
@@ -299,7 +296,7 @@ class MainTest < Test::Unit::TestCase
     o.next!
     assert_equal ['on_new_exit next -> next_state', 'on_next_state_entry next new ->'], o.history
 
-  end 
+  end
 
   test 'diagram generation' do
     Workflow::create_workflow_diagram(Order, 'doc')
