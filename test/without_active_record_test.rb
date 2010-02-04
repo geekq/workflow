@@ -27,14 +27,26 @@ class WithoutWorkflowTest < Test::Unit::TestCase
 
   test 'better error message on transitions_to typo' do
     assert_raise Workflow::WorkflowDefinitionError do
-      c = Class.new do
+      Class.new do
         include Workflow
         workflow do
           state :new do
-            event :event1, :transition_to => :next # typo
+            event :event1, :transitionnn => :next # missing transitions_to target
           end
           state :next
         end
+      end
+    end
+  end
+
+  test 'check :transition_to alias' do
+    Class.new do
+      include Workflow
+      workflow do
+        state :new do
+          event :event1, :transition_to => :next
+        end
+        state :next
       end
     end
   end

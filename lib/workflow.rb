@@ -25,11 +25,12 @@ module Workflow
     end
 
     def event(name, args = {}, &action)
+      target = args[:transitions_to] || args[:transition_to]
       raise WorkflowDefinitionError.new(
         "missing ':transitions_to' in workflow event definition for '#{name}'") \
-        if args[:transitions_to].nil?
+        if target.nil?
       @scoped_state.events[name.to_sym] =
-        Event.new(name, args[:transitions_to], (args[:meta] or {}), &action)
+        Event.new(name, target, (args[:meta] or {}), &action)
     end
 
     def on_entry(&proc)
