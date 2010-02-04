@@ -2,19 +2,19 @@ require 'rubygems'
 require 'active_support'
 
 module Workflow
- 
+
   class Specification
-    
+
     attr_accessor :states, :initial_state, :meta, :on_transition_proc
-    
+
     def initialize(meta = {}, &specification)
       @states = Hash.new
       @meta = meta
       instance_eval(&specification)
     end
-    
+
     private
-  
+
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
       new_state = State.new(name, meta[:meta])
@@ -23,16 +23,19 @@ module Workflow
       @scoped_state = new_state
       instance_eval(&events_and_etc) if events_and_etc
     end
-    
+
     def event(name, args = {}, &action)
+      raise WorkflowDefinitionError.new(
+        "missing ':transitions_to' in workflow event definition for '#{name}'") \
+        if args[:transitions_to].nil?
       @scoped_state.events[name.to_sym] =
         Event.new(name, args[:transitions_to], (args[:meta] or {}), &action)
     end
-    
+
     def on_entry(&proc)
       @scoped_state.on_entry = proc
     end
-    
+
     def on_exit(&proc)
       @scoped_state.on_exit = proc
     end
@@ -41,7 +44,7 @@ module Workflow
       @on_transition_proc = proc
     end
   end
-  
+
   class TransitionHalted < Exception
 
     attr_reader :halted_because
@@ -57,14 +60,16 @@ module Workflow
 
   class WorkflowError < Exception; end
 
+  class WorkflowDefinitionError < Exception; end
+
   class State
-    
+
     attr_accessor :name, :events, :meta, :on_entry, :on_exit
-    
+
     def initialize(name, meta = {})
       @name, @events, @meta = name, Hash.new, meta
     end
-    
+
     def to_s
       "#{name}"
     end
@@ -73,17 +78,17 @@ module Workflow
       name.to_sym
     end
   end
-  
+
   class Event
-    
+
     attr_accessor :name, :transitions_to, :meta, :action
-    
+
     def initialize(name, transitions_to, meta = {}, &action)
       @name, @transitions_to, @meta, @action = name, transitions_to.to_sym, meta, action
     end
-    
+
   end
-  
+
   module WorkflowClassMethods
     attr_reader :workflow_spec
 
@@ -110,7 +115,7 @@ module Workflow
   end
 
   module WorkflowInstanceMethods
-    def current_state 
+    def current_state
       loaded_state = load_workflow_state
       res = spec.states[loaded_state.to_sym] if loaded_state
       res || spec.initial_state
@@ -150,18 +155,18 @@ module Workflow
     private
 
     def check_transition(event)
-      # Create a meaningful error message instead of 
+      # Create a meaningful error message instead of
       # "undefined method `on_entry' for nil:NilClass"
       # Reported by Kyle Burton
       if !spec.states[event.transitions_to]
-        raise WorkflowError.new("Event[#{event.name}]'s " + 
+        raise WorkflowError.new("Event[#{event.name}]'s " +
             "transitions_to[#{event.transitions_to}] is not a declared state.")
       end
     end
 
     def spec
       c = self.class
-      # using a simple loop instead of class_inheritable_accessor to avoid 
+      # using a simple loop instead of class_inheritable_accessor to avoid
       # dependency on Rails' ActiveSupport
       until c.workflow_spec || !(c.include? Workflow)
         c = c.superclass
@@ -199,9 +204,9 @@ module Workflow
       self.send action_name.to_sym, *args if self.respond_to?(action_name.to_sym)
     end
 
-    def run_on_entry(state, prior_state, triggering_event, *args)     
+    def run_on_entry(state, prior_state, triggering_event, *args)
       if state.on_entry
-        instance_exec(prior_state.name, triggering_event, *args, &state.on_entry) 
+        instance_exec(prior_state.name, triggering_event, *args, &state.on_entry)
       else
         hook_name = "on_#{state}_entry"
         self.send hook_name, prior_state, triggering_event, *args if self.respond_to? hook_name
@@ -280,7 +285,7 @@ module Workflow
   #       end
   #     end
   #
-  # You can influence the placement of nodes by specifying 
+  # You can influence the placement of nodes by specifying
   # additional meta information in your states and transition descriptions.
   # You can assign higher `doc_weight` value to the typical transitions
   # in your workflow. All other states and transitions will be arranged
@@ -311,7 +316,7 @@ digraph #{workflow_name} {
         state.events.each do |event_name, event|
           meta_info = event.meta
           if meta_info[:doc_weight]
-            weight_prop = ", weight=#{meta_info[:doc_weight]}"             
+            weight_prop = ", weight=#{meta_info[:doc_weight]}"
           else
             weight_prop = ''
           end

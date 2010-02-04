@@ -24,5 +24,19 @@ class WithoutWorkflowTest < Test::Unit::TestCase
     article = Article.new
     assert article.new?
   end
+
+  test 'better error message on transitions_to typo' do
+    assert_raise Workflow::WorkflowDefinitionError do
+      c = Class.new do
+        include Workflow
+        workflow do
+          state :new do
+            event :event1, :transition_to => :next # typo
+          end
+          state :next
+        end
+      end
+    end
+  end
 end
 
