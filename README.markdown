@@ -1,3 +1,77 @@
+What is workflow?
+=================
+Defining workflow...
+
+Installation
+============
+
+    gem install workflow
+
+Alternatively you can just download the lib/workflow.rb and put it in the lib folder of your 
+Rails application.
+
+Transition event handler
+========================
+
+The best way is to use convention over configuration and to define a
+method with the same name as the event. Then it is automatically invoked
+when event is raised. For the Article workflow defined earlier it would
+be:
+
+    class Article
+      def reject
+        # send email to the author here explaining the reason
+      end
+    end
+
+article.reject! # will cause a state transition, persist new state (if
+integrated with ActiveRecord) and invoke this user defined reject
+method.
+
+Integrating with ActiveRecord
+=============================
+
+Integrationg with CouchDB
+=========================
+
+Accessing your workflow specification
+=====================================
+
+Documenting with diagrams
+=========================
+
+Earlier versions
+================
+... originally written by Ryan
+
+Completely reworked (keeping the original workflow DSL spirit)
+
+Migration from
+--------------
+
+Support
+=======
+
+Mailing list
+------------
+There is a mailing list to talk about Workflow.
+Unfortunately it is overspammed at the moment.
+
+  http://groups.google.com/group/ruby-workflow
+
+
+Reporting bugs
+--------------
+
+    http://github.com/geekq/workflow/issues
+
+About
+=====
+
+
+to overhaul
+
+
 = Motivation for the fork
 
 Why to overflow the world with yet another fork of the workflow library?
@@ -68,13 +142,6 @@ are very problematic.
   As little meta programming as needed - not as much as possible. ;-)
   So you can easily extend or modify it to suit your needs.
 
-
-== Installation
-
-    gem install workflow
-
-Alternatively you can just download the lib/workflow.rb and put it in the lib folder of your 
-Rails application.
 
 
 == Migration from the original Ryan's library
@@ -148,16 +215,6 @@ I'll update/merge the readme as soon as posssible.
 In the mean time please use the original readme in conjunction with
 the API changes and migration hints listed above.
 
-
-=== New Mailing List!
-
-Hi! We've now got a mailing list to talk about Workflow, and that's good! Come visit and post your problems or ideas or anything!!!
-
-  http://groups.google.com/group/ruby-workflow
-
-See you there!
-
-=== What is workflow?
 
 Workflow is a finite-state-machine-inspired API for modeling and interacting with what we tend to refer to as 'workflow'.
 
