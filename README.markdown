@@ -1,5 +1,5 @@
 What is workflow?
-=================
+-----------------
 
 Workflow is a finite-state-machine-inspired API for modeling and
 interacting with what we tend to refer to as 'workflow'.
@@ -55,7 +55,7 @@ Let's create an article instance and check in which state it is:
     article.accepted? # => false
     article.new? # => true
 
-You can also access the whole +current_state+ object including the list
+You can also access the whole `current_state` object including the list
 of possible events and other meta information:
 
     article.current_state 
@@ -76,15 +76,16 @@ transition to other states.
 
 
 Installation
-============
+------------
 
     gem install workflow
 
 Alternatively you can just download the lib/workflow.rb and put it in
 the lib folder of your Rails or Ruby application.
 
+
 Transition event handler
-========================
+------------------------
 
 The best way is to use convention over configuration and to define a
 method with the same name as the event. Then it is automatically invoked
@@ -101,20 +102,52 @@ be:
 (if integrated with ActiveRecord) and invoke this user defined reject
 method.
 
-Integrating with ActiveRecord
-=============================
 
-Integrationg with CouchDB
-=========================
+Integration with ActiveRecord
+-----------------------------
+
+Workflow library can handle the state persistence fully automatically. You
+only need to define a string field on the table called `workflow_state`
+and include the workflow mixin in your model class as usual:
+
+    class Order < ActiveRecord::Base
+      include Workflow
+      workflow do
+        # list states and transitions here
+      end
+    end
+
+On a database record loading all the state check methods e.g.
+`article.state`, `article.awaiting_review?' are immediately available.
+For new records or if the workflow_state field is not set the state
+defaults to the first state declared in the workflow specification. In
+our example it is `:new`, so `Article.new.new?` returns true and
+`Article.new.approved?` returns false.
+
+At the end of a successful state transition like `article.approve!` the
+new state is immediately saved in the database.
+
+
+Custom state persistence
+------------------------
+
+If you do not use a relational database and ActiveRecord, you can still
+integrate the workflow very easily. To implement persistence you just
+need to override `load_workflow_state` and
+`persist_workflow_state(new_value)` methods. Lets see an example for
+using CouchDB, a document oriented database.
+
+Integration with CouchDB
+------------------------
 
 Accessing your workflow specification
-=====================================
+-------------------------------------
 
 Documenting with diagrams
-=========================
+-------------------------
 
 Earlier versions
-================
+----------------
 ... originally written by Ryan
 
 Completely reworked (keeping the original workflow DSL spirit)
@@ -123,23 +156,22 @@ Migration from
 --------------
 
 Support
-=======
+-------
 
-Mailing list
-------------
+### Mailing list
+
 There is a mailing list to talk about Workflow.
 Unfortunately it is overspammed at the moment.
 
   http://groups.google.com/group/ruby-workflow
 
 
-Reporting bugs
---------------
+### Reporting bugs
 
     http://github.com/geekq/workflow/issues
 
 About
-=====
+-----
 
 Author: Vladimir Dobriakov, http://www.innoq.com/blog/vd, http://blog.geekq.net/
 
@@ -459,72 +491,3 @@ We promised that we'd show you how to integrate workflow with your existing clas
   article.approve
   article.state          # => :approved
 
-And as ActiveRecord is all the rage these days, all you need is a string field on the table called "workflow_state", which is used to store the current state. Workflow handles auto-setting of a state after a find, yet it doesn't save a record after a transition (though you could make it do this in on_transition).
-
-  class Article < ActiveRecord::Base
-    include Workflow
-    workflow do
-      # ...
-    end
-  end
-
-When integrating with other classes, behind the scenes, Workflow sets up a Proxy to method missing. A probable common error would be to call an event that doesn't exist, so we catch +NoMethodError+'s and helpfully let you know what available events exist:
-
-  class Article  
-    include Workflow
-    workflow do
-      state :new do
-        event :submit, :transitions_to => :awaiting_review
-      end
-      state :awaiting_review do
-        event :approve, :transitions_to => :approved
-      end
-      state :approved
-      # ...
-    end
-  end
-  
-  article = Article.new
-  article.aaaa
-  NoMethodError: undefined method `aaaa' for #<Article:0xe4e8>, conversely, if you were looking to call an event for its workflow, you're in the :new state, and the available events are [:submit]
-  
-So just incase you screw something up (like I did while testing this library), it'll give you a useful message.
-
-You can blatter existing workflows, by simply opening them up again (similar to how Ruby works!).
-
-  Workflow.specify 'Blatter' do
-    state :opened do
-      event :close, :transitions_to => :closed
-    end
-    state :closed
-  end
-  
-  workflow = Workflow.new('Blatter')
-  workflow.close
-  workflow.state # => :closed
-  workflow.open  # => raises a (nice) NoMethodError exception!
-  
-  Workflow.specify 'Blatter' do
-    state :closed do
-      event :open, :transitions_to => :opened
-    end
-  end
-  
-  workflow.open
-  workflow.state # => :opened
-
-  Workflow.specify 'Blatter' do
-    state :open do
-      event :close, :transitions_to => :jammed # the door is now faulty :)
-    end
-    state :jammed
-  end
-  
-  workflow.close
-  workflow.state # => :jammed
-
-Why can we do this? Well, we needed it for our production app, so there.
-  
-And that's about it. A update to the implementation may allow multiple workflows per instance of a class or ActiveRecord, but we haven't figured out if that's required or appropriate.
-
-Ryan Allen, March 2008.
