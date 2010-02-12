@@ -1,14 +1,87 @@
 What is workflow?
 =================
-Defining workflow...
+
+Workflow is a finite-state-machine-inspired API for modeling and
+interacting with what we tend to refer to as 'workflow'.
+
+A lot of business modeling tends to involve workflow-like concepts, and
+the aim of this library is to make the expression of these concepts as
+clear as possible, using similar terminology as found in state machine
+theory.
+
+So, a workflow has a state. It can only be in one state at a time. When
+a workflow changes state, we call that a transition. Transitions occur
+on an event, so events cause transitions to occur. Additionally, when an
+event fires, other random code can be executed, we call those actions.
+So any given state has a bunch of events, any event in a state causes a
+transition to another state and potentially causes code to be executed
+(an action). We can hook into states when they are entered, and exited
+from, and we can cause transitions to fail (guards), and we can hook in
+to every transition that occurs ever for whatever reason we can come up
+with.
+
+Now, all that's a mouthful, but we'll demonstrate the API bit by bit
+with a real-ish world example.
+
+Let's say we're modeling article submission from journalists. An article
+is written, then submitted. When it's submitted, it's awaiting review.
+Someone reviews the article, and then either accepts or rejects it.
+Explaining all that is a pain in the arse. Here is the expression of
+this workflow using the API:
+
+    class Article
+      include Workflow
+      workflow do
+        state :new do
+          event :submit, :transitions_to => :awaiting_review
+        end
+        state :awaiting_review do
+          event :review, :transitions_to => :being_reviewed
+        end
+        state :being_reviewed do
+          event :accept, :transitions_to => :accepted
+          event :reject, :transitions_to => :rejected
+        end
+        state :accepted
+        state :rejected
+      end
+    end
+
+Much better, isn't it!
+
+Let's create an article instance and check in which state it is:
+
+    article = Article.new
+    article.accepted? # => false
+    article.new? # => true
+
+You can also access the whole +current_state+ object including the list
+of possible events and other meta information:
+
+    article.current_state 
+    => #<Workflow::State:0x7f1e3d6731f0 @events={
+      :submit=>#<Workflow::Event:0x7f1e3d6730d8 @action=nil, 
+        @transitions_to=:awaiting_review, @name=:submit, @meta={}>}, 
+      name:new, meta{}
+
+Now we can call the submit event, which transitions to the
+<tt>:awaiting_review</tt> state:
+
+    article.submit!
+    article.awaiting_review? # => true
+  
+Events are actually instance methods on a workflow, and depending on the
+state you're in, you'll have a different set of events used to
+transition to other states.
+
 
 Installation
 ============
 
     gem install workflow
 
-Alternatively you can just download the lib/workflow.rb and put it in the lib folder of your 
-Rails application.
+Alternatively you can just download the lib/workflow.rb and put it in
+the lib folder of your Rails or Ruby application.
 
 Transition event handler
 ========================
@@ -24,8 +97,8 @@ be:
       end
     end
 
-article.reject! # will cause a state transition, persist new state (if
-integrated with ActiveRecord) and invoke this user defined reject
+`article.reject!` will cause a state transition, persist the new state
+(if integrated with ActiveRecord) and invoke this user defined reject
 method.
 
 Integrating with ActiveRecord
@@ -68,8 +141,19 @@ Reporting bugs
 About
 =====
 
+Author: Vladimir Dobriakov, http://www.innoq.com/blog/vd, http://blog.geekq.net/
 
-to overhaul
+Copyright (c) 2008-2009 Vodafone
+
+Copyright (c) 2007-2008 Ryan Allen, FlashDen Pty Ltd
+
+Based on the work of Ryan Allen and Scott Barron
+
+Licensed under MIT license, see the MIT-LICENSE file.
+
+
+THE END
+-------------------------------------------------
 
 
 = Motivation for the fork
@@ -163,18 +247,6 @@ Credit: Michael (rockrep)
 * when using both a block and a callback method for an event, the block executes prior to the callback
 
 
-== About
-
-Author: Vladimir Dobriakov, http://www.innoq.com/blog/vd, http://blog.geekq.net/
-
-Copyright (c) 2008-2009 Vodafone
-
-Copyright (c) 2007-2008 Ryan Allen, FlashDen Pty Ltd
-
-Based on the work of Ryan Allen and Scott Barron
-
-Licensed under MIT license, see the MIT-LICENSE file.
-
 
 == New in the version 0.3.0
 
@@ -215,58 +287,6 @@ I'll update/merge the readme as soon as posssible.
 In the mean time please use the original readme in conjunction with
 the API changes and migration hints listed above.
 
-
-Workflow is a finite-state-machine-inspired API for modeling and interacting with what we tend to refer to as 'workflow'.
-
-A lot of business modeling tends to involve workflow-like concepts, and the aim of this library is to make the expression of these concepts as clear as possible, using similar terminology as found in state machine theory.
-
-So, a workflow has a state. It can only be in one state at a time. When a workflow changes state, we call that a transition. Transitions occur on an event, so events cause transitions to occur. Additionally, when an event fires, other random code can be executed, we call those actions. So any given state has a bunch of events, any event in a state causes a transition to another state and potentially causes code to be executed (an action). We can hook into states when they are entered, and exited from, and we can cause transitions to fail (guards), and we can hook in to every transition that occurs ever for whatever reason we can come up with.
-
-Now, all that's a mouthful, but we'll demonstrate the API bit by bit with a real-ish world example.
-
-Let's say we're modeling article submission from journalists. An article is written, then submitted. When it's submitted, it's awaiting review. Someone reviews the article, and then either accepts or rejects it. Explaining all that is a pain in the arse. Here is the expression of this workflow using the API:
-
-
-  class Article
-    include Workflow
-    workflow do
-      state :new do
-        event :submit, :transitions_to => :awaiting_review
-      end
-      state :awaiting_review do
-        event :review, :transitions_to => :being_reviewed
-      end
-      state :being_reviewed do
-        event :accept, :transitions_to => :accepted
-        event :reject, :transitions_to => :rejected
-      end
-      state :accepted
-      state :rejected
-    end
-  end
-
-Much better, isn't it!
-
-Let's create an article instance and check in which state it is:
-
-  article = Article.new
-  article.accepted? # => false
-  article.new? # => true
-
-You can also access the whole +current_state+ object including the list of possible events and other meta information:
-
-  article.current_state 
-  => #<Workflow::State:0x7f1e3d6731f0 @events={
-    :submit=>#<Workflow::Event:0x7f1e3d6730d8 @action=nil, 
-      @transitions_to=:awaiting_review, @name=:submit, @meta={}>}, 
-    name:new, meta{}
-
-Now we can call the submit event, which transitions to the <tt>:awaiting_review</tt> state:
-
-  article.submit!
-  article.awaiting_review? # => true
-  
-Events are actually instance methods on a workflow, and depending on the state you're in, you'll have a different set of events used to transition to other states.
 
 TODO - continue editing
 
