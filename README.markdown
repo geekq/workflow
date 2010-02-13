@@ -12,7 +12,7 @@ theory.
 So, a workflow has a state. It can only be in one state at a time. When
 a workflow changes state, we call that a transition. Transitions occur
 on an event, so events cause transitions to occur. Additionally, when an
-event fires, other random code can be executed, we call those actions.
+event fires, other arbitrary code can be executed, we call those actions.
 So any given state has a bunch of events, any event in a state causes a
 transition to another state and potentially causes code to be executed
 (an action). We can hook into states when they are entered, and exited
@@ -26,8 +26,7 @@ with a real-ish world example.
 Let's say we're modeling article submission from journalists. An article
 is written, then submitted. When it's submitted, it's awaiting review.
 Someone reviews the article, and then either accepts or rejects it.
-Explaining all that is a pain in the arse. Here is the expression of
-this workflow using the API:
+Here is the expression of this workflow using the API:
 
     class Article
       include Workflow
@@ -47,7 +46,7 @@ this workflow using the API:
       end
     end
 
-Much better, isn't it!
+Nice, isn't it!
 
 Let's create an article instance and check in which state it is:
 
@@ -84,6 +83,20 @@ Alternatively you can just download the lib/workflow.rb and put it in
 the lib folder of your Rails or Ruby application.
 
 
+Examples
+--------
+
+After installation or downloading of the library you can easily try out
+all the example code from this README in irb.
+
+    $ irb
+    require 'rubygems'
+    require 'workflow'
+
+Now just copy and paste the source code from the beginning of this README
+file snippet by snippet and observe the output.
+
+
 Transition event handler
 ------------------------
 
@@ -94,14 +107,42 @@ be:
 
     class Article
       def reject
-        # send email to the author here explaining the reason
+        puts 'sending email to the author explaining the reason...'
       end
     end
 
-`article.reject!` will cause a state transition, persist the new state
+`article.review!; article.reject!` will cause a state transition, persist the new state
 (if integrated with ActiveRecord) and invoke this user defined reject
 method.
 
+You can also define event handler accepting/requiring additional
+arguments:
+
+    class Article
+      def review(reviewer = '')
+        puts "[#{reviewer}] is now reviewing the article"
+      end
+    end
+
+    article2 = Article.new
+    article2.submit!
+    article2.review!('Homer Simpson') # => [Homer Simpson] is now reviewing the article
+
+
+### The old, deprecated way
+
+The old way, using a block is still supported but deprecated:
+
+    event :review, :transitions_to => :being_reviewed do |reviewer|
+      # store the reviewer
+    end
+
+We've noticed, that mixing the list of events and states with the blocks
+invoked for particular transitions leads to a bumpy and poorly readable code
+due to a deep nesting. We tried (and dismissed) lambdas for this. Eventually
+we decided to invoke an optional user defined callback method with the same
+name as the event (convention over configuration) as explained before.
+      
 
 Integration with ActiveRecord
 -----------------------------
@@ -127,9 +168,11 @@ our example it is `:new`, so `Article.new.new?` returns true and
 At the end of a successful state transition like `article.approve!` the
 new state is immediately saved in the database.
 
+You can change this behaviour by overriding `persist_workflow_state`
+method.
 
-Custom state persistence
-------------------------
+Custom workflow state persistence
+---------------------------------
 
 If you do not use a relational database and ActiveRecord, you can still
 integrate the workflow very easily. To implement persistence you just
@@ -143,6 +186,39 @@ Integration with CouchDB
 Accessing your workflow specification
 -------------------------------------
 
+You can easily reflect on workflow specification programmatically - for
+the whole class or for the current object. Examples:
+
+    article2.current_state.events # lists possible events from here
+    article2.current_state.events[:reject].transitions_to # => :rejected
+
+    Article.workflow_spec.states.keys
+    #=> [:rejected, :awaiting_review, :being_reviewed, :accepted, :new]
+
+    # list all events for all states
+    Article.workflow_spec.states.values.collect &:events
+
+
+You can also store and later retrieve additional meta data for every
+state and every event:
+
+    class MyProcess
+      include Workflow
+      workflow do
+        state :main, :meta => {:importance => 8}
+        state :supplemental, :meta => {:importance => 1}
+      end
+    end
+    puts MyProcess.workflow_spec.states[:supplemental].meta[:importance] # => 1
+
+The workflow library itself uses this feature to tweak the graphical
+representation of the workflow. See below.
+ 
+
+Advanced transition hooks
+-------------------------
+`on_entry`, `on_exit`, `on_transition`
+
 Documenting with diagrams
 -------------------------
 
@@ -152,8 +228,29 @@ Earlier versions
 
 Completely reworked (keeping the original workflow DSL spirit)
 
-Migration from
---------------
+
+Migration from the original Ryan's library
+------------------------------------------
+
+Credit: Michael (rockrep)
+
+Accessing workflow specification
+
+    my_instance.workflow # old
+    MyClass.workflow_spec # new
+
+Accessing states, events, meta, e.g.
+
+    my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag] # old
+    MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag] # new
+
+Causing state transitions
+
+    my_instance.workflow.my_event # old
+    my_instance.my_event! # new
+
+when using both a block and a callback method for an event, the block executes prior to the callback
+
 
 Support
 -------
@@ -258,25 +355,6 @@ are very problematic.
   As little meta programming as needed - not as much as possible. ;-)
   So you can easily extend or modify it to suit your needs.
 
-
-
-== Migration from the original Ryan's library
-
-Credit: Michael (rockrep)
-
-* Accessing workflow specification
-    my_instance.workflow # old
-    MyClass.workflow_spec # new
-
-* Accessing states, events, meta, e.g.
-    my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag] # old
-    MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag] # new
-
-* Causing state transitions
-    my_instance.workflow.my_event # old
-    my_instance.my_event! # new
-
-* when using both a block and a callback method for an event, the block executes prior to the callback
 
 
 
