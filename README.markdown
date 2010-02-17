@@ -171,6 +171,12 @@ new state is immediately saved in the database.
 You can change this behaviour by overriding `persist_workflow_state`
 method.
 
+### Single table inheritance
+
+Single table inheritance is also supported. Descendant classes can either
+inherit the workflow definition from the parent or override with its own
+definition.
+
 Custom workflow state persistence
 ---------------------------------
 
@@ -217,10 +223,53 @@ representation of the workflow. See below.
 
 Advanced transition hooks
 -------------------------
-`on_entry`, `on_exit`, `on_transition`
+
+### on_entry/on_exit
+
+We already had a look at the declaring callbacks for particular workflow
+events. If you would like to react to all transitions to/from the same state
+in the same way you can use the on_entry/on_exit hooks. You can either define it
+with a block inside the workflow definition or through naming
+convention, e.g. for the state :pending just define the method
+`on_pending_exit(new_state, event, *args)` somewhere in your class.
+
+### on_transition
+
+If you want to be informed about everything happening everywhere, e.g. for
+logging then you can use the universal `on_transition` hook:
+
+    workflow do
+      state :one do
+        event :increment, :transitions_to => :two
+      end
+      state :two
+      on_transition do |from, to, triggering_event, *event_args|
+        Log.info "#{from} -> #{to}"
+      end
+    end
+
+### Guards
+
+It is possible to implement conditions for transitions. You can halt the
+transition by invoking halt! from the transition event.
+
+### Hook order
+
+The whole event sequence is as follows:
+
+    * event specific action
+    * on_transition (if action didn't halt)
+    * on_exit
+    * PERSIST WORKFLOW STATE, i.e. transition
+    * on_entry
+
 
 Documenting with diagrams
 -------------------------
+
+You can generate graphical representation of your workflow for
+documentation purposes. S. Workflow::create_workflow_diagram.
+
 
 Earlier versions
 ----------------
@@ -280,6 +329,15 @@ Based on the work of Ryan Allen and Scott Barron
 
 Licensed under MIT license, see the MIT-LICENSE file.
 
+
+Changelog
+---------
+
+0.4
+
+* completely rewritten the documentation to match my branch. Every
+  described feature is backed up by an automated test.
+* replace transition halting facility by a simple exception throw
 
 THE END
 -------------------------------------------------
