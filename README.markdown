@@ -159,7 +159,7 @@ and include the workflow mixin in your model class as usual:
     end
 
 On a database record loading all the state check methods e.g.
-`article.state`, `article.awaiting_review?' are immediately available.
+`article.state`, `article.awaiting_review?` are immediately available.
 For new records or if the workflow_state field is not set the state
 defaults to the first state declared in the workflow specification. In
 our example it is `:new`, so `Article.new.new?` returns true and

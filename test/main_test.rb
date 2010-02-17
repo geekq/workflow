@@ -342,7 +342,8 @@ class MainTest < Test::Unit::TestCase
       end
 
       def reject(reason)
-        halt! unless reason =~ /important/i
+        halt! 'We do not reject articles unless the reason is important' \
+          unless reason =~ /important/i
       end
     end
 
