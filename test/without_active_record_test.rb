@@ -39,7 +39,7 @@ class WithoutWorkflowTest < Test::Unit::TestCase
     end
   end
 
-  test 'check :transition_to alias' do
+  test 'check transition_to alias' do
     Class.new do
       include Workflow
       workflow do
