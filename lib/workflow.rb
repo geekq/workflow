@@ -135,6 +135,8 @@ module Workflow
       raise NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
         if event.nil?
+      # This three member variables are a relict from the old workflow library
+      # TODO: refactor some day
       @halted_because = nil
       @halted = false
       @raise_exception_on_halt = false

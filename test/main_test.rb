@@ -57,7 +57,7 @@ class MainTest < Test::Unit::TestCase
     o
   end
 
-  test 'immediatly save the new workflow_state on state machine transition' do
+  test 'immediately save the new workflow_state on state machine transition' do
     o = assert_state 'some order', 'accepted'
     o.ship!
     assert_state 'some order', 'shipped'
@@ -308,5 +308,53 @@ class MainTest < Test::Unit::TestCase
       $stdout = STDOUT
     end
   end
+
+  test 'halt stops the transition' do
+    c = Class.new do
+      include Workflow
+      workflow do
+        state :young do
+          event :age, :transitions_to => :old
+        end
+        state :old
+      end
+
+      def age(by=1)
+        halt 'too fast' if by > 100
+      end
+    end
+
+    joe = c.new
+    assert joe.young?
+    joe.age! 120
+    assert joe.young?, 'Transition should have been halted'
+    assert_equal 'too fast', joe.halted_because
+  end
+
+  test 'halt! raises exception' do
+    article_class = Class.new do
+      include Workflow
+      workflow do
+        state :new do
+          event :reject, :transitions_to => :rejected
+        end
+        state :rejected
+      end
+
+      def reject(reason)
+        halt! unless reason =~ /important/i
+      end
+    end
+
+    article = article_class.new
+    assert article.new?
+    assert_raise Workflow::TransitionHalted do
+      article.reject! 'Too funny'
+    end
+    assert article.new?, 'Transition should have been halted'
+    article.reject! 'Important: too short'
+    assert article.rejected?, 'Transition should happen now'
+  end
+
 end
 
