@@ -189,6 +189,35 @@ using CouchDB, a document oriented database.
 Integration with CouchDB
 ------------------------
 
+We are using the compact [couchtiny library](http://github.com/geekq/couchtiny)
+here. But the implementation would look similar for the popular
+couchrest library.
+
+    require 'couchtiny'
+    require 'couchtiny/document'
+    require 'workflow'
+
+    class User < CouchTiny::Document
+      include Workflow
+      workflow do
+        state :submitted do
+          event :activate_via_link, :transitions_to => :proved_email
+        end
+        state :proved_email
+      end
+
+      def load_workflow_state
+        self[:workflow_state]
+      end
+
+      def persist_workflow_state(new_value)
+        self[:workflow_state] = new_value
+        save!
+      end
+    end
+
+Please also have a look at [the full source code]().
+
 Accessing your workflow specification
 -------------------------------------
 
