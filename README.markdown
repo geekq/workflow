@@ -216,7 +216,8 @@ couchrest library.
       end
     end
 
-Please also have a look at [the full source code]().
+Please also have a look at 
+[the full source code](http://github.com/geekq/workflow/blob/master/test/couchtiny_example.rb).
 
 Accessing your workflow specification
 -------------------------------------
