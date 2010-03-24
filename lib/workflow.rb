@@ -92,6 +92,15 @@ module Workflow
 
   module WorkflowClassMethods
     attr_reader :workflow_spec
+    
+    def workflow_column(column_name=nil)
+      if column_name
+        @workflow_state_column_name = column_name.to_sym
+      else
+        @workflow_state_column_name ||= :workflow_state
+      end
+      @workflow_state_column_name
+    end
 
     def workflow(&specification)
       @workflow_spec = Specification.new(Hash.new, &specification)
@@ -245,13 +254,13 @@ module Workflow
 
   module ActiveRecordInstanceMethods
     def load_workflow_state
-      read_attribute(:workflow_state)
+      read_attribute(self.class.workflow_column)
     end
 
     # On transition the new workflow state is immediately saved in the
     # database.
     def persist_workflow_state(new_value)
-      update_attribute :workflow_state, new_value
+      update_attribute self.class.workflow_column, new_value
     end
 
     private
@@ -262,7 +271,7 @@ module Workflow
     # state. That's why it is important to save the string with the name of the
     # initial state in all the new records.
     def write_initial_state
-      write_attribute :workflow_state, current_state.to_s
+      write_attribute self.class.workflow_column, current_state.to_s
     end
   end
 

@@ -24,6 +24,25 @@ class Order < ActiveRecord::Base
 
 end
 
+class OrderWithFooBarColumn < ActiveRecord::Base
+  include Workflow
+  
+  workflow_column(:foo_bar)
+  
+  workflow do
+    state :submitted do
+      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
+      end
+    end
+    state :accepted do
+      event :ship, :transitions_to => :shipped
+    end
+    state :shipped
+  end
+
+end
+
+
 class MainTest < Test::Unit::TestCase
 
   def exec(sql)
@@ -45,15 +64,25 @@ class MainTest < Test::Unit::TestCase
     end
 
     exec "INSERT INTO orders(title, workflow_state) VALUES('some order', 'accepted')"
+    
+    ActiveRecord::Schema.define do
+      create_table :order_with_foo_bar_columns do |t|
+        t.string :title, :null => false
+        t.string :foo_bar
+      end
+    end
+
+    exec "INSERT INTO order_with_foo_bar_columns(title, foo_bar) VALUES('some order', 'accepted')"
+    
   end
 
   def teardown
     ActiveRecord::Base.connection.disconnect!
   end
 
-  def assert_state(title, expected_state)
-    o = Order.find_by_title(title)
-    assert_equal expected_state, o.read_attribute(:workflow_state)
+  def assert_state(title, expected_state, klass = Order)
+    o = klass.find_by_title(title)
+    assert_equal expected_state, o.read_attribute(klass.workflow_column)
     o
   end
 
@@ -61,6 +90,12 @@ class MainTest < Test::Unit::TestCase
     o = assert_state 'some order', 'accepted'
     o.ship!
     assert_state 'some order', 'shipped'
+  end
+
+  test 'immediately save the new workflow_state on state machine transition with custom column name' do
+    o = assert_state 'some order', 'accepted', OrderWithFooBarColumn
+    o.ship!
+    assert_state 'some order', 'shipped', OrderWithFooBarColumn
   end
 
   test 'persist workflow_state in the db and reload' do
@@ -73,6 +108,28 @@ class MainTest < Test::Unit::TestCase
 
     o.reload
     assert_equal 'shipped', o.read_attribute(:workflow_state)
+  end
+
+  test 'persist workflow_state in the db with_custom_name and reload' do
+    o = assert_state 'some order', 'accepted', OrderWithFooBarColumn
+    assert_equal :accepted, o.current_state.name
+    o.ship!
+    o.save!
+
+    assert_state 'some order', 'shipped', OrderWithFooBarColumn
+
+    o.reload
+    assert_equal 'shipped', o.read_attribute(:foo_bar)
+  end
+  
+  test 'default workflow column should be workflow_state' do
+    o = assert_state 'some order', 'accepted'
+    assert_equal :workflow_state, o.class.workflow_column
+  end
+
+  test 'custom workflow column should be foo_bar' do
+    o = assert_state 'some order', 'accepted', OrderWithFooBarColumn
+    assert_equal :foo_bar, o.class.workflow_column
   end
 
   test 'access workflow specification' do
