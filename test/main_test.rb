@@ -24,11 +24,11 @@ class Order < ActiveRecord::Base
 
 end
 
-class OrderWithFooBarColumn < ActiveRecord::Base
+class LegacyOrder < ActiveRecord::Base
   include Workflow
-  
-  workflow_column(:foo_bar)
-  
+
+  workflow_column :foo_bar # use this legacy database column for persistence
+
   workflow do
     state :submitted do
       event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
@@ -64,16 +64,16 @@ class MainTest < Test::Unit::TestCase
     end
 
     exec "INSERT INTO orders(title, workflow_state) VALUES('some order', 'accepted')"
-    
+
     ActiveRecord::Schema.define do
-      create_table :order_with_foo_bar_columns do |t|
+      create_table :legacy_orders do |t|
         t.string :title, :null => false
         t.string :foo_bar
       end
     end
 
-    exec "INSERT INTO order_with_foo_bar_columns(title, foo_bar) VALUES('some order', 'accepted')"
-    
+    exec "INSERT INTO legacy_orders(title, foo_bar) VALUES('some order', 'accepted')"
+
   end
 
   def teardown
@@ -93,9 +93,9 @@ class MainTest < Test::Unit::TestCase
   end
 
   test 'immediately save the new workflow_state on state machine transition with custom column name' do
-    o = assert_state 'some order', 'accepted', OrderWithFooBarColumn
+    o = assert_state 'some order', 'accepted', LegacyOrder
     o.ship!
-    assert_state 'some order', 'shipped', OrderWithFooBarColumn
+    assert_state 'some order', 'shipped', LegacyOrder
   end
 
   test 'persist workflow_state in the db and reload' do
@@ -111,24 +111,24 @@ class MainTest < Test::Unit::TestCase
   end
 
   test 'persist workflow_state in the db with_custom_name and reload' do
-    o = assert_state 'some order', 'accepted', OrderWithFooBarColumn
+    o = assert_state 'some order', 'accepted', LegacyOrder
     assert_equal :accepted, o.current_state.name
     o.ship!
     o.save!
 
-    assert_state 'some order', 'shipped', OrderWithFooBarColumn
+    assert_state 'some order', 'shipped', LegacyOrder
 
     o.reload
     assert_equal 'shipped', o.read_attribute(:foo_bar)
   end
-  
+
   test 'default workflow column should be workflow_state' do
     o = assert_state 'some order', 'accepted'
     assert_equal :workflow_state, o.class.workflow_column
   end
 
   test 'custom workflow column should be foo_bar' do
-    o = assert_state 'some order', 'accepted', OrderWithFooBarColumn
+    o = assert_state 'some order', 'accepted', LegacyOrder
     assert_equal :foo_bar, o.class.workflow_column
   end
 

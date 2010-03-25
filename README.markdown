@@ -171,6 +171,21 @@ new state is immediately saved in the database.
 You can change this behaviour by overriding `persist_workflow_state`
 method.
 
+
+### Custom workflow database column
+
+[meuble](http://imeuble.info/) contributed a solution for using
+custom persistence column easily, e.g. for a legacy database schema:
+
+    class LegacyOrder < ActiveRecord::Base
+      include Workflow
+      
+      workflow_column :foo_bar # use this legacy database column for
+                               # persistence
+    end
+
+
+
 ### Single table inheritance
 
 Single table inheritance is also supported. Descendant classes can either
