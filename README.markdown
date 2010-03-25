@@ -405,14 +405,6 @@ on_entry/on_exit block are given, then only on_entry/on_exit block is used.
 Support
 -------
 
-### Mailing list
-
-There is a mailing list to talk about Workflow.
-Unfortunately it is overspammed at the moment.
-
-  http://groups.google.com/group/ruby-workflow
-
-
 ### Reporting bugs
 
     http://github.com/geekq/workflow/issues
