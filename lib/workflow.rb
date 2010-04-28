@@ -274,13 +274,27 @@ module Workflow
     end
   end
 
+  module RemodelInstanceMethods
+    def load_workflow_state
+      send(self.class.workflow_column)
+    end
+
+    def persist_workflow_state(new_value)
+      update(self.class.workflow_column => new_value)
+    end
+  end
+
   def self.included(klass)
     klass.send :include, WorkflowInstanceMethods
     klass.extend WorkflowClassMethods
     if Object.const_defined?(:ActiveRecord)
       if klass < ActiveRecord::Base
-      klass.send :include, ActiveRecordInstanceMethods
-      klass.before_validation :write_initial_state
+        klass.send :include, ActiveRecordInstanceMethods
+        klass.before_validation :write_initial_state
+      end
+    elsif Object.const_defined?(:Remodel)
+      if klass < Remodel::Entity
+        klass.send :include, RemodelInstanceMethods
       end
     end
   end
