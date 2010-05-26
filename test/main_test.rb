@@ -134,6 +134,8 @@ class MainTest < Test::Unit::TestCase
 
   test 'access workflow specification' do
     assert_equal 3, Order.workflow_spec.states.length
+    assert_equal ['submitted', 'accepted', 'shipped'].sort,
+      Order.workflow_spec.state_names.map{|n| n.to_s}.sort
   end
 
   test 'current state object' do

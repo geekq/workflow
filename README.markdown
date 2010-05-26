@@ -250,6 +250,9 @@ the whole class or for the current object. Examples:
     Article.workflow_spec.states.keys
     #=> [:rejected, :awaiting_review, :being_reviewed, :accepted, :new]
 
+    Article.workflow_spec.state_names
+    #=> [:rejected, :awaiting_review, :being_reviewed, :accepted, :new]
+
     # list all events for all states
     Article.workflow_spec.states.values.collect &:events
 

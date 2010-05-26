@@ -12,6 +12,10 @@ module Workflow
       instance_eval(&specification)
     end
 
+    def state_names
+      states.keys
+    end
+
     private
 
     def state(name, meta = {:meta => {}}, &events_and_etc)
@@ -91,7 +95,7 @@ module Workflow
 
   module WorkflowClassMethods
     attr_reader :workflow_spec
-    
+
     def workflow_column(column_name=nil)
       if column_name
         @workflow_state_column_name = column_name.to_sym
