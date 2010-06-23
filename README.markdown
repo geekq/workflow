@@ -376,7 +376,11 @@ Changelog
 
 * completely rewritten the documentation to match my branch
 * switch to [jeweler][] for building gems
+* use [jemcutter][] for gem distribution
 * every described feature is backed up by an automated test
+
+[jeweler]: http://github.com/technicalpickles/jeweler
+[jemcutter]: http://gemcutter.org/gems/workflow
 
 ### New in the version 0.3.0
 

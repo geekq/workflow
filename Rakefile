@@ -22,7 +22,7 @@ begin
     gemspec.name = "workflow"
     gemspec.rubyforge_project = 'workflow'
     gemspec.email = "vladimir@geekq.net"
-    gemspec.homepage = "http://blog.geekQ.net/"
+    gemspec.homepage = "http://github.com/geekq/workflow"
     gemspec.authors = ["Vladimir Dobriakov"]
     gemspec.summary = "A replacement for acts_as_state_machine."
     gemspec.description = <<-EOS
@@ -36,9 +36,7 @@ begin
       for particular state
     EOS
 
-    Jeweler::RubyforgeTasks.new do |rubyforge|
-      rubyforge.doc_task = "rdoc"
-    end
+    Jeweler::GemcutterTasks.new
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
