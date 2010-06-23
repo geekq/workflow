@@ -374,8 +374,9 @@ Changelog
 
 ### New in the version 0.4.0
 
-* completely rewritten the documentation to match my branch. Every
-  described feature is backed up by an automated test.
+* completely rewritten the documentation to match my branch
+* switch to [jeweler][] for building gems
+* every described feature is backed up by an automated test
 
 ### New in the version 0.3.0
 
