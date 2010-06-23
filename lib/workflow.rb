@@ -1,5 +1,6 @@
 require 'rubygems'
 
+# See also README.markdown for documentation
 module Workflow
 
   class Specification

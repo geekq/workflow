@@ -12,8 +12,7 @@ Rake::TestTask.new do |t|
 end
 
 Rake::RDocTask.new do |rdoc|
-  rdoc.main = "README"
-  rdoc.rdoc_files.include("README.rdoc", "lib/**/*.rb")
+  rdoc.rdoc_files.include("lib/**/*.rb")
   rdoc.options << "-S"
 end
 
@@ -36,6 +35,10 @@ begin
     * convenient access to the workflow specification: list states, possible events
       for particular state
     EOS
+
+    Jeweler::RubyforgeTasks.new do |rubyforge|
+      rubyforge.doc_task = "rdoc"
+    end
   end
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install technicalpickles-jeweler -s http://gems.github.com"
