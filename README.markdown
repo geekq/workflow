@@ -419,7 +419,7 @@ Support
 
 ### Reporting bugs
 
-    http://github.com/geekq/workflow/issues
+<http://github.com/geekq/workflow/issues>
 
 
 About

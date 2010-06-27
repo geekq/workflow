@@ -22,7 +22,7 @@ begin
     gemspec.name = "workflow"
     gemspec.rubyforge_project = 'workflow'
     gemspec.email = "vladimir@geekq.net"
-    gemspec.homepage = "http://github.com/geekq/workflow"
+    gemspec.homepage = "http://www.geekq.net/workflow/"
     gemspec.authors = ["Vladimir Dobriakov"]
     gemspec.summary = "A replacement for acts_as_state_machine."
     gemspec.description = <<-EOS
