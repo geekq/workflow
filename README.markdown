@@ -304,7 +304,8 @@ logging then you can use the universal `on_transition` hook:
 ### Guards
 
 If you want to halt the transition conditionally, you can just raise an
-exception. There is a helper called `halt!`, which raises the
+exception in your [transition event handler](#transition_event_handler).
+There is a helper called `halt!`, which raises the
 Workflow::TransitionHalted exception. You can provide an additional
 `halted_because` parameter.
 
@@ -316,6 +317,8 @@ Workflow::TransitionHalted exception. You can provide an additional
 The traditional `halt` (without the exclamation mark) is still supported
 too. This just prevents the state change without raising an
 exception.
+
+You can check `halted?` and `halted_because` values later.
 
 ### Hook order
 
@@ -372,6 +375,11 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
+### New in the version 0.5.0
+
+* change the behaviour of halt! to immediately raise an exception. See
+  also http://github.com/geekq/workflow/issues/#issue/3
+
 ### New in the version 0.4.0
 
 * completely rewritten the documentation to match my branch
@@ -425,7 +433,7 @@ Support
 About
 -----
 
-Author: Vladimir Dobriakov, http://www.innoq.com/blog/vd, http://blog.geekq.net/
+Author: Vladimir Dobriakov, <http://www.innoq.com/blog/vd>, <http://blog.geekq.net/>
 
 Copyright (c) 2008-2009 Vodafone
 

@@ -390,9 +390,10 @@ class MainTest < Test::Unit::TestCase
     assert_equal 'too fast', joe.halted_because
   end
 
-  test 'halt! raises exception' do
+  test 'halt! raises exception immediately' do
     article_class = Class.new do
       include Workflow
+      attr_accessor :too_far
       workflow do
         state :new do
           event :reject, :transitions_to => :rejected
@@ -403,6 +404,7 @@ class MainTest < Test::Unit::TestCase
       def reject(reason)
         halt! 'We do not reject articles unless the reason is important' \
           unless reason =~ /important/i
+        self.too_far = "This line should not be executed"
       end
     end
 
@@ -411,6 +413,7 @@ class MainTest < Test::Unit::TestCase
     assert_raise Workflow::TransitionHalted do
       article.reject! 'Too funny'
     end
+    assert_nil article.too_far
     assert article.new?, 'Transition should have been halted'
     article.reject! 'Important: too short'
     assert article.rejected?, 'Transition should happen now'

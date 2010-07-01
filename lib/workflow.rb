@@ -135,10 +135,14 @@ module Workflow
       res || spec.initial_state
     end
 
+    # See the 'Guards' section in the README
+    # @return true if the last transition was halted by one of the transition callbacks.
     def halted?
       @halted
     end
 
+    # @return the reason of the last transition abort as set by the previous
+    # call of `halt` or `halt!` method.
     def halted_because
       @halted_because
     end
@@ -148,18 +152,11 @@ module Workflow
       raise NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
         if event.nil?
-      # This three member variables are a relict from the old workflow library
-      # TODO: refactor some day
       @halted_because = nil
       @halted = false
-      @raise_exception_on_halt = false
       return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
       if @halted
-        if @raise_exception_on_halt
-          raise TransitionHalted.new(@halted_because)
-        else
-          false
-        end
+        return false
       else
         check_transition(event)
         run_on_transition(current_state, spec.states[event.transitions_to], name, *args)
@@ -168,16 +165,15 @@ module Workflow
       end
     end
 
-    private
+    def halt(reason = nil)
+      @halted_because = reason
+      @halted = true
+    end
 
-    def check_transition(event)
-      # Create a meaningful error message instead of
-      # "undefined method `on_entry' for nil:NilClass"
-      # Reported by Kyle Burton
-      if !spec.states[event.transitions_to]
-        raise WorkflowError.new("Event[#{event.name}]'s " +
-            "transitions_to[#{event.transitions_to}] is not a declared state.")
-      end
+    def halt!(reason = nil)
+      @halted_because = reason
+      @halted = true
+      raise TransitionHalted.new(reason)
     end
 
     def spec
@@ -190,16 +186,16 @@ module Workflow
       c.workflow_spec
     end
 
-    def halt(reason = nil)
-      @halted_because = reason
-      @halted = true
-      @raise_exception_on_halt = false
-    end
+    private
 
-    def halt!(reason = nil)
-      @halted_because = reason
-      @halted = true
-      @raise_exception_on_halt = true
+    def check_transition(event)
+      # Create a meaningful error message instead of
+      # "undefined method `on_entry' for nil:NilClass"
+      # Reported by Kyle Burton
+      if !spec.states[event.transitions_to]
+        raise WorkflowError.new("Event[#{event.name}]'s " +
+            "transitions_to[#{event.transitions_to}] is not a declared state.")
+      end
     end
 
     def transition(from, to, name, *args)
