@@ -331,6 +331,63 @@ The whole event sequence is as follows:
     * on_entry
 
 
+Multiple Workflows
+------------------
+
+I am frequently asked if it's possible to represent multiple "workflows"
+in an ActiveRecord class. 
+
+The solution depends on your business logic and how you want to
+structure your implementation.
+
+### Use Single Table Inheritance
+
+One solution can be to do it on the class level and use a class
+hierarchy. You can use [single table inheritance][STI] so there is only
+single `orders` table in the database. Read more in the chapter "Single
+Table Inheritance" of the [ActiveRecord documentation][ActiveRecord].
+Then you define your different classes:
+
+    class Order < ActiveRecord::Base
+      include Workflow
+    end
+
+    class SmallOrder < Order
+      workflow do
+        # workflow definition for small orders goes here
+      end
+    end
+
+    class BigOrder < Order
+      workflow do
+        # workflow for big orders, probably with a longer approval chain
+      end
+    end
+
+
+### Individual workflows for objects
+
+Another solution would be to connect different workflows to object
+instances via metaclass, e.g.
+
+    booking = Booking.find(1234)
+    if # some condition
+      class << booking
+        include Workflow
+        workflow do
+          state :state1
+          state :state2
+        end
+      end
+    # if some other condition, use a different workflow
+
+Please also have a look at [the full working example][multiple_workflow_test]!
+
+[STI]: http://www.martinfowler.com/eaaCatalog/singleTableInheritance.html
+[ActiveRecord]: http://api.rubyonrails.org/classes/ActiveRecord/Base.html
+[multiple_workflow_test]: http://github.com/geekq/workflow/blob/master/test/multiple_workflows_test.rb
+
+
 Documenting with diagrams
 -------------------------
 
@@ -374,6 +431,12 @@ when using both a block and a callback method for an event, the block executes p
 
 Changelog
 ---------
+
+### New in the version 0.6.0
+
+* enable multiple workflows by connecting workflow to object instances
+  (using metaclass) instead of connecting to a class, s. "Multiple
+  Workflows" section
 
 ### New in the version 0.5.0
 

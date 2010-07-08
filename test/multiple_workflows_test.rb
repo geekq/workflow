@@ -2,7 +2,6 @@ require File.join(File.dirname(__FILE__), 'test_helper')
 class MultipleWorkflowsTest < ActiveRecordTestCase
 
   test 'multiple workflows' do
-    # that means defining the workflow per object instead of per class
 
     ActiveRecord::Schema.define do
       create_table :bookings do |t|
@@ -17,6 +16,7 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
 
     class Booking < ActiveRecord::Base
       def initialize_workflow
+        # define workflow per object instead of per class
         case workflow_type
         when 'workflow_1'
           class << self
@@ -51,11 +51,11 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
 
     assert booking1.initial?
     booking1.progress!
-    assert booking1.last?
+    assert booking1.last?, 'booking1 should transition to the "last" state'
 
     assert booking2.initial?
     booking2.progress!
-    assert booking2.intermediate?
+    assert booking2.intermediate?, 'booking2 should transition to the "intermediate" state'
   end
 
 end
