@@ -43,18 +43,10 @@ class LegacyOrder < ActiveRecord::Base
 end
 
 
-class MainTest < Test::Unit::TestCase
-
-  def exec(sql)
-    ActiveRecord::Base.connection.execute sql
-  end
+class MainTest < ActiveRecordTestCase
 
   def setup
-    ActiveRecord::Base.establish_connection(
-      :adapter => "sqlite3",
-      :database  => ":memory:" #"tmp/test"
-    )
-    ActiveRecord::Base.connection.reconnect! # eliminate ActiveRecord warning. TODO: delete as soon as ActiveRecord is fixed
+    super
 
     ActiveRecord::Schema.define do
       create_table :orders do |t|
@@ -74,10 +66,6 @@ class MainTest < Test::Unit::TestCase
 
     exec "INSERT INTO legacy_orders(title, foo_bar) VALUES('some order', 'accepted')"
 
-  end
-
-  def teardown
-    ActiveRecord::Base.connection.disconnect!
   end
 
   def assert_state(title, expected_state, klass = Order)

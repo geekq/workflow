@@ -177,6 +177,11 @@ module Workflow
     end
 
     def spec
+      # check the singleton class first
+      class << self
+        return workflow_spec if workflow_spec
+      end
+
       c = self.class
       # using a simple loop instead of class_inheritable_accessor to avoid
       # dependency on Rails' ActiveSupport
