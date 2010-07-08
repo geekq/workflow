@@ -370,7 +370,11 @@ Then you define your different classes:
 Another solution would be to connect different workflows to object
 instances via metaclass, e.g.
 
+    # Load an object from the database
     booking = Booking.find(1234)
+
+    # Now define a workflow - exclusively for this object,
+    # probably depending on some condition or database field
     if # some condition
       class << booking
         include Workflow
@@ -381,7 +385,9 @@ instances via metaclass, e.g.
       end
     # if some other condition, use a different workflow
 
-Please also have a look at [the full working example][multiple_workflow_test]!
+You can also encapsulate this in a class method or even put in some
+ActiveRecord callback. Please also have a look at [the full working
+example][multiple_workflow_test]!
 
 [STI]: http://www.martinfowler.com/eaaCatalog/singleTableInheritance.html
 [ActiveRecord]: http://api.rubyonrails.org/classes/ActiveRecord/Base.html
