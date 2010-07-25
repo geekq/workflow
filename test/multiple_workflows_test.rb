@@ -41,6 +41,13 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
           end
         end
       end
+
+      def metaclass; class << self; self; end; end
+
+      def workflow_spec
+        metaclass.workflow_spec
+      end
+
     end
 
     booking1 = Booking.find_by_title('booking1')
@@ -56,6 +63,15 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
     assert booking2.initial?
     booking2.progress!
     assert booking2.intermediate?, 'booking2 should transition to the "intermediate" state'
+
+    assert booking1.workflow_spec, 'can access the individual workflow specification'
+    assert_equal 2, booking1.workflow_spec.states.length
+    assert_equal 3, booking2.workflow_spec.states.length
+  end
+
+  class Object
+    # The hidden singleton lurks behind everyone
+    def metaclass; class << self; self; end; end
   end
 
 end
