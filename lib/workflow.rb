@@ -332,7 +332,7 @@ module Workflow
   # @param [String] target_dir Directory, where to save the dot and the pdf files
   # @param [String] graph_options You can change graph orientation, size etc. See graphviz documentation
   def self.create_workflow_diagram(klass, target_dir, graph_options='rankdir="LR", size="7,11.6", ratio="fill"')
-    workflow_name = "#{klass.name.tableize}_workflow"
+    workflow_name = "#{klass.name.tableize}_workflow".gsub('/', '_')
     fname = File.join(target_dir, "generated_#{workflow_name}")
     File.open("#{fname}.dot", 'w') do |file|
       file.puts %Q|
