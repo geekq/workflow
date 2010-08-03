@@ -278,11 +278,8 @@ class MainTest < ActiveRecordTestCase
   end
 
   test 'STI when parent changed the workflow_state column' do
-    img = Image.new
-    small_img = SmallImage.new
-
-    assert_equal 'status', img.class.workflow_column.to_s
-    assert_equal 'status', small_img.class.workflow_column.to_s
+    assert_equal 'status', Image.workflow_column.to_s
+    assert_equal 'status', SmallImage.workflow_column.to_s
   end
 
   test 'Two-level inheritance' do
