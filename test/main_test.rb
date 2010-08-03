@@ -96,13 +96,13 @@ class MainTest < ActiveRecordTestCase
 
   test 'immediately save the new workflow_state on state machine transition' do
     o = assert_state 'some order', 'accepted'
-    o.ship!
+    assert o.ship!
     assert_state 'some order', 'shipped'
   end
 
   test 'immediately save the new workflow_state on state machine transition with custom column name' do
     o = assert_state 'some order', 'accepted', LegacyOrder
-    o.ship!
+    assert o.ship!
     assert_state 'some order', 'shipped', LegacyOrder
   end
 

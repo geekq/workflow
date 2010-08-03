@@ -161,8 +161,10 @@ module Workflow
       else
         check_transition(event)
         run_on_transition(current_state, spec.states[event.transitions_to], name, *args)
-        transition(current_state, spec.states[event.transitions_to], name, *args)
-        return_value
+        transition_value = transition(
+          current_state, spec.states[event.transitions_to], name, *args
+        )
+        return_value.nil? ? transition_value : return_value
       end
     end
 
@@ -206,8 +208,9 @@ module Workflow
 
     def transition(from, to, name, *args)
       run_on_exit(from, to, name, *args)
-      persist_workflow_state to.to_s
+      val = persist_workflow_state to.to_s
       run_on_entry(to, from, name, *args)
+      val
     end
 
     def run_on_transition(from, to, event, *args)
