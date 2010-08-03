@@ -21,7 +21,6 @@ class Order < ActiveRecord::Base
     end
     state :shipped
   end
-
 end
 
 class LegacyOrder < ActiveRecord::Base
@@ -39,9 +38,23 @@ class LegacyOrder < ActiveRecord::Base
     end
     state :shipped
   end
-
 end
 
+class Image < ActiveRecord::Base
+  include Workflow
+  
+  workflow_column :status
+
+  workflow do
+    state :unconverted do
+      event :convert, :transitions_to => :converted
+    end
+    state :converted
+  end
+end
+
+class SmallImage < Image
+end
 
 class MainTest < ActiveRecordTestCase
 
@@ -66,6 +79,13 @@ class MainTest < ActiveRecordTestCase
 
     exec "INSERT INTO legacy_orders(title, foo_bar) VALUES('some order', 'accepted')"
 
+    ActiveRecord::Schema.define do
+      create_table :images do |t|
+        t.string :title, :null => false
+        t.string :state
+        t.string :type
+      end
+    end
   end
 
   def assert_state(title, expected_state, klass = Order)
@@ -255,6 +275,14 @@ class MainTest < ActiveRecordTestCase
     bo = BigOrder.new
     assert bo.submitted?
     assert !bo.accepted?
+  end
+
+  test 'STI when parent changed the workflow_state column' do
+    img = Image.new
+    small_img = SmallImage.new
+
+    assert_equal 'status', img.class.workflow_column.to_s
+    assert_equal 'status', small_img.class.workflow_column.to_s
   end
 
   test 'Two-level inheritance' do
