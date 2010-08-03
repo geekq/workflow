@@ -100,10 +100,11 @@ module Workflow
     def workflow_column(column_name=nil)
       if column_name
         @workflow_state_column_name = column_name.to_sym
-      else
-        @workflow_state_column_name ||= :workflow_state
       end
-      @workflow_state_column_name
+      if !@workflow_state_column_name && superclass.respond_to?(:workflow_column)
+        @workflow_state_column_name = superclass.workflow_column
+      end
+      @workflow_state_column_name ||= :workflow_state
     end
 
     def workflow(&specification)
