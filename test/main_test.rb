@@ -42,7 +42,7 @@ end
 
 class Image < ActiveRecord::Base
   include Workflow
-  
+
   workflow_column :status
 
   workflow do
@@ -54,6 +54,9 @@ class Image < ActiveRecord::Base
 end
 
 class SmallImage < Image
+end
+
+class SpecialSmallImage < SmallImage
 end
 
 class MainTest < ActiveRecordTestCase
@@ -280,6 +283,7 @@ class MainTest < ActiveRecordTestCase
   test 'STI when parent changed the workflow_state column' do
     assert_equal 'status', Image.workflow_column.to_s
     assert_equal 'status', SmallImage.workflow_column.to_s
+    assert_equal 'status', SpecialSmallImage.workflow_column.to_s
   end
 
   test 'Two-level inheritance' do
