@@ -83,6 +83,14 @@ Alternatively you can just download the lib/workflow.rb and put it in
 the lib folder of your Rails or Ruby application.
 
 
+Ruby 1.9
+--------
+
+Workflow gem does not work with some (but very widespread) Ruby 1.9
+builds due to a known bug in Ruby 1.9. Either compile your Ruby 1.9 from
+source or [comment out some lines in workflow](http://github.com/geekq/workflow/issues#issue/6)
+(reduces functionality).
+
 Examples
 --------
 
