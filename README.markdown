@@ -446,6 +446,14 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
+### New in the version 0.7.0
+
+* fix issue#10 Workflow::create_workflow_diagram documentation and path
+  escaping
+* fix issue#7 workflow_column does not work STI (single table
+  inheritance) ActiveRecord models
+* fix issue#5 Diagram generation fails for models in modules
+
 ### New in the version 0.6.0
 
 * enable multiple workflows by connecting workflow to object instances
@@ -454,8 +462,8 @@ Changelog
 
 ### New in the version 0.5.0
 
-* change the behaviour of halt! to immediately raise an exception. See
-  also http://github.com/geekq/workflow/issues/#issue/3
+* fix issue#3 change the behaviour of halt! to immediately raise an
+  exception. See also http://github.com/geekq/workflow/issues/#issue/3
 
 ### New in the version 0.4.0
 

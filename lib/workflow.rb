@@ -310,13 +310,13 @@ module Workflow
   end
 
   # Generates a `dot` graph of the workflow.
-  # Prerequisite: the `dot` binary.
-  # You can use it in your own Rakefile like this:
+  # Prerequisite: the `dot` binary. (Download from http://www.graphviz.org/)
+  # You can use this method in your own Rakefile like this:
   #
   #     namespace :doc do
   #       desc "Generate a graph of the workflow."
-  #       task :workflow do
-  #         Workflow::create_workflow_diagram(Order.new)
+  #       task :workflow => :environment do # needs access to the Rails environment
+  #         Workflow::create_workflow_diagram(Order)
   #       end
   #     end
   #
