@@ -5,6 +5,7 @@ require 'active_record'
 require 'sqlite3'
 require 'workflow'
 require 'mocha'
+require 'stringio'
 #require 'ruby-debug'
 
 ActiveRecord::Migration.verbose = false
@@ -434,6 +435,29 @@ class MainTest < ActiveRecordTestCase
     assert article.new?, 'Transition should have been halted'
     article.reject! 'Important: too short'
     assert article.rejected?, 'Transition should happen now'
+  end
+
+  test 'workflow graph generation' do
+    Dir.chdir('tmp') do
+      capture_streams do
+        Workflow::create_workflow_diagram(Order)
+      end
+    end
+  end
+
+  test 'workflow graph generation in path with spaces' do
+    `mkdir -p '/tmp/Workflow test'`
+    capture_streams do
+      Workflow::create_workflow_diagram(Order,  '/tmp/Workflow test')
+    end
+  end
+
+  def capture_streams
+    old_stdout = $stdout
+    $stdout = captured_stdout = StringIO.new
+    yield
+    $stdout = old_stdout
+    captured_stdout
   end
 
 end
