@@ -194,6 +194,13 @@ module Workflow
       c.workflow_spec
     end
 
+    def method_missing(name, *params)
+      if name.to_s.match(/\Acan_(\w+)\?\z/)
+        return self.current_state.events.include?($1.to_sym)
+      end
+      super
+    end
+
     private
 
     def check_transition(event)
