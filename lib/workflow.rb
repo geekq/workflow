@@ -123,6 +123,10 @@ module Workflow
             define_method "#{event_name}!".to_sym do |*args|
               process_event!(event_name, *args)
             end
+
+            define_method "can_#{event_name}?" do
+              return self.current_state.events.include? event_name
+            end
           end
         end
       end

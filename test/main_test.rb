@@ -437,6 +437,25 @@ class MainTest < ActiveRecordTestCase
     assert article.rejected?, 'Transition should happen now'
   end
 
+  test 'can fire event?' do
+    c = Class.new do
+      include Workflow
+      workflow do
+        state :newborn do
+          event :go_to_school, :transitions_to => :schoolboy
+        end
+        state :schoolboy do
+          event :go_to_college, :transitions_to => :student
+        end
+        state :student
+      end
+    end
+
+    human = c.new
+    assert human.can_go_to_school?
+    assert_equal false, human.can_go_to_college?
+  end
+
   test 'workflow graph generation' do
     Dir.chdir('tmp') do
       capture_streams do
