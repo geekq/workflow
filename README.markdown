@@ -73,6 +73,10 @@ Events are actually instance methods on a workflow, and depending on the
 state you're in, you'll have a different set of events used to
 transition to other states.
 
+It is also easy to check, if a certain transition is possible from the
+current state . `article.can_submit?` checks if there is a `:submit`
+event (transition) defined for the current state.
+
 
 Installation
 ------------
@@ -445,6 +449,11 @@ when using both a block and a callback method for an event, the block executes p
 
 Changelog
 ---------
+
+### New in the version 0.8.0
+
+* check if a certain transition possible from the current state with
+  `can_....?`
 
 ### New in the version 0.7.0
 
