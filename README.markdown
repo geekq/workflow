@@ -454,6 +454,7 @@ Changelog
 
 * check if a certain transition possible from the current state with
   `can_....?`
+* fix workflow_state persistence for multiple_workflows example
 
 ### New in the version 0.7.0
 

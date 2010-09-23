@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
+require 'workflow'
 class MultipleWorkflowsTest < ActiveRecordTestCase
 
   test 'multiple workflows' do
@@ -15,12 +16,14 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
     exec "INSERT INTO bookings(title, workflow_state, workflow_type) VALUES('booking2', 'initial', 'workflow_2')"
 
     class Booking < ActiveRecord::Base
+
+      include Workflow
+
       def initialize_workflow
         # define workflow per object instead of per class
         case workflow_type
         when 'workflow_1'
           class << self
-            include Workflow
             workflow do
               state :initial do
                 event :progress, :transitions_to => :last
@@ -30,7 +33,6 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
           end
         when 'workflow_2'
           class << self
-            include Workflow
             workflow do
               state :initial do
                 event :progress, :transitions_to => :intermediate
@@ -67,6 +69,11 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
     assert booking1.workflow_spec, 'can access the individual workflow specification'
     assert_equal 2, booking1.workflow_spec.states.length
     assert_equal 3, booking2.workflow_spec.states.length
+
+    # check persistence
+    booking2reloaded = Booking.find_by_title('booking2')
+    booking2reloaded.initialize_workflow
+    assert booking2reloaded.intermediate?, 'persistence of workflow state does not work'
   end
 
   class Object
