@@ -183,6 +183,32 @@ new state is immediately saved in the database.
 You can change this behaviour by overriding `persist_workflow_state`
 method.
 
+### Transition based validation
+If you are using ActiveRecord you might want to define different validations
+for different transitions. There is a `validate_presence_of` hook that let's
+you specify the attributes that need to be present for an successful transition.
+If the object is not valid at the end of the transition event the transition
+is halted and a TransitionHalted exception is thrown.
+
+Here is a sample that illustrates how to use the presence validation:
+
+    class Article
+      include Workflow
+      workflow do
+        state :new do
+          event :submit, :transitions_to => :awaiting_review, :validates_presence_of => [:title, :body]
+        end
+        state :awaiting_review do
+          event :review, :transitions_to => :being_reviewed
+        end
+        state :being_reviewed do
+          event :accept, :transitions_to => :accepted
+          event :reject, :transitions_to => :rejected, :validates_presence_of => [:title, :body, :reject_reason]
+        end
+        state :accepted
+        state :rejected
+      end
+    end
 
 ### Custom workflow database column
 

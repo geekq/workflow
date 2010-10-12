@@ -30,11 +30,13 @@ module Workflow
 
     def event(name, args = {}, &action)
       target = args[:transitions_to] || args[:transition_to]
+      validations = {}
+      validations[:presence_of] = args[:validates_presence_of] if args[:validates_presence_of]
       raise WorkflowDefinitionError.new(
         "missing ':transitions_to' in workflow event definition for '#{name}'") \
         if target.nil?
       @scoped_state.events[name.to_sym] =
-        Workflow::Event.new(name, target, (args[:meta] or {}), &action)
+        Workflow::Event.new(name, target, validations, (args[:meta] or {}), &action)
     end
 
     def on_entry(&proc)
@@ -86,10 +88,10 @@ module Workflow
 
   class Event
 
-    attr_accessor :name, :transitions_to, :meta, :action
+    attr_accessor :name, :transitions_to, :validations, :meta, :action
 
-    def initialize(name, transitions_to, meta = {}, &action)
-      @name, @transitions_to, @meta, @action = name, transitions_to.to_sym, meta, action
+    def initialize(name, transitions_to, validations, meta = {}, &action)
+      @name, @transitions_to, @validations, @meta, @action = name, transitions_to.to_sym, validations, meta, action
     end
 
   end
@@ -164,6 +166,7 @@ module Workflow
         return false
       else
         check_transition(event)
+        check_validation(event)
         run_on_transition(current_state, spec.states[event.transitions_to], name, *args)
         transition_value = transition(
           current_state, spec.states[event.transitions_to], name, *args
@@ -207,6 +210,22 @@ module Workflow
       if !spec.states[event.transitions_to]
         raise WorkflowError.new("Event[#{event.name}]'s " +
             "transitions_to[#{event.transitions_to}] is not a declared state.")
+      end
+    end
+    
+    def check_validation(event)
+      if self.class.superclass.to_s.split("::").first == "ActiveRecord"
+        singleton = class << self; self end
+        validations = Proc.new {}
+        
+        unless event.validations.empty?
+          validations = Proc.new {
+            errors.add_on_blank(event.validations[:presence_of]) if event.validations[:presence_of]
+          }
+        end
+        
+        singleton.send :define_method, :validate, &validations
+        halt! "Event[#{event.name}]'s transitions_to[#{event.transitions_to}] is not valid." if self.invalid?
       end
     end
 

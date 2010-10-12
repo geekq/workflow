@@ -24,6 +24,29 @@ class Order < ActiveRecord::Base
   end
 end
 
+class Article < ActiveRecord::Base
+  include Workflow
+  workflow do
+    state :new do
+      event :accept, :transitions_to => :accepted, :validates_presence_of => [:title, :body]
+      event :reject, :transitions_to => :rejected
+    end
+    state :accepted do
+      event :blame, :transitions_to => :blamed, :validates_presence_of => [:title, :body, :blame_reason]
+      event :delete, :transitions_to => :deleted
+    end
+    state :rejected do
+      event :delete, :transitions_to => :deleted
+    end
+    state :blamed do
+      event :delete, :transitions_to => :deleted
+    end
+    state :deleted do
+      event :accept, :transitions_to => :accepted
+    end
+  end
+end
+
 class LegacyOrder < ActiveRecord::Base
   include Workflow
 
@@ -73,6 +96,20 @@ class MainTest < ActiveRecordTestCase
     end
 
     exec "INSERT INTO orders(title, workflow_state) VALUES('some order', 'accepted')"
+    
+    ActiveRecord::Schema.define do
+      create_table :articles do |t|
+        t.string :title
+        t.string :body
+        t.string :blame_reason
+        t.string :reject_reason
+        t.string :workflow_state
+      end
+    end
+
+    exec "INSERT INTO articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('new1', NULL, NULL, NULL, 'new')"
+    exec "INSERT INTO articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('new2', 'some content', NULL, NULL, 'new')"
+    exec "INSERT INTO articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('accepted1', 'some content', NULL, NULL, 'accepted')"
 
     ActiveRecord::Schema.define do
       create_table :legacy_orders do |t|
@@ -96,6 +133,35 @@ class MainTest < ActiveRecordTestCase
     o = klass.find_by_title(title)
     assert_equal expected_state, o.read_attribute(klass.workflow_column)
     o
+  end
+  
+  test 'deny transition from new to accepted because of the missing presence of the body' do
+    a = Article.find_by_title('new1');
+    assert_raise Workflow::TransitionHalted do
+      a.accept!
+    end
+    assert_state 'new1', 'new', Article
+  end
+  
+  test 'allow transition from new to accepted because body is present this time' do
+    a = Article.find_by_title('new2');
+    assert a.accept!
+    assert_state 'new2', 'accepted', Article
+  end
+  
+  test 'allow transition from accepted to blamed because of a blame_reason' do
+    a = Article.find_by_title('accepted1');
+    a.blame_reason = "Provocant thesis"
+    assert a.blame!
+    assert_state 'accepted1', 'blamed', Article
+  end
+  
+  test 'deny transition from accepted to blamed because of no blame_reason' do
+    a = Article.find_by_title('accepted1');
+    assert_raise Workflow::TransitionHalted do
+      assert a.blame!
+    end
+    assert_state 'accepted1', 'accepted', Article
   end
 
   test 'immediately save the new workflow_state on state machine transition' do
