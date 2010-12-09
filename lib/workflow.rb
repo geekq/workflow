@@ -5,7 +5,8 @@ module Workflow
 
   class Specification
 
-    attr_accessor :states, :initial_state, :meta, :on_transition_proc
+    attr_accessor :states, :initial_state, :meta,
+      :on_transition_proc, :before_transition_proc, :after_transition_proc
 
     def initialize(meta = {}, &specification)
       @states = Hash.new
@@ -43,6 +44,14 @@ module Workflow
 
     def on_exit(&proc)
       @scoped_state.on_exit = proc
+    end
+
+    def after_transition(&proc)
+      @after_transition_proc = proc
+    end
+
+    def before_transition(&proc)
+      @before_transition_proc = proc
     end
 
     def on_transition(&proc)
@@ -159,17 +168,29 @@ module Workflow
         if event.nil?
       @halted_because = nil
       @halted = false
+
+      check_transition(event)
+
+      from = current_state
+      to = spec.states[event.transitions_to]
+
+      run_before_transition(current_state, spec.states[event.transitions_to], name, *args)
+      return false if @halted
+
       return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
-      if @halted
-        return false
-      else
-        check_transition(event)
-        run_on_transition(current_state, spec.states[event.transitions_to], name, *args)
-        transition_value = transition(
-          current_state, spec.states[event.transitions_to], name, *args
-        )
-        return_value.nil? ? transition_value : return_value
-      end
+      return false if @halted
+
+      run_on_transition(from, to, name, *args)
+
+      run_on_exit(from, to, name, *args)
+
+      transition_value = persist_workflow_state to.to_s
+
+      run_on_entry(to, from, name, *args)
+
+      run_after_transition(from, to, name, *args)
+
+      return_value.nil? ? transition_value : return_value
     end
 
     def halt(reason = nil)
@@ -210,15 +231,18 @@ module Workflow
       end
     end
 
-    def transition(from, to, name, *args)
-      run_on_exit(from, to, name, *args)
-      val = persist_workflow_state to.to_s
-      run_on_entry(to, from, name, *args)
-      val
+    def run_before_transition(from, to, event, *args)
+      instance_exec(from.name, to.name, event, *args, &spec.before_transition_proc) if
+        spec.before_transition_proc
     end
 
     def run_on_transition(from, to, event, *args)
       instance_exec(from.name, to.name, event, *args, &spec.on_transition_proc) if spec.on_transition_proc
+    end
+
+    def run_after_transition(from, to, event, *args)
+      instance_exec(from.name, to.name, event, *args, &spec.after_transition_proc) if
+        spec.after_transition_proc
     end
 
     def run_action(action, *args)

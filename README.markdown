@@ -346,11 +346,13 @@ You can check `halted?` and `halted_because` values later.
 
 The whole event sequence is as follows:
 
+    * before_transition
     * event specific action
     * on_transition (if action did not halt)
     * on_exit
     * PERSIST WORKFLOW STATE, i.e. transition
     * on_entry
+    * after_transition
 
 
 Multiple Workflows
@@ -465,6 +467,8 @@ Changelog
 * check if a certain transition possible from the current state with
   `can_....?`
 * fix workflow_state persistence for multiple_workflows example
+* add before_transition and after_transition hooks as suggested by
+  [kasperbn](https://github.com/kasperbn)
 
 ### New in the version 0.7.0
 
