@@ -176,6 +176,9 @@ module Workflow
 
       run_before_transition(current_state, spec.states[event.transitions_to], name, *args)
       return false if @halted
+      
+      run_validations(event)
+      return false if @halted
 
       return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
       return false if @halted
@@ -228,6 +231,12 @@ module Workflow
       if !spec.states[event.transitions_to]
         raise WorkflowError.new("Event[#{event.name}]'s " +
             "transitions_to[#{event.transitions_to}] is not a declared state.")
+      end
+    end
+    
+    def run_validations(event)
+      if self.respond_to?(:valid?)
+        halt("Transition to #{event.name} failed validation") unless self.valid?(event.name)
       end
     end
 
