@@ -4,5 +4,4 @@ pkg
 doc/
 html/
 *.swp
-*.gemspec
 .yardoc
