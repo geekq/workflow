@@ -91,8 +91,11 @@ Ruby 1.9
 --------
 
 Workflow gem does not work with some (but very widespread) Ruby 1.9
-builds due to a known bug in Ruby 1.9. Either compile your Ruby 1.9 from
-source or [comment out some lines in workflow](http://github.com/geekq/workflow/issues#issue/6)
+builds due to a known bug in Ruby 1.9. Either 
+
+* use newer ruby build, 1.9.2-p136 and -p180 tested to work
+* or compile your Ruby 1.9 from source 
+* or [comment out some lines in workflow](http://github.com/geekq/workflow/issues#issue/6)
 (reduces functionality).
 
 Examples
