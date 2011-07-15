@@ -134,7 +134,7 @@ module Workflow
             end
 
             define_method "can_#{event_name}?" do
-              return self.current_state.events.include? event_name
+              return self.current_state.events.include?(event_name)
             end
           end
         end
