@@ -363,38 +363,50 @@ module Workflow
   # @param klass A class with the Workflow mixin, for which you wish the graphical workflow representation
   # @param [String] target_dir Directory, where to save the dot and the pdf files
   # @param [String] graph_options You can change graph orientation, size etc. See graphviz documentation
-  def self.create_workflow_diagram(klass, target_dir='.', graph_options='rankdir="LR", size="7,11.6", ratio="fill"')
-    workflow_name = "#{klass.name.tableize}_workflow".gsub('/', '_')
-    fname = File.join(target_dir, "generated_#{workflow_name}")
-    File.open("#{fname}.dot", 'w') do |file|
-      file.puts %Q|
-digraph #{workflow_name} {
-  graph [#{graph_options}];
-  node [shape=box];
-  edge [len=1];
-      |
+  #
+  # ====================================
+  # I18n file structure based on state names and event names per workflow
+  # "pt-BR":
+  #    workflow:
+  #      workflow_name:
+  #        states:
+  #          state_1: Begin
+  #          state_2: Review Information
+  #          state_3: End
+  #      events:
+  #        state_1:
+  #          event_1: assign
+  #        state_2:
+  #          event_1: revised
+  # ====================================
+    def self.create_workflow_diagram(klass, target_dir='.', graph_options='rankdir="LR", size="5,3", ratio="fill"')
+      workflow_name = "#{klass.name.tableize}_workflow".gsub('/', '_')
+      fname = File.join(target_dir, "generated_#{workflow_name}")
+      File.open("#{fname}.dot", 'w') do |file|
+        file.puts %Q|
+                        digraph #{workflow_name} {
+                          graph [#{graph_options}];
+                          node [shape=box];
+                          edge [len=1];
+        |
+        
+        klass.workflow_spec.states.each do |state_name, state|
+          file.puts %Q{#{state.name} [label="#{I18n.t("workflow.#{klass.name.downcase}.states.#{state_name}")}"];}
 
-      klass.workflow_spec.states.each do |state_name, state|
-        file.puts %Q{  #{state.name} [label="#{state.name}"];}
-        state.events.each do |event_name, event|
-          meta_info = event.meta
-          if meta_info[:doc_weight]
-            weight_prop = ", weight=#{meta_info[:doc_weight]}"
-          else
-            weight_prop = ''
+          state.events.each do |event_name, event|
+            meta_info = event.meta
+            if meta_info[:doc_weight]
+              weight_prop = ", weight=#{meta_info[:doc_weight]}"
+            else
+              weight_prop = ''
+            end
+            file.puts %Q{  #{state.name} -> #{event.transitions_to} [label="#{I18n.t("workflow.#{klass.name.downcase}.events.#{state_name}.#{event_name}")}" #{weight_prop}];}
           end
-          file.puts %Q{  #{state.name} -> #{event.transitions_to} [label="#{event_name.to_s.humanize}" #{weight_prop}];}
         end
+        file.puts "}"
+        file.puts
       end
-      file.puts "}"
-      file.puts
+      `dot -Tpdf -o'#{fname}.pdf' '#{fname}.dot'`
+      puts "Please run the following to open the generated file: open '#{fname}.pdf'"
     end
-    `dot -Tpdf -o'#{fname}.pdf' '#{fname}.dot'`
-    puts "
-Please run the following to open the generated file:
-
-open '#{fname}.pdf'
-
-"
-  end
 end
