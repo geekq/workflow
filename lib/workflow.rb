@@ -174,7 +174,7 @@ module Workflow
       from = current_state
       to = spec.states[event.transitions_to]
 
-      run_before_transition(current_state, spec.states[event.transitions_to], name, *args)
+      run_before_transition(from, to, name, *args)
       return false if @halted
 
       return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
