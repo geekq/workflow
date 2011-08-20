@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
     "test/readme_example.rb",
     "test/test_helper.rb",
     "test/without_active_record_test.rb",
+    "workflow.gemspec",
     "workflow.rb"
   ]
   s.homepage = %q{http://www.geekq.net/workflow/}
