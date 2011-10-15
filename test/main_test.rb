@@ -253,22 +253,17 @@ class MainTest < ActiveRecordTestCase
 
   test 'multiple events with the same name and different arguments lists from different states'
 
-  test 'implicit transition callback' do
+  test 'implicit transition callback with a public method' do
     args = mock()
     args.expects(:my_tran).once # this is validated at the end
-    c = Class.new
-    c.class_eval do
-      include Workflow
-      def my_transition(args)
-        args.my_tran
-      end
-      workflow do
-        state :one do
-          event :my_transition, :transitions_to => :two
-        end
-        state :two
-      end
-    end
+    c = transition_callback_class_with_public_method
+    c.new.my_transition!(args)
+  end
+
+  test 'implicit transition callback with a private method' do
+    args = mock()
+    args.expects(:my_tran).once # this is validated at the end
+    c = transition_callback_class_with_private_method
     c.new.my_transition!(args)
   end
 
@@ -343,29 +338,19 @@ class MainTest < ActiveRecordTestCase
   #
   # If both a function with a name according to naming convention and the
   # on_entry/on_exit block are given, then only on_entry/on_exit block is used.
-  test 'on_entry and on_exit hooks in separate methods' do
-    c = Class.new
-    c.class_eval do
-      include Workflow
-      attr_reader :history
-      def initialize
-        @history = []
-      end
-      workflow do
-        state :new do
-          event :next, :transitions_to => :next_state
-        end
-        state :next_state
-      end
+  test 'on_entry and on_exit hooks in separate public methods' do
+    c = on_entry_and_on_exit_hooks_class_with_public_methods
 
-      def on_next_state_entry(prior_state, event, *args)
-        @history << "on_next_state_entry #{event} #{prior_state} ->"
-      end
+    o = c.new
+    assert_equal 'new', o.current_state.to_s
+    assert_equal [], o.history
+    o.next!
+    assert_equal ['on_new_exit next -> next_state', 'on_next_state_entry next new ->'], o.history
 
-      def on_new_exit(new_state, event, *args)
-        @history << "on_new_exit #{event} -> #{new_state}"
-      end
-    end
+  end
+
+  test 'on_entry and on_exit hooks in separate private methods' do
+    c = on_entry_and_on_exit_hooks_class_with_private_methods
 
     o = c.new
     assert_equal 'new', o.current_state.to_s
@@ -477,6 +462,64 @@ class MainTest < ActiveRecordTestCase
     yield
     $stdout = old_stdout
     captured_stdout
+  end
+
+  def transition_callback_class_with_public_method
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      def my_transition(args)
+        args.my_tran
+      end
+      workflow do
+        state :one do
+          event :my_transition, :transitions_to => :two
+        end
+        state :two
+      end
+    end
+    c
+  end
+
+  def transition_callback_class_with_private_method
+    c = transition_callback_class_with_public_method
+    c.class_eval { private :my_transition }
+    c
+  end
+
+  def on_entry_and_on_exit_hooks_class_with_public_methods
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      attr_reader :history
+      def initialize
+        @history = []
+      end
+      workflow do
+        state :new do
+          event :next, :transitions_to => :next_state
+        end
+        state :next_state
+      end
+
+      def on_next_state_entry(prior_state, event, *args)
+        @history << "on_next_state_entry #{event} #{prior_state} ->"
+      end
+
+      def on_new_exit(new_state, event, *args)
+        @history << "on_new_exit #{event} -> #{new_state}"
+      end
+    end
+    c
+  end
+
+  def on_entry_and_on_exit_hooks_class_with_private_methods
+    c = on_entry_and_on_exit_hooks_class_with_public_methods
+    c.class_eval do
+      private :on_next_state_entry
+      private :on_new_exit
+    end
+    c
   end
 
 end
