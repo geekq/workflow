@@ -5,3 +5,4 @@ doc/
 html/
 *.swp
 .yardoc
+Gemfile.lock
