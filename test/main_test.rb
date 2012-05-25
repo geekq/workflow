@@ -244,6 +244,12 @@ class MainTest < ActiveRecordTestCase
     assert !o.shipped?
   end
 
+  test 'compare states' do
+    o = assert_state 'some order', 'accepted'
+    assert o.current_state < :shipped
+    assert o.current_state > :submitted
+  end
+
   test 'correct exception for event, that is not allowed in current state' do
     o = assert_state 'some order', 'accepted'
     assert_raise Workflow::NoTransitionAllowed do

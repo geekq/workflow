@@ -22,7 +22,7 @@ module Workflow
 
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
-      new_state = Workflow::State.new(name, meta[:meta])
+      new_state = Workflow::State.new(name, self, meta[:meta])
       @initial_state = new_state if @states.empty?
       @states[name.to_sym] = new_state
       @scoped_state = new_state
@@ -79,9 +79,25 @@ module Workflow
   class State
 
     attr_accessor :name, :events, :meta, :on_entry, :on_exit
+    attr_reader :spec
 
-    def initialize(name, meta = {})
-      @name, @events, @meta = name, Hash.new, meta
+    def initialize(name, spec, meta = {})
+      @name, @spec, @events, @meta = name, spec, Hash.new, meta
+    end
+
+    unless RUBY_VERSION < '1.9'
+      include Comparable
+  
+      def <=>(other_state)
+        states = spec.states.keys
+        if states.index(self.to_sym) < states.index(other_state.to_sym)
+          -1
+        elsif states.index(self.to_sym) > states.index(other_state.to_sym)
+          1
+        else
+          0
+        end
+      end
     end
 
     def to_s
@@ -143,6 +159,7 @@ module Workflow
   end
 
   module WorkflowInstanceMethods
+
     def current_state
       loaded_state = load_workflow_state
       res = spec.states[loaded_state.to_sym] if loaded_state
