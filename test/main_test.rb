@@ -248,6 +248,9 @@ class MainTest < ActiveRecordTestCase
     o = assert_state 'some order', 'accepted'
     assert o.current_state < :shipped
     assert o.current_state > :submitted
+    assert_raise ArgumentError do
+      o.current_state > :unknown
+    end
   end
 
   test 'correct exception for event, that is not allowed in current state' do

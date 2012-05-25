@@ -90,6 +90,7 @@ module Workflow
   
       def <=>(other_state)
         states = spec.states.keys
+        raise ArgumentError, "state `#{other_state}' does not exist" unless other_state.in? states
         if states.index(self.to_sym) < states.index(other_state.to_sym)
           -1
         elsif states.index(self.to_sym) > states.index(other_state.to_sym)
