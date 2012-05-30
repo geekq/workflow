@@ -67,6 +67,18 @@ of possible events and other meta information:
         @transitions_to=:awaiting_review, @name=:submit, @meta={}>}, 
       name:new, meta{}
 
+On Ruby 1.9 and above, you can check whether a state comes before or
+after another state (by the order they were defined):
+
+    article.current_state
+    => being_reviewed
+    article.current_state < :accepted
+    => true
+    article.current_state >= :accepted
+    => false
+    article.between? :awaiting_review, :rejected
+    => true
+
 Now we can call the submit event, which transitions to the
 <tt>:awaiting_review</tt> state:
 
