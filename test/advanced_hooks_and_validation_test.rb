@@ -51,8 +51,9 @@ class Article < ActiveRecord::Base
           }
         end
 
-        singleton.send :define_method, :validate, &validations
-        halt! "Event[#{triggering_event}]'s transitions_to[#{to}] is not valid." if self.invalid?
+        singleton.send :define_method, :validate_for_transition, &validations
+        validate_for_transition
+        halt! "Event[#{triggering_event}]'s transitions_to[#{to}] is not valid." unless self.errors.empty?
       end
     end
   end
