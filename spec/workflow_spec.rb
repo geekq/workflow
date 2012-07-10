@@ -36,6 +36,10 @@ describe Article do
     it { should have_event(:review) }
     it { should_not have_event(:impossible_event) }
     it { should have_event(:inevitable_event)}
+    it {should have_events([:inevitable_event])} 
+    it {should_not have_only_events([:inevitable_event])} 
+    it {should have_only_events([:inevitable_event, :review])}
+    it {should_not have_only_events([:inevitable_event, :review, :impossible_event])}
 
     it "should not transition to impossible state" do
       @article.impossible_event!

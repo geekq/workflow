@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'set'
 # See also README.markdown for documentation
 module Workflow
 
@@ -265,7 +266,23 @@ module Workflow
     def has_event?(event_name)
       can_do_event?(event_name)[0]
     end
+
+    # Public: for use as an RSpec matcher
+    #
+    # es -> an Array of events
+    # returns true if the object returns true for has_event? on each of the events
+    def has_events?(es)
+      !(es.map{|e| has_event?(e)}.include?(false))
+    end
     
+    # Public: for use as an RSpec matcher
+    #
+    # events -> an Array of events
+    # returns true only if these are the only events possible in this state. i.e. if we leave out an event, it will return false
+    def has_only_events?(es)
+      Set.new(current_state.events.keys.select{|e| has_event?(e)}) == Set.new(es)
+    end
+
     private
 
 
