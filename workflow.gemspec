@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.version = "0.8.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Vladimir Dobriakov"]
+  s.authors = ["Vladimir Dobriakov", "svs"]
   s.date = %q{2011-08-20}
   s.description = %q{    Workflow is a finite-state-machine-inspired API for modeling and interacting
     with what we tend to refer to as 'workflow'.
@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
     * convenient access to the workflow specification: list states, possible events
       for particular state
 }
-  s.email = %q{vladimir@geekq.net}
+  s.email = %q{vladimir@geekq.net svs@svs.io}
   s.extra_rdoc_files = [
     "README.markdown"
   ]
@@ -37,6 +37,8 @@ Gem::Specification.new do |s|
     "test/readme_example.rb",
     "test/test_helper.rb",
     "test/without_active_record_test.rb",
+    "spec/spec_helper.rb",
+    "spec/workflow_spec.rb",         
     "workflow.gemspec",
     "workflow.rb"
   ]

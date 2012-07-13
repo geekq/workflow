@@ -1,5 +1,5 @@
 require 'rubygems'
-
+require 'set'
 # See also README.markdown for documentation
 module Workflow
 
@@ -31,11 +31,12 @@ module Workflow
 
     def event(name, args = {}, &action)
       target = args[:transitions_to] || args[:transition_to]
+      condition = args[:if]
       raise WorkflowDefinitionError.new(
         "missing ':transitions_to' in workflow event definition for '#{name}'") \
         if target.nil?
       @scoped_state.events[name.to_sym] =
-        Workflow::Event.new(name, target, (args[:meta] or {}), &action)
+        Workflow::Event.new(name, target, condition, (args[:meta] or {}), &action)
     end
 
     def on_entry(&proc)
@@ -112,10 +113,11 @@ module Workflow
 
   class Event
 
-    attr_accessor :name, :transitions_to, :meta, :action
+    attr_accessor :name, :transitions_to, :meta, :action, :condition
 
-    def initialize(name, transitions_to, meta = {}, &action)
+    def initialize(name, transitions_to, condition, meta = {}, &action)
       @name, @transitions_to, @meta, @action = name, transitions_to.to_sym, meta, action
+      @condition = condition
     end
 
   end
@@ -151,7 +153,7 @@ module Workflow
             end
 
             define_method "can_#{event_name}?" do
-              return self.current_state.events.include?(event_name)
+              return self.has_event?(event_name)
             end
           end
         end
@@ -186,7 +188,9 @@ module Workflow
         if event.nil?
       @halted_because = nil
       @halted = false
-
+      @halted, @halted_because = halt_event?(name)
+      return false if @halted
+          
       check_transition(event)
 
       from = current_state
@@ -237,7 +241,50 @@ module Workflow
       c.workflow_spec
     end
 
+
+    # checks whether the current state can move to the given event
+    # calls the proc in event.condition to ascertain this.
+    # returns an Array with [Boolean, String]
+    def can_do_event?(event_name)
+      msg = "event not allowed"
+      p = false
+      event = current_state.events[event_name]
+      return [p, msg] unless event
+      predicate = event.condition
+      return [true, ""] unless predicate # no if condition given
+      p, _msg = [predicate].flatten
+      [p.call(self), _msg || msg]
+    end
+
+    # returns the opposite boolean value as can_do_event?
+    def halt_event?(event_name)
+      rv = can_do_event?(event_name)
+      [!rv[0],rv[1]]
+    end
+
+    # returns only the Boolean value of can_do_event?
+    def has_event?(event_name)
+      can_do_event?(event_name)[0]
+    end
+
+    # Public: for use as an RSpec matcher
+    #
+    # es -> an Array of events
+    # returns true if the object returns true for has_event? on each of the events
+    def has_events?(es)
+      !(es.map{|e| has_event?(e)}.include?(false))
+    end
+    
+    # Public: for use as an RSpec matcher
+    #
+    # events -> an Array of events
+    # returns true only if these are the only events possible in this state. i.e. if we leave out an event, it will return false
+    def has_only_events?(es)
+      Set.new(current_state.events.keys.select{|e| has_event?(e)}) == Set.new(es)
+    end
+
     private
+
 
     def check_transition(event)
       # Create a meaningful error message instead of
