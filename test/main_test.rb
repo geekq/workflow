@@ -267,7 +267,6 @@ class MainTest < ActiveRecordTestCase
   test 'implicit transition callback' do
     args = mock()
     args.expects(:my_tran).once # this is validated at the end
-    args.expects(:another_tran).once
     c = Class.new
     c.class_eval do
       include Workflow
@@ -278,10 +277,7 @@ class MainTest < ActiveRecordTestCase
         state :one do
           event :my_transition, :transitions_to => :two
         end
-        state :two do
-          event :another_transition, :transitions_to => :three
-        end
-        state :three
+        state :two
       end
       
       private
@@ -291,7 +287,28 @@ class MainTest < ActiveRecordTestCase
     end
     a = c.new
     a.my_transition!(args)
-    a.another_transition!(args)
+  end
+  
+  test 'private transition callback' do
+    args = mock()
+    args.expects(:log).once
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow do
+        state :new do
+          event :assign, :transitions_to => :assigned
+        end
+        state :assigned
+      end
+      
+      private
+      def assign(args)
+        args.log('Assigned')
+      end
+    end
+    a = c.new
+    a.assign!(args)
   end
 
   test 'Single table inheritance (STI)' do
