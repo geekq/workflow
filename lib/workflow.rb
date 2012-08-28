@@ -266,9 +266,14 @@ module Workflow
     def run_action(action, *args)
       instance_exec(*args, &action) if action
     end
+    
+    def has_callback?(action)
+      self.respond_to?(action) or self.class.private_method_defined?(action)
+    end
 
     def run_action_callback(action_name, *args)
-      self.send action_name.to_sym, *args if self.respond_to?(action_name.to_sym)
+      action = action_name.to_sym
+      self.send(action, *args) if has_callback?(action)
     end
 
     def run_on_entry(state, prior_state, triggering_event, *args)
