@@ -320,7 +320,7 @@ module Workflow
     # On transition the new workflow state is immediately saved in the
     # database.
     def persist_workflow_state(new_value)
-      update_attribute self.class.workflow_column, new_value
+      update_attributes self.class.workflow_column => new_value
     end
 
     private
