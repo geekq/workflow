@@ -342,6 +342,26 @@ example][advanced_hooks_and_validation_test].
 
 [advanced_hooks_and_validation_test]: http://github.com/geekq/workflow/blob/master/test/advanced_hooks_and_validation_test.rb
 
+### on_error
+
+If you want to do custom exception handling internal to workflow, you can define an `on_error` hook in your workflow.  
+For example:
+
+    workflow do
+      state :first do
+        event :forward, :transitions_to => :second
+      end
+      state :second
+
+      on_error do |error, from, to, event, *args|
+        Log.info "Exception(#error.class) on #{from} -> #{to}" 
+      end
+    end
+
+If forward! results in an exception, `on_error` is invoked and the workflow stays in a 'first' state.  This capability 
+is particularly useful if your errors are transient and you want to queue up a job to retry in the future without 
+affecting the existing workflow state.
+
 ### Guards
 
 If you want to halt the transition conditionally, you can just raise an
