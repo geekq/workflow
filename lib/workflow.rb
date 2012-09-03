@@ -6,7 +6,7 @@ module Workflow
   class Specification
 
     attr_accessor :states, :initial_state, :meta,
-      :on_transition_proc, :before_transition_proc, :after_transition_proc
+      :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
 
     def initialize(meta = {}, &specification)
       @states = Hash.new
@@ -56,6 +56,10 @@ module Workflow
 
     def on_transition(&proc)
       @on_transition_proc = proc
+    end
+
+    def on_error(&proc)
+      @on_error_proc = proc
     end
   end
 
@@ -195,7 +199,12 @@ module Workflow
       run_before_transition(from, to, name, *args)
       return false if @halted
 
-      return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
+      begin
+        return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
+      rescue Exception => e
+        run_on_error(e, from, to, name, *args)
+      end
+
       return false if @halted
 
       run_on_transition(from, to, name, *args)
@@ -252,6 +261,15 @@ module Workflow
     def run_before_transition(from, to, event, *args)
       instance_exec(from.name, to.name, event, *args, &spec.before_transition_proc) if
         spec.before_transition_proc
+    end
+
+    def run_on_error(error, from, to, event, *args)
+      if spec.on_error_proc
+        instance_exec(error, from.name, to.name, event, *args, &spec.on_error_proc)
+        halt(error.message)
+      else
+        raise error
+      end
     end
 
     def run_on_transition(from, to, event, *args)
