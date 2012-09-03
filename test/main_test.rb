@@ -279,8 +279,36 @@ class MainTest < ActiveRecordTestCase
         end
         state :two
       end
+
+      private
+      def another_transition(args)
+        args.another_tran
+      end
     end
-    c.new.my_transition!(args)
+    a = c.new
+    a.my_transition!(args)
+  end
+
+  test '#53 Support for private transition callbacks' do
+    args = mock()
+    args.expects(:log).once
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow do
+        state :new do
+          event :assign, :transitions_to => :assigned
+        end
+        state :assigned
+      end
+
+      private
+      def assign(args)
+        args.log('Assigned')
+      end
+    end
+    a = c.new
+    a.assign!(args)
   end
 
   test 'Single table inheritance (STI)' do
