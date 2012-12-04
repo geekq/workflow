@@ -46,5 +46,5 @@ Jeweler::Tasks.new do |gemspec|
       for particular state
   EOS
 
-  Jeweler::GemcutterTasks.new
+  Jeweler::RubygemsDotOrgTasks.new
 end
