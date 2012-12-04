@@ -4,26 +4,19 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{workflow}
-  s.version = "0.8.1"
+  s.name = "workflow"
+  s.version = "0.8.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Vladimir Dobriakov"]
-  s.date = %q{2011-08-20}
-  s.description = %q{    Workflow is a finite-state-machine-inspired API for modeling and interacting
-    with what we tend to refer to as 'workflow'.
-
-    * nice DSL to describe your states, events and transitions
-    * robust integration with ActiveRecord and non relational data stores
-    * various hooks for single transitions, entering state etc.
-    * convenient access to the workflow specification: list states, possible events
-      for particular state
-}
-  s.email = %q{vladimir@geekq.net}
+  s.date = "2012-12-04"
+  s.description = "    Workflow is a finite-state-machine-inspired API for modeling and interacting\n    with what we tend to refer to as 'workflow'.\n\n    * nice DSL to describe your states, events and transitions\n    * robust integration with ActiveRecord and non relational data stores\n    * various hooks for single transitions, entering state etc.\n    * convenient access to the workflow specification: list states, possible events\n      for particular state\n"
+  s.email = "vladimir@geekq.net"
   s.extra_rdoc_files = [
     "README.markdown"
   ]
   s.files = [
+    "Gemfile",
     "MIT-LICENSE",
     "README.markdown",
     "Rakefile",
@@ -34,31 +27,50 @@ Gem::Specification.new do |s|
     "test/couchtiny_example.rb",
     "test/main_test.rb",
     "test/multiple_workflows_test.rb",
+    "test/on_error_test.rb",
     "test/readme_example.rb",
     "test/test_helper.rb",
     "test/without_active_record_test.rb",
     "workflow.gemspec",
     "workflow.rb"
   ]
-  s.homepage = %q{http://www.geekq.net/workflow/}
+  s.homepage = "http://www.geekq.net/workflow/"
   s.require_paths = ["lib"]
-  s.rubyforge_project = %q{workflow}
-  s.rubygems_version = %q{1.3.6}
-  s.summary = %q{A replacement for acts_as_state_machine.}
+  s.rubyforge_project = "workflow"
+  s.rubygems_version = "1.8.24"
+  s.summary = "A replacement for acts_as_state_machine."
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<workflow>, [">= 0"])
+      s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
+      s.add_development_dependency(%q<bundler>, [">= 1.0.0"])
+      s.add_development_dependency(%q<jeweler>, ["~> 1.8.4"])
+      s.add_development_dependency(%q<rake>, [">= 0"])
+      s.add_development_dependency(%q<mocha>, [">= 0"])
+      s.add_development_dependency(%q<activerecord>, [">= 0"])
+      s.add_development_dependency(%q<sqlite3>, [">= 0"])
     else
+      s.add_dependency(%q<workflow>, [">= 0"])
+      s.add_dependency(%q<rdoc>, ["~> 3.12"])
+      s.add_dependency(%q<bundler>, [">= 1.0.0"])
+      s.add_dependency(%q<jeweler>, ["~> 1.8.4"])
+      s.add_dependency(%q<rake>, [">= 0"])
+      s.add_dependency(%q<mocha>, [">= 0"])
+      s.add_dependency(%q<activerecord>, [">= 0"])
+      s.add_dependency(%q<sqlite3>, [">= 0"])
     end
   else
+    s.add_dependency(%q<workflow>, [">= 0"])
+    s.add_dependency(%q<rdoc>, ["~> 3.12"])
+    s.add_dependency(%q<bundler>, [">= 1.0.0"])
+    s.add_dependency(%q<jeweler>, ["~> 1.8.4"])
+    s.add_dependency(%q<rake>, [">= 0"])
+    s.add_dependency(%q<mocha>, [">= 0"])
+    s.add_dependency(%q<activerecord>, [">= 0"])
+    s.add_dependency(%q<sqlite3>, [">= 0"])
   end
-
-  s.add_development_dependency "rake"
-  s.add_development_dependency "mocha"
-  s.add_development_dependency "activerecord"
-  s.add_development_dependency "sqlite3"
-
 end
+
