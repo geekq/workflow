@@ -6,3 +6,8 @@ group :development do
   gem "jeweler", "~> 1.8.4"
 end
 
+group :test do
+  gem 'activerecord', :require => "active_record"
+  gem "sqlite3"
+  gem "mocha"
+end
