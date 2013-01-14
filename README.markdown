@@ -501,6 +501,10 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
+### New in the version 0.8.7
+
+* switch from [jeweler][] to pure bundler for building gems
+
 ### New in the version 0.8.0
 
 * check if a certain transition possible from the current state with

@@ -1,6 +1,5 @@
 require 'rubygems'
-require 'bundler'
-require 'rubygems/package_task'
+require "bundler/gem_tasks"
 require 'rake/testtask'
 require 'rdoc/task'
 
@@ -26,25 +25,3 @@ Rake::RDocTask.new do |rdoc|
   rdoc.options << "-S"
 end
 
-require 'jeweler'
-
-Jeweler::Tasks.new do |gemspec|
-  gemspec.name = "workflow"
-  gemspec.rubyforge_project = 'workflow'
-  gemspec.email = "vladimir@geekq.net"
-  gemspec.homepage = "http://www.geekq.net/workflow/"
-  gemspec.authors = ["Vladimir Dobriakov"]
-  gemspec.summary = "A replacement for acts_as_state_machine."
-  gemspec.description = <<-EOS
-    Workflow is a finite-state-machine-inspired API for modeling and interacting
-    with what we tend to refer to as 'workflow'.
-
-    * nice DSL to describe your states, events and transitions
-    * robust integration with ActiveRecord and non relational data stores
-    * various hooks for single transitions, entering state etc.
-    * convenient access to the workflow specification: list states, possible events
-      for particular state
-  EOS
-
-  Jeweler::RubygemsDotOrgTasks.new
-end
