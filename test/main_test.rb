@@ -311,6 +311,22 @@ class MainTest < ActiveRecordTestCase
     a.assign!(args)
   end
 
+  test '#58 Limited private transition callback lookup' do
+    args = mock()
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow do
+        state :new do
+          event :fail, :transitions_to => :failed
+        end
+        state :failed
+      end
+    end
+    a = c.new
+    a.fail!(args)
+  end
+
   test 'Single table inheritance (STI)' do
     class BigOrder < Order
     end
