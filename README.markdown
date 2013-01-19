@@ -501,6 +501,19 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
+### New in the version 0.9.0
+
+* **Use protected callback methods.**
+  If you wish to use non-public callback methods, you now have to switch
+  from private to protected methods. See also issues
+  [#53](https://github.com/geekq/workflow/pull/53)
+  and [#58](https://github.com/geekq/workflow/pull/58). With the new
+  implementation:
+
+  * callback methods can be hidden (non public)
+  * no unintentional calls on `fail!` and other Kernel methods
+  * inheritance hierarchy with workflow is supported
+
 ### New in the version 0.8.7
 
 * switch from [jeweler][] to pure bundler for building gems

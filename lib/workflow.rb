@@ -286,7 +286,7 @@ module Workflow
     end
     
     def has_callback?(action)
-      self.respond_to?(action) or self.private_methods(false).map(&:to_sym).include?(action)
+      self.respond_to?(action) or self.class.protected_method_defined?(action)
     end
 
     def run_action_callback(action_name, *args)

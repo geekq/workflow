@@ -289,7 +289,7 @@ class MainTest < ActiveRecordTestCase
     a.my_transition!(args)
   end
 
-  test '#53 Support for private transition callbacks' do
+  test '#53 Support for non public transition callbacks' do
     args = mock()
     args.expects(:log).once
     c = Class.new
@@ -302,7 +302,7 @@ class MainTest < ActiveRecordTestCase
         state :assigned
       end
 
-      private
+      protected
       def assign(args)
         args.log('Assigned')
       end
