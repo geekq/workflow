@@ -503,14 +503,14 @@ Changelog
 
 ### New in the version 0.9.0
 
-* **Use protected callback methods.**
-  If you wish to use non-public callback methods, you now have to switch
-  from private to protected methods. See also issues
-  [#53](https://github.com/geekq/workflow/pull/53)
+* **Support to priavate/protected callback methods.**
+  See also issues [#53](https://github.com/geekq/workflow/pull/53)
   and [#58](https://github.com/geekq/workflow/pull/58). With the new
   implementation:
 
-  * callback methods can be hidden (non public)
+  * callback methods can be hidden (non public): both private methods
+    in the immediate class and protected methods somewhere in the class
+    hierarchy are supported
   * no unintentional calls on `fail!` and other Kernel methods
   * inheritance hierarchy with workflow is supported
 

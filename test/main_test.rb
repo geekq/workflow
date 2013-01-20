@@ -291,24 +291,40 @@ class MainTest < ActiveRecordTestCase
 
   test '#53 Support for non public transition callbacks' do
     args = mock()
-    args.expects(:log).once
-    c = Class.new
+    args.expects(:log).with('in private callback').once
+    args.expects(:log).with('in protected callback in the base class').once
+
+    b = Class.new # the base class with a protected callback
+    b.class_eval do
+      protected
+      def assign_old(args)
+        args.log('in protected callback in the base class')
+      end
+    end
+
+    c = Class.new(b) # inheriting class with an additional protected callback
     c.class_eval do
       include Workflow
       workflow do
         state :new do
           event :assign, :transitions_to => :assigned
+          event :assign_old, :transitions_to => :assigned_old
         end
         state :assigned
+        state :assigned_old
       end
 
-      protected
+      private
       def assign(args)
-        args.log('Assigned')
+        args.log('in private callback')
       end
     end
+
     a = c.new
     a.assign!(args)
+
+    a2 = c.new
+    a2.assign_old!(args)
   end
 
   test '#58 Limited private transition callback lookup' do

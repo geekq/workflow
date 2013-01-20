@@ -284,9 +284,14 @@ module Workflow
     def run_action(action, *args)
       instance_exec(*args, &action) if action
     end
-    
+
     def has_callback?(action)
-      self.respond_to?(action) or self.class.protected_method_defined?(action)
+      # 1. public callback method or
+      # 2. protected method somewhere in the class hierarchy or
+      # 3. private in the immediate class (parent classes ignored)
+      self.respond_to?(action) or
+        self.class.protected_method_defined?(action) or
+        self.private_methods(false).map(&:to_sym).include?(action)
     end
 
     def run_action_callback(action_name, *args)
