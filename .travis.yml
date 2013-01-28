@@ -1,6 +1,9 @@
 before_install:
   - sudo apt-get install -qq graphviz
-rvm:
-#  - 1.8.7 TODO run with a different set of tests: rake test_without_new_versions
-  - 1.9.3
 
+matrix:
+  include:
+    - rvm: 1.8.7
+      gemfile: gemfiles/Gemfile.rails-2.3.x
+      script: rake test_without_new_versions
+    - rvm: 1.9.3
