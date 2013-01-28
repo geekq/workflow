@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
+require 'test_helper'
 
 $VERBOSE = false
 require 'active_record'
@@ -10,7 +10,7 @@ require 'stringio'
 
 ActiveRecord::Migration.verbose = false
 
-class ProtectedOrder < ActiveRecord::Base
+class AttrProtectedTestOrder < ActiveRecord::Base
   include Workflow
 
   workflow do
@@ -28,8 +28,8 @@ class ProtectedOrder < ActiveRecord::Base
 
 end
 
-ProtectedOrder.logger = Logger.new(STDOUT) # active_record 2.3 expects a logger instance
-ProtectedOrder.logger.level = Logger::WARN # switch to Logger::DEBUG to see the SQL statements
+AttrProtectedTestOrder.logger = Logger.new(STDOUT) # active_record 2.3 expects a logger instance
+AttrProtectedTestOrder.logger.level = Logger::WARN # switch to Logger::DEBUG to see the SQL statements
 
 class AttrProtectedTest < ActiveRecordTestCase
 
@@ -37,28 +37,28 @@ class AttrProtectedTest < ActiveRecordTestCase
     super
 
     ActiveRecord::Schema.define do
-      create_table :protected_orders do |t|
+      create_table :attr_protected_test_orders do |t|
         t.string :title, :null => false
         t.string :workflow_state
       end
     end
 
-    exec "INSERT INTO protected_orders(title, workflow_state) VALUES('order1', 'submitted')"
-    exec "INSERT INTO protected_orders(title, workflow_state) VALUES('order2', 'accepted')"
-    exec "INSERT INTO protected_orders(title, workflow_state) VALUES('order3', 'accepted')"
-    exec "INSERT INTO protected_orders(title, workflow_state) VALUES('order4', 'accepted')"
-    exec "INSERT INTO protected_orders(title, workflow_state) VALUES('order5', 'accepted')"
-    exec "INSERT INTO protected_orders(title, workflow_state) VALUES('protected order', 'submitted')"
+    exec "INSERT INTO attr_protected_test_orders(title, workflow_state) VALUES('order1', 'submitted')"
+    exec "INSERT INTO attr_protected_test_orders(title, workflow_state) VALUES('order2', 'accepted')"
+    exec "INSERT INTO attr_protected_test_orders(title, workflow_state) VALUES('order3', 'accepted')"
+    exec "INSERT INTO attr_protected_test_orders(title, workflow_state) VALUES('order4', 'accepted')"
+    exec "INSERT INTO attr_protected_test_orders(title, workflow_state) VALUES('order5', 'accepted')"
+    exec "INSERT INTO attr_protected_test_orders(title, workflow_state) VALUES('protected order', 'submitted')"
   end
 
-  def assert_state(title, expected_state, klass = ProtectedOrder)
+  def assert_state(title, expected_state, klass = AttrProtectedTestOrder)
     o = klass.find_by_title(title)
     assert_equal expected_state, o.read_attribute(klass.workflow_column)
     o
   end
 
   test 'cannot mass-assign workflow_state if attr_protected' do
-     o = ProtectedOrder.find_by_title('order1')
+     o = AttrProtectedTestOrder.find_by_title('order1')
      assert_equal 'submitted', o.read_attribute(:workflow_state)
      o.update_attributes :workflow_state => 'some_bad_value'
      assert_equal 'submitted', o.read_attribute(:workflow_state)
@@ -89,9 +89,9 @@ class AttrProtectedTest < ActiveRecordTestCase
   end
 
   test 'access workflow specification' do
-    assert_equal 3, Order.workflow_spec.states.length
+    assert_equal 3, AttrProtectedTestOrder.workflow_spec.states.length
     assert_equal ['submitted', 'accepted', 'shipped'].sort,
-      Order.workflow_spec.state_names.map{|n| n.to_s}.sort
+      AttrProtectedTestOrder.workflow_spec.state_names.map{|n| n.to_s}.sort
   end
 
   test 'current state object' do
