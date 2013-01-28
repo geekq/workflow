@@ -1,5 +1,4 @@
-require File.join(File.dirname(File.dirname(__FILE__)), 'test_helper')
-
+require 'test_helper'
 require 'workflow'
 
 class ComparableStatesOrder
@@ -16,7 +15,7 @@ class ComparableStatesOrder
   end
 end
 
-class CompareStatesTest < ActiveRecordTestCase
+class CompareStatesTest < Test::Unit::TestCase
 
   test 'compare states' do
     o = ComparableStatesOrder.new
