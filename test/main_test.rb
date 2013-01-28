@@ -438,7 +438,7 @@ class MainTest < ActiveRecordTestCase
   test 'diagram generation' do
     begin
       $stdout = StringIO.new('', 'w')
-      Workflow::create_workflow_diagram(Order, 'doc')
+      Workflow::create_workflow_diagram(Order, '/tmp')
       assert_match(/open.+\.pdf/, $stdout.string,
         'PDF should be generate and a hint be given to the user.')
     ensure
@@ -517,14 +517,14 @@ class MainTest < ActiveRecordTestCase
   end
 
   test 'workflow graph generation' do
-    Dir.chdir('tmp') do
+    Dir.chdir('/tmp') do
       capture_streams do
-        Workflow::create_workflow_diagram(Order)
+        Workflow::create_workflow_diagram(Order, '/tmp')
       end
     end
   end
 
-  test 'workflow graph generation in path with spaces' do
+  test 'workflow graph generation in a path with spaces' do
     `mkdir -p '/tmp/Workflow test'`
     capture_streams do
       Workflow::create_workflow_diagram(Order,  '/tmp/Workflow test')
