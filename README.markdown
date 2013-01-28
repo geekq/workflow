@@ -503,7 +503,7 @@ Changelog
 
 ### New in the version 0.9.0
 
-* **Support to priavate/protected callback methods.**
+* **Support to private/protected callback methods.**
   See also issues [#53](https://github.com/geekq/workflow/pull/53)
   and [#58](https://github.com/geekq/workflow/pull/58). With the new
   implementation:
@@ -513,6 +513,11 @@ Changelog
     hierarchy are supported
   * no unintentional calls on `fail!` and other Kernel methods
   * inheritance hierarchy with workflow is supported
+
+* using Rails' 3.1 `update_column` whenever available so only the
+  workflow state column and not other pending attribute changes are
+  saved on state transition. Fallback to `update_attribute` for older
+  Rails. [commit](https://github.com/geekq/workflow/commit/7e091d8ded1aeeb0a86647bbf7d78ab3c9d0c458)
 
 ### New in the version 0.8.7
 
