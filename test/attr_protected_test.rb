@@ -10,13 +10,6 @@ require 'stringio'
 
 ActiveRecord::Migration.verbose = false
 
-module AttrProtected
-  extend ActiveSupport::Concern
-  included do
-    attr_protected :workflow_state
-  end
-end
-
 class ProtectedOrder < ActiveRecord::Base
   include Workflow
 
@@ -30,6 +23,8 @@ class ProtectedOrder < ActiveRecord::Base
     end
     state :shipped
   end
+
+  attr_accessible :title # protecting all the other attributes
 end
 
 class AttrProtectedTest < ActiveRecordTestCase
@@ -46,8 +41,6 @@ class AttrProtectedTest < ActiveRecordTestCase
 
     exec "INSERT INTO protected_orders(title, workflow_state) VALUES('some order', 'accepted')"
     exec "INSERT INTO protected_orders(title, workflow_state) VALUES('protected order', 'submitted')"
-    
-    ProtectedOrder.extend(AttrProtected)
   end
 
   def assert_state(title, expected_state, klass = ProtectedOrder)
