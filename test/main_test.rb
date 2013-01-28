@@ -244,17 +244,6 @@ class MainTest < ActiveRecordTestCase
     assert !o.shipped?
   end
 
-  unless RUBY_VERSION < '1.9'
-    test 'compare states' do
-      o = assert_state 'some order', 'accepted'
-      assert o.current_state < :shipped
-      assert o.current_state > :submitted
-      assert_raise ArgumentError do
-        o.current_state > :unknown
-      end
-    end
-  end
-
   test 'correct exception for event, that is not allowed in current state' do
     o = assert_state 'some order', 'accepted'
     assert_raise Workflow::NoTransitionAllowed do
