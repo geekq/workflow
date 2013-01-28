@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow)
+
 What is workflow?
 -----------------
 
