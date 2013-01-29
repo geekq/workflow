@@ -519,7 +519,7 @@ Changelog
 * using Rails' 3.1 `update_column` whenever available so only the
   workflow state column and not other pending attribute changes are
   saved on state transition. Fallback to `update_attribute` for older
-  Rails. [commit](https://github.com/geekq/workflow/commit/7e091d8ded1aeeb0a86647bbf7d78ab3c9d0c458)
+  Rails and other ORMs. [commit](https://github.com/geekq/workflow/commit/7e091d8ded1aeeb0a86647bbf7d78ab3c9d0c458)
 
 ### New in the version 0.8.7
 
