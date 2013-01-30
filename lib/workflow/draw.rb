@@ -31,16 +31,18 @@ module Workflow
     # @param [String] graph_options You can change graph orientation, size etc. See graphviz documentation
     def self.workflow_diagram(klass, options={})
       options = {
-        name: "#{klass.name.tableize}_workflow".gsub('/', '_'),
-        path: '.',
-        orientation: "landscape",
-        ratio: "fill",
-        format: 'png',
-        font: 'Helvetica'
+        :name => "#{klass.name.tableize}_workflow".gsub('/', '_'),
+        :path => '.',
+        :orientation => "landscape",
+        :ratio => "fill",
+        :format => 'png',
+        :font => 'Helvetica'
       }.merge options
 
       begin
+        require 'rubygems'
         require 'graphviz'
+
         graph = GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB', :ratio => options[:ratio])
 
         # Add nodes
@@ -67,7 +69,7 @@ open '#{filename}'
         graph
       rescue LoadError => e
         $stderr.puts "Could not load the ruby-graphiz gem for rendering: #{e.message}"
-        fales
+        false
       end
     end
   end
