@@ -16,13 +16,13 @@ module Workflow
     #
     # You can influence the placement of nodes by specifying
     # additional meta information in your states and transition descriptions.
-    # You can assign higher `doc_weight` value to the typical transitions
+    # You can assign higher `weight` value to the typical transitions
     # in your workflow. All other states and transitions will be arranged
     # around that main line. See also `weight` in the graphviz documentation.
     # Example:
     #
     #     state :new do
-    #       event :approve, :transitions_to => :approved, :meta => {:doc_weight => 8}
+    #       event :approve, :transitions_to => :approved, :meta => {:weight => 8}
     #     end
     #
     #
@@ -34,7 +34,6 @@ module Workflow
         name: "#{klass.name.tableize}_workflow".gsub('/', '_'),
         path: '.',
         orientation: "landscape",
-        size: [7, 11.6],
         ratio: "fill",
         format: 'png',
         font: 'Helvetica'
@@ -42,7 +41,7 @@ module Workflow
 
       begin
         require 'graphviz'
-        graph = GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB')
+        graph = GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB', :ratio => options[:ratio])
 
         # Add nodes
         klass.workflow_spec.states.each do |_, state|

@@ -14,7 +14,7 @@ class Order < ActiveRecord::Base
   include Workflow
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
+      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
       end
     end
     state :accepted do
@@ -31,7 +31,7 @@ class LegacyOrder < ActiveRecord::Base
 
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
+      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
       end
     end
     state :accepted do

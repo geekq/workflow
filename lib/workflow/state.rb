@@ -8,13 +8,15 @@ module Workflow
       @name, @spec, @events, @meta = name, spec, Hash.new, meta
     end
 
-    def draw(graph, options={})
-      node = graph.add_node(to_s,
+    def draw(graph)
+      defaults = {
         :label => to_s,
         :width => '1',
         :height => '1',
         :shape => 'ellipse'
-      )
+      }
+
+      node = graph.add_nodes(to_s, defaults.merge(meta))
 
       # Add open arrow for initial state
       # graph.add_edge(graph.add_node('starting_state', :shape => 'point'), node) if initial?
