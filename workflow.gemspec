@@ -22,6 +22,7 @@ Gem::Specification.new do |gem|
   ]
 
   gem.add_dependency 'activesupport', [">= 3.2"]
+  gem.add_dependency 'ruby-graphviz'
 
   gem.add_development_dependency 'rdoc',    [">= 3.12"]
   gem.add_development_dependency 'bundler', [">= 1.0.0"]
