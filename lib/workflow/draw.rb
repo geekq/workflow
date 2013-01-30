@@ -10,7 +10,7 @@ module Workflow
     #     namespace :doc do
     #       desc "Generate a graph of the workflow."
     #       task :workflow
-    #         Workflow::Draw::workflow_diagram(Order)
+    #         Workflow::workflow_diagram(Order)
     #       end
     #     end
     #
@@ -29,41 +29,47 @@ module Workflow
     # @param klass A class with the Workflow mixin, for which you wish the graphical workflow representation
     # @param [String] target_dir Directory, where to save the dot and the pdf files
     # @param [String] graph_options You can change graph orientation, size etc. See graphviz documentation
-    def self.workflow_diagram(klass, target_dir='.', graph_options='rankdir="LR", size="7,11.6", ratio="fill"')
-      workflow_name = "#{klass.name.tableize}_workflow".gsub('/', '_')
-      fname = File.join(target_dir, "generated_#{workflow_name}")
-      File.open("#{fname}.dot", 'w') do |file|
-        file.puts %Q|
-        digraph #{workflow_name} {
-        graph [#{graph_options}];
-        node [shape=box];
-        edge [len=1];
-        |
+    def self.workflow_diagram(klass, options={})
+      options = {
+        name: "#{klass.name.tableize}_workflow".gsub('/', '_'),
+        path: '.',
+        orientation: "landscape",
+        size: [7, 11.6],
+        ratio: "fill",
+        format: 'png',
+        font: 'Helvetica'
+      }.merge options
 
-        klass.workflow_spec.states.each do |state_name, state|
-          file.puts %Q{  #{state.name} [label="#{state.name}"];}
-          state.events.each do |event_name, event|
-            meta_info = event.meta
-            if meta_info[:doc_weight]
-              weight_prop = ", weight=#{meta_info[:doc_weight]}"
-            else
-              weight_prop = ''
-            end
-            file.puts %Q{  #{state.name} -> #{event.transitions_to} [label="#{event_name.to_s.humanize}" #{weight_prop}];}
+      begin
+        require 'graphviz'
+        graph = GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB')
+
+        # Add nodes
+        klass.workflow_spec.states.each do |_, state|
+          node = state.draw(graph)
+          node.fontname = options[:font]
+
+          state.events.each do |_, event|
+            edge = event.draw(graph, state)
+            edge.fontname = options[:font]
           end
         end
-        file.puts "}"
-        file.puts
-      end
 
-      `dot -Tpdf -o'#{fname}.pdf' '#{fname}.dot'`
+        # Generate the graph
+        filename = File.join(options[:path], "#{options[:name]}.#{options[:format]}")
 
-      puts "
+        graph.output options[:format] => "'#{filename}'"
+
+    puts "
 Please run the following to open the generated file:
 
-open '#{fname}.pdf'
-
+open '#{filename}'
 "
+        graph
+      rescue LoadError => e
+        $stderr.puts "Could not load the ruby-graphiz gem for rendering: #{e.message}"
+        fales
+      end
     end
   end
 end
