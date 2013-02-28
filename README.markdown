@@ -503,7 +503,7 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
-### New in the version 0.9.0
+### New in the version 1.0.0
 
 * **Support to private/protected callback methods.**
   See also issues [#53](https://github.com/geekq/workflow/pull/53)
