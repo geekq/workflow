@@ -5,7 +5,7 @@ class ComparableStatesOrder
   include Workflow
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
+      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
       end
     end
     state :accepted do
@@ -21,8 +21,10 @@ class CompareStatesTest < Test::Unit::TestCase
     o = ComparableStatesOrder.new
     o.accept!
     assert_equal :accepted, o.current_state.name
+    assert o.current_state == :accepted
     assert o.current_state < :shipped
     assert o.current_state > :submitted
+    assert o.current_state.between? :submitted, :shipped
     assert_raise ArgumentError do
       o.current_state > :unknown
     end
