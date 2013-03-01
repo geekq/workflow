@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'active_support/inflector'
 
 # See also README.markdown for documentation
 module Workflow
@@ -91,7 +92,7 @@ module Workflow
 
     unless RUBY_VERSION < '1.9'
       include Comparable
-  
+
       def <=>(other_state)
         states = spec.states.keys
         raise ArgumentError, "state `#{other_state}' does not exist" unless other_state.in? states
