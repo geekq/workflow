@@ -24,7 +24,6 @@ class CompareStatesTest < Test::Unit::TestCase
     assert o.current_state == :accepted
     assert o.current_state < :shipped
     assert o.current_state > :submitted
-    assert o.current_state.between? :submitted, :shipped
     assert_raise ArgumentError do
       o.current_state > :unknown
     end
