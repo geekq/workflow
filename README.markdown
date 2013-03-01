@@ -63,10 +63,10 @@ Let's create an article instance and check in which state it is:
 You can also access the whole `current_state` object including the list
 of possible events and other meta information:
 
-    article.current_state 
+    article.current_state
     => #<Workflow::State:0x7f1e3d6731f0 @events={
-      :submit=>#<Workflow::Event:0x7f1e3d6730d8 @action=nil, 
-        @transitions_to=:awaiting_review, @name=:submit, @meta={}>}, 
+      :submit=>#<Workflow::Event:0x7f1e3d6730d8 @action=nil,
+        @transitions_to=:awaiting_review, @name=:submit, @meta={}>},
       name:new, meta{}
 
 On Ruby 1.9 and above, you can check whether a state comes before or
@@ -86,7 +86,7 @@ Now we can call the submit event, which transitions to the
 
     article.submit!
     article.awaiting_review? # => true
-  
+
 Events are actually instance methods on a workflow, and depending on the
 state you're in, you'll have a different set of events used to
 transition to other states.
@@ -101,18 +101,17 @@ Installation
 
     gem install workflow
 
-Alternatively you can just download the lib/workflow.rb and put it in
-the lib folder of your Rails or Ruby application.
-
+**Important**: If you're interested in graphing your workflow state machine, you will also need to
+install the `active_support` and `ruby-graphviz` gems.
 
 Ruby 1.9
 --------
 
 Workflow gem does not work with some (but very widespread) Ruby 1.9
-builds due to a known bug in Ruby 1.9. Either 
+builds due to a known bug in Ruby 1.9. Either
 
 * use newer ruby build, 1.9.2-p136 and -p180 tested to work
-* or compile your Ruby 1.9 from source 
+* or compile your Ruby 1.9 from source
 * or [comment out some lines in workflow](http://github.com/geekq/workflow/issues#issue/6)
 (reduces functionality).
 
@@ -175,7 +174,7 @@ invoked for particular transitions leads to a bumpy and poorly readable code
 due to a deep nesting. We tried (and dismissed) lambdas for this. Eventually
 we decided to invoke an optional user defined callback method with the same
 name as the event (convention over configuration) as explained before.
-      
+
 
 Integration with ActiveRecord
 -----------------------------
@@ -212,7 +211,7 @@ custom persistence column easily, e.g. for a legacy database schema:
 
     class LegacyOrder < ActiveRecord::Base
       include Workflow
-      
+
       workflow_column :foo_bar # use this legacy database column for
                                # persistence
     end
@@ -234,8 +233,8 @@ need to override `load_workflow_state` and
 `persist_workflow_state(new_value)` methods. Next section contains an example for
 using CouchDB, a document oriented database.
 
-[Tim Lossen](http://tim.lossen.de/) implemented support 
-for [remodel](http://github.com/tlossen/remodel) / [redis](http://github.com/antirez/redis) 
+[Tim Lossen](http://tim.lossen.de/) implemented support
+for [remodel](http://github.com/tlossen/remodel) / [redis](http://github.com/antirez/redis)
 key-value store.
 
 Integration with CouchDB
@@ -268,7 +267,7 @@ couchrest library.
       end
     end
 
-Please also have a look at 
+Please also have a look at
 [the full source code](http://github.com/geekq/workflow/blob/master/test/couchtiny_example.rb).
 
 Integration with Mongoid
@@ -310,7 +309,7 @@ state and every event:
 
 The workflow library itself uses this feature to tweak the graphical
 representation of the workflow. See below.
- 
+
 
 Advanced transition hooks
 -------------------------
@@ -346,7 +345,7 @@ example][advanced_hooks_and_validation_test].
 
 ### on_error
 
-If you want to do custom exception handling internal to workflow, you can define an `on_error` hook in your workflow.  
+If you want to do custom exception handling internal to workflow, you can define an `on_error` hook in your workflow.
 For example:
 
     workflow do
@@ -356,12 +355,12 @@ For example:
       state :second
 
       on_error do |error, from, to, event, *args|
-        Log.info "Exception(#error.class) on #{from} -> #{to}" 
+        Log.info "Exception(#error.class) on #{from} -> #{to}"
       end
     end
 
-If forward! results in an exception, `on_error` is invoked and the workflow stays in a 'first' state.  This capability 
-is particularly useful if your errors are transient and you want to queue up a job to retry in the future without 
+If forward! results in an exception, `on_error` is invoked and the workflow stays in a 'first' state.  This capability
+is particularly useful if your errors are transient and you want to queue up a job to retry in the future without
 affecting the existing workflow state.
 
 ### Guards
@@ -400,7 +399,7 @@ Multiple Workflows
 ------------------
 
 I am frequently asked if it's possible to represent multiple "workflows"
-in an ActiveRecord class. 
+in an ActiveRecord class.
 
 The solution depends on your business logic and how you want to
 structure your implementation.
@@ -472,7 +471,7 @@ Earlier versions
 The `workflow` library was originally written by Ryan Allen.
 
 The version 0.3 was almost completely (including ActiveRecord
-integration, API for accessing workflow specification, 
+integration, API for accessing workflow specification,
 method_missing free implementation) rewritten by Vladimir Dobriakov
 keeping the original workflow DSL spirit.
 
@@ -568,7 +567,7 @@ Intermixing of transition graph definition (states, transitions)
 on the one side and implementation of the actions on the other side
 for a bigger state machine can introduce clutter.
 
-To reduce this clutter it is now possible to use state entry- and 
+To reduce this clutter it is now possible to use state entry- and
 exit- hooks defined through a naming convention. For example, if there
 is a state :pending, then instead of using a
 block:
@@ -579,7 +578,7 @@ block:
       end
     end
 
-you can hook in by defining method 
+you can hook in by defining method
 
     def on_pending_exit(new_state, event, *args)
       # your implementation here
@@ -590,7 +589,7 @@ like `def on_pending_exit(*args)` if your are not interested in
 arguments.  Please note: `def on_pending_exit()` with an empty list
 would not work.
 
-If both a function with a name according to naming convention and the 
+If both a function with a name according to naming convention and the
 on_entry/on_exit block are given, then only on_entry/on_exit block is used.
 
 
