@@ -14,7 +14,7 @@ class Order < ActiveRecord::Base
   include Workflow
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
+      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
       end
     end
     state :accepted do
@@ -31,7 +31,7 @@ class LegacyOrder < ActiveRecord::Base
 
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
+      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
       end
     end
     state :accepted do
@@ -438,7 +438,7 @@ class MainTest < ActiveRecordTestCase
   test 'diagram generation' do
     begin
       $stdout = StringIO.new('', 'w')
-      Workflow::Draw::workflow_diagram(Order, '/tmp')
+      Workflow::Draw::workflow_diagram(Order, :path => '/tmp')
       assert_match(/run the following/, $stdout.string,
         'PDF should be generate and a hint be given to the user.')
     ensure
@@ -519,7 +519,7 @@ class MainTest < ActiveRecordTestCase
   test 'workflow graph generation' do
     Dir.chdir('/tmp') do
       capture_streams do
-        Workflow::Draw::workflow_diagram(Order, '/tmp')
+        Workflow::Draw::workflow_diagram(Order, :path => '/tmp')
       end
     end
   end
@@ -527,7 +527,7 @@ class MainTest < ActiveRecordTestCase
   test 'workflow graph generation in a path with spaces' do
     `mkdir -p '/tmp/Workflow test'`
     capture_streams do
-      Workflow::Draw::workflow_diagram(Order, '/tmp/Workflow test')
+      Workflow::Draw::workflow_diagram(Order, :path => '/tmp/Workflow test')
     end
   end
 
