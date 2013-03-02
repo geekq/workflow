@@ -104,10 +104,13 @@ Installation
 **Important**: If you're interested in graphing your workflow state machine, you will also need to
 install the `active_support` and `ruby-graphviz` gems.
 
+Versions up to and including 1.0.0 are also available as a single file download -
+[lib/workflow.rb file](https://github.com/geekq/workflow/blob/v1.0.0/lib/workflow.rb).
+
 Ruby 1.9
 --------
 
-Workflow gem does not work with some (but very widespread) Ruby 1.9
+Workflow gem does not work with some Ruby 1.9
 builds due to a known bug in Ruby 1.9. Either
 
 * use newer ruby build, 1.9.2-p136 and -p180 tested to work
