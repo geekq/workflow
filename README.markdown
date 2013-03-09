@@ -50,9 +50,12 @@ Here is the expression of this workflow using the API:
 
 Nice, isn't it!
 
-Note: the first state in the definition (`:new` in the example, but you
-can name it as you wish) is used as the initial state - newly created
-objects start their life cycle in that state.
+By default, the first state in the definition (`:new` in the example, but
+you can name it as you wish) is used as the initial state and thus newly
+created objects start their life cycle in that state. You can override this
+with `initial_state`:
+ 
+    initial_state :awaiting_review
 
 Let's create an article instance and check in which state it is:
 
