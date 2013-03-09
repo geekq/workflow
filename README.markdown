@@ -465,7 +465,15 @@ Documenting with diagrams
 -------------------------
 
 You can generate a graphical representation of your workflow for
-documentation purposes. S. Workflow::create_workflow_diagram.
+documentation purposes e.g. as a rake task:
+
+    namespace :doc do
+      desc "Generate a workflow graph for a model passed e.g. as 'MODEL=Order'."
+      task :workflow => :environment do
+        require 'workflow/draw'
+        Workflow::Draw::workflow_diagram(ENV['MODEL'].constantize)
+      end
+    end
 
 
 Earlier versions
