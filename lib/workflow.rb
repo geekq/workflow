@@ -3,7 +3,6 @@ require 'rubygems'
 require 'workflow/specification'
 require 'workflow/adapters/active_record'
 require 'workflow/adapters/remodel'
-require 'workflow/draw'
 
 # See also README.markdown for documentation
 module Workflow
