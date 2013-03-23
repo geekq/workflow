@@ -1,5 +1,5 @@
 module Workflow
-  module Adapter
+  module Adapters
     module Remodel
       module InstanceMethods
         def load_workflow_state

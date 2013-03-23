@@ -8,6 +8,8 @@ require 'mocha/setup'
 require 'stringio'
 #require 'ruby-debug'
 
+require 'workflow/draw'
+
 ActiveRecord::Migration.verbose = false
 
 class Order < ActiveRecord::Base
