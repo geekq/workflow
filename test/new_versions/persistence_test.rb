@@ -58,5 +58,15 @@ class PersistenceTest < ActiveRecordTestCase
     assert o.changed?, 'title should not be saved and the change still stay pending'
   end
 
-end
+  test "state is available on new record before persisting" do
+    o = PersistenceTestOrder.new title: "cloud9"
+    assert_equal "submitted", o.read_attribute(PersistenceTestOrder.workflow_column)
+  end
 
+  test 'ensure bang methods can be run when record is not yet persisted' do
+    o = PersistenceTestOrder.new title: "cloud9"
+
+    assert_nothing_raised { o.accept! }
+    assert "accepted", o.read_attribute(PersistenceTestOrder.workflow_column)
+  end
+end

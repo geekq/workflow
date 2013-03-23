@@ -1,5 +1,5 @@
 module Workflow
-  module Adapter
+  module Adapters
     module ActiveRecord
       module InstanceMethods
         def load_workflow_state
