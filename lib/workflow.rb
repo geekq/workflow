@@ -187,7 +187,7 @@ module Workflow
         instance_exec(prior_state.name, triggering_event, *args, &state.on_entry)
       else
         hook_name = "on_#{state}_entry"
-        self.send hook_name, prior_state, triggering_event, *args if self.respond_to? hook_name
+        self.send hook_name, prior_state, triggering_event, *args if has_callback? hook_name
       end
     end
 
@@ -197,7 +197,7 @@ module Workflow
           instance_exec(new_state.name, triggering_event, *args, &state.on_exit)
         else
           hook_name = "on_#{state}_exit"
-          self.send hook_name, new_state, triggering_event, *args if self.respond_to? hook_name
+          self.send hook_name, new_state, triggering_event, *args if has_callback? hook_name
         end
       end
     end
