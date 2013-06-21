@@ -225,6 +225,7 @@ module Workflow
     if Object.const_defined?(:ActiveRecord)
       if klass < ActiveRecord::Base
         klass.send :include, Adapter::ActiveRecord::InstanceMethods
+        klass.send :extend, Adapter::ActiveRecord::Scopes
         klass.before_validation :write_initial_state
       end
     elsif Object.const_defined?(:Remodel)
