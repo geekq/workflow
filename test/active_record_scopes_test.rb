@@ -45,14 +45,5 @@ class ActiveRecordScopesTest < ActiveRecordTestCase
   test 'have "with_accepted_state" scope' do
     assert_respond_to Article, :with_accepted_state
   end
-
-  test 'scope "with_new_state" returns AR relation' do
-    assert_kind_of ActiveRecord::Relation, Article.with_new_state
-  end
-
-  test 'scope "with_accepted_state" returns AR relation' do
-    assert_kind_of ActiveRecord::Relation, Article.with_accepted_state
-  end
-  
 end
 
