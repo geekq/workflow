@@ -20,7 +20,6 @@ matrix:
     - rvm: 2.0.0
       gemfile: gemfiles/Gemfile.rails-3.x
 
-  allow_failures:
+  allow_failures: # allow_failures is an `or` filter
     # bleeding edge: newest Rails with Ruby 2.0
-    - rvm: 2.0.0
     - gemfile: gemfiles/Gemfile.rails-edge
