@@ -207,6 +207,25 @@ new state is immediately saved in the database.
 You can change this behaviour by overriding `persist_workflow_state`
 method.
 
+### Scopes
+
+Workflow library also adds automatically generated scopes with names based on
+states names:
+
+    class Order < ActiveRecord::Base
+      include Workflow
+      workflow do
+        state :approved
+        state :pending
+      end
+    end
+
+    # returns all orders with `approved` state
+    Order.with_approved_state
+
+    # returns all orders with `pending` state
+    Order.with_pending_state
+
 
 ### Custom workflow database column
 
