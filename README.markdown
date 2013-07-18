@@ -465,8 +465,8 @@ example][multiple_workflow_test]!
 Documenting with diagrams
 -------------------------
 
-You can generate a graphical representation of your workflow for
-documentation purposes. S. Workflow::create_workflow_diagram.
+You can generate a graphical representation of the workflow for
+a particular class for documentation purposes: `Workflow::create_workflow_diagram(class)`.
 
 
 Earlier versions
