@@ -3,7 +3,6 @@ require 'rubygems'
 require 'workflow/specification'
 require 'workflow/adapters/active_record'
 require 'workflow/adapters/remodel'
-require 'workflow/draw'
 
 # See also README.markdown for documentation
 module Workflow
@@ -224,11 +223,11 @@ module Workflow
 
     if Object.const_defined?(:ActiveRecord)
       if klass < ActiveRecord::Base
-        klass.send :include, Adapter::ActiveRecord::InstanceMethods
+        klass.send :include, Adapters::ActiveRecord::InstanceMethods
         klass.before_validation :write_initial_state
       end
     elsif Object.const_defined?(:Remodel)
-      if klass < Adapter::Remodel::Entity
+      if klass < Adapters::Remodel::Entity
         klass.send :include, Remodel::InstanceMethods
       end
     end
