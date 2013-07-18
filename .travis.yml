@@ -4,7 +4,7 @@ before_install:
 rvm:
   - 2.0.0
 gemfile:
-  - gemfile: gemfiles/Gemfile.rails-edge
+  - gemfiles/Gemfile.rails-edge
 
 matrix:
   include:
