@@ -2,7 +2,7 @@ before_install:
   - sudo apt-get install -qq graphviz
 
 rvm:
-  - rvm: 2.0.0
+  - 2.0.0
 gemfile:
   - gemfile: gemfiles/Gemfile.rails-edge
 
