@@ -44,19 +44,19 @@ module Workflow
           class << object
             alias_method :workflow_without_scopes, :workflow unless method_defined?(:workflow_without_scopes)
             alias_method :workflow, :workflow_with_scopes
-          end 
+          end
         end
 
         def workflow_with_scopes(&specification)
           workflow_without_scopes(&specification)
           states     = workflow_spec.states.values
           eigenclass = class << self; self; end
-          
+
           states.each do |state|
             # Use eigenclass instead of `define_singleton_method`
             # to be compatible with Ruby 1.8+
             eigenclass.send(:define_method, "with_#{state}_state") do
-              where(workflow_column.to_sym => state)
+              where("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
             end
           end
         end
