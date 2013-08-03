@@ -7,7 +7,7 @@ require 'sqlite3'
 require 'workflow'
 require 'mocha/setup'
 require 'stringio'
-require 'protected_attributes' unless ActiveRecord::Base.respond_to? :attr_accessible
+require 'protected_attributes' if ActiveRecord::VERSION::MAJOR >= 4
 
 ActiveRecord::Migration.verbose = false
 
