@@ -7,6 +7,7 @@ require 'sqlite3'
 require 'workflow'
 require 'mocha/setup'
 require 'stringio'
+require 'protected_attributes' unless ActiveRecord::Base.respond_to? :attr_accessible
 
 ActiveRecord::Migration.verbose = false
 
@@ -60,7 +61,9 @@ class AttrProtectedTest < ActiveRecordTestCase
   test 'cannot mass-assign workflow_state if attr_protected' do
      o = AttrProtectedTestOrder.find_by_title('order1')
      assert_equal 'submitted', o.read_attribute(:workflow_state)
+     AttrProtectedTestOrder.logger.level = Logger::ERROR # ignore warnings
      o.update_attributes :workflow_state => 'some_bad_value'
+     AttrProtectedTestOrder.logger.level = Logger::WARN
      assert_equal 'submitted', o.read_attribute(:workflow_state)
      o.update_attribute :workflow_state, 'some_overridden_value'
      assert_equal 'some_overridden_value', o.read_attribute(:workflow_state)
