@@ -20,7 +20,18 @@ module Workflow
     end
 
     def workflow(&specification)
-      @workflow_spec = Specification.new(Hash.new, &specification)
+      assign_workflow Specification.new(Hash.new, &specification)
+    end
+
+    private
+
+    def assign_workflow(specification_object)
+      # TODO Ensure assign_workflow can be only called once
+      #
+      # creates the convinence methods, note: there is currently no way
+      # to reassign different workflow, undefining created methods
+
+      @workflow_spec = specification_object
       @workflow_spec.states.values.each do |state|
         state_name = state.name
         module_eval do
