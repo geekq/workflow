@@ -49,12 +49,12 @@ class InheritanceTest < ActiveRecordTestCase
   end
 
   def sort_sym_array(a)
-    a.sort! { |a, b| a.to_s <=> b.to_s } # workaround for Ruby 1.8.7
+    a.sort { |a, b| a.to_s <=> b.to_s } # workaround for Ruby 1.8.7
   end
 
   def bang_methods(obj)
     non_trivial_methods = obj.public_methods-Object.public_methods
     methods_with_bang = non_trivial_methods.select {|m| m =~ /!$/}
-    sort_sym_array methods_with_bang
+    sort_sym_array(methods_with_bang).map {|m| m.to_sym}
   end
 end
