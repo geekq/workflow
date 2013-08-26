@@ -538,7 +538,7 @@ Changelog
 
 * Tested with ActiveRecord 4.0 (Rails 4.0)
 * Tested with Ruby 2.0
-* automatically generated scopes with names based on states names
+* automatically generated scopes with names based on state names
 * clean workflow definition override for class inheritance - undefining
   the old convinience methods, s. <http://git.io/FZO02A>
 
