@@ -25,11 +25,28 @@ module Workflow
 
     private
 
+    # Creates the convinience methods like `my_transition!`
     def assign_workflow(specification_object)
-      # TODO Ensure assign_workflow can be only called once
-      #
-      # creates the convinence methods, note: there is currently no way
-      # to reassign different workflow, undefining created methods
+
+      # Merging two workflow specifications can **not** be done automically, so
+      # just make the latest specification win. Same for inheritance -
+      # definition in the subclass wins.
+      if respond_to? :inherited_workflow_spec # undefine methods defined by the old workflow_spec
+        inherited_workflow_spec.states.values.each do |state|
+          state_name = state.name
+          module_eval do
+            undef_method "#{state_name}?"
+          end
+
+          state.events.values.each do |event|
+            event_name = event.name
+            module_eval do
+              undef_method "#{event_name}!".to_sym
+              undef_method "can_#{event_name}?"
+            end
+          end
+        end
+      end
 
       @workflow_spec = specification_object
       @workflow_spec.states.values.each do |state|
@@ -230,6 +247,19 @@ module Workflow
 
   def self.included(klass)
     klass.send :include, InstanceMethods
+
+    # backup the parent workflow spec, making accessible through #inherited_workflow_spec
+    if klass.superclass.respond_to?(:workflow_spec, true)
+      klass.module_eval do
+        # see http://stackoverflow.com/a/2495650/111995 for implementation explanation
+        pro = Proc.new { klass.superclass.workflow_spec }
+        singleton_class = class << self; self; end
+        singleton_class.send(:define_method, :inherited_workflow_spec) do
+          pro.call
+        end
+      end
+    end
+
     klass.extend ClassMethods
 
     if Object.const_defined?(:ActiveRecord)
