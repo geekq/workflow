@@ -151,6 +151,13 @@ be:
 (if integrated with ActiveRecord) and invoke this user defined reject
 method.
 
+Note: on successful transition from one state to another the workflow
+gem immediately persists the new workflow state with `update_column()`,
+bypassing any ActiveRecord callbacks including `updated_at` update.
+This way it is possible to deal with the validation and to save the
+pending changes to a record at some later point instead of the moment
+when transition occurs.
+
 You can also define event handler accepting/requiring additional
 arguments:
 
@@ -196,7 +203,7 @@ and include the workflow mixin in your model class as usual:
 
 On a database record loading all the state check methods e.g.
 `article.state`, `article.awaiting_review?` are immediately available.
-For new records or if the workflow_state field is not set the state
+For new records or if the `workflow_state` field is not set the state
 defaults to the first state declared in the workflow specification. In
 our example it is `:new`, so `Article.new.new?` returns true and
 `Article.new.approved?` returns false.
