@@ -541,6 +541,9 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
+### New in the version 1.2.0
+
+
 ### New in the version 1.1.0
 
 * Tested with ActiveRecord 4.0 (Rails 4.0)
