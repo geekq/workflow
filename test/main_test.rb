@@ -268,11 +268,6 @@ class MainTest < ActiveRecordTestCase
         end
         state :two
       end
-
-      private
-      def another_transition(args)
-        args.another_tran
-      end
     end
     a = c.new
     a.my_transition!(args)
@@ -281,6 +276,8 @@ class MainTest < ActiveRecordTestCase
   test '#53 Support for non public transition callbacks' do
     args = mock()
     args.expects(:log).with('in private callback').once
+    args.expects(:log).with('in protected on_exit callback').twice
+    args.expects(:log).with('in protected on_entry callback').once
     args.expects(:log).with('in protected callback in the base class').once
 
     b = Class.new # the base class with a protected callback
@@ -301,6 +298,16 @@ class MainTest < ActiveRecordTestCase
         end
         state :assigned
         state :assigned_old
+      end
+
+      protected
+
+      def on_new_exit new_state, event, args
+        args.log('in protected on_exit callback')
+      end
+
+      def on_assigned_entry prior_state, event, args
+        args.log('in protected on_entry callback')
       end
 
       private
