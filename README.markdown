@@ -543,6 +543,7 @@ Changelog
 
 ### New in the version 1.2.0
 
+* Fix issue #98 protected on\_\* callbacks in Ruby 2
 
 ### New in the version 1.1.0
 
