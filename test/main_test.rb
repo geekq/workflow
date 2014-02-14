@@ -282,6 +282,7 @@ class MainTest < ActiveRecordTestCase
     args = mock()
     args.expects(:log).with('in private callback').once
     args.expects(:log).with('in protected callback in the base class').once
+    args.expects(:log).with('in protected callback `on_assigned_entry`').once
 
     b = Class.new # the base class with a protected callback
     b.class_eval do
@@ -289,6 +290,7 @@ class MainTest < ActiveRecordTestCase
       def assign_old(args)
         args.log('in protected callback in the base class')
       end
+
     end
 
     c = Class.new(b) # inheriting class with an additional protected callback
@@ -301,6 +303,11 @@ class MainTest < ActiveRecordTestCase
         end
         state :assigned
         state :assigned_old
+      end
+
+      protected
+      def on_assigned_entry(prev_state, event, args)
+        args.log('in protected callback `on_assigned_entry`')
       end
 
       private
