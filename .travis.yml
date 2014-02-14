@@ -19,3 +19,6 @@ matrix:
 
     - rvm: 2.0.0
       gemfile: gemfiles/Gemfile.rails-3.x
+
+    - rvm: 2.1.0
+      gemfile: gemfiles/Gemfile.rails-3.x
