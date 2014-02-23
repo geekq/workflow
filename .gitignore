@@ -5,6 +5,7 @@ html/
 *.rbc
 .bundle
 .config
+.ruby*
 .yardoc
 Gemfile.lock
 InstalledFiles
