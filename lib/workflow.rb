@@ -3,6 +3,7 @@ require 'rubygems'
 require 'workflow/specification'
 require 'workflow/adapters/active_record'
 require 'workflow/adapters/remodel'
+require 'workflow/adapters/mongoid'
 
 # See also README.markdown for documentation
 module Workflow
@@ -262,15 +263,16 @@ module Workflow
 
     klass.extend ClassMethods
 
-    if Object.const_defined?(:ActiveRecord)
-      if klass < ActiveRecord::Base
-        klass.send :include, Adapter::ActiveRecord::InstanceMethods
-        klass.send :extend, Adapter::ActiveRecord::Scopes
+    if Object.const_defined?(:ActiveRecord) && klass < ActiveRecord::Base
+      klass.send :include, Adapter::ActiveRecord::InstanceMethods
+      klass.send :extend, Adapter::ActiveRecord::Scopes
+      klass.before_validation :write_initial_state
+    elsif Object.const_defined?(:Remodel) && klass < Adapter::Remodel::Entity
+      klass.send :include, Remodel::InstanceMethods
+    elsif Object.const_defined?(:Mongoid) && klass < Mongoid::Document
+      klass.class_eval do
+        klass.send :include, Adapter::Mongoid::InstanceMethods
         klass.before_validation :write_initial_state
-      end
-    elsif Object.const_defined?(:Remodel)
-      if klass < Adapter::Remodel::Entity
-        klass.send :include, Remodel::InstanceMethods
       end
     end
   end
