@@ -2,8 +2,9 @@ before_install:
   - sudo apt-get install -qq graphviz
 
 rvm:
-  - 1.9.3
   - 2.0.0
+gemfile:
+  - gemfiles/Gemfile.rails-edge
 
 matrix:
   include:
@@ -12,3 +13,12 @@ matrix:
       gemfile: gemfiles/Gemfile.rails-2.3.x
       # running a smaller test set for old Rails and Ruby
       script: rake test_without_new_versions
+
+    - rvm: 1.9.3
+      gemfile: gemfiles/Gemfile.rails-3.x
+
+    - rvm: 2.0.0
+      gemfile: gemfiles/Gemfile.rails-3.x
+
+    - rvm: 2.1.0
+      gemfile: gemfiles/Gemfile.rails-3.x
