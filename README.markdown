@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow)
 
+
 What is workflow?
 -----------------
 
@@ -153,6 +154,13 @@ be:
 (if integrated with ActiveRecord) and invoke this user defined reject
 method.
 
+Note: on successful transition from one state to another the workflow
+gem immediately persists the new workflow state with `update_column()`,
+bypassing any ActiveRecord callbacks including `updated_at` update.
+This way it is possible to deal with the validation and to save the
+pending changes to a record at some later point instead of the moment
+when transition occurs.
+
 You can also define event handler accepting/requiring additional
 arguments:
 
@@ -198,7 +206,7 @@ and include the workflow mixin in your model class as usual:
 
 On a database record loading all the state check methods e.g.
 `article.state`, `article.awaiting_review?` are immediately available.
-For new records or if the workflow_state field is not set the state
+For new records or if the `workflow_state` field is not set the state
 defaults to the first state declared in the workflow specification. In
 our example it is `:new`, so `Article.new.new?` returns true and
 `Article.new.approved?` returns false.
@@ -208,6 +216,25 @@ new state is immediately saved in the database.
 
 You can change this behaviour by overriding `persist_workflow_state`
 method.
+
+### Scopes
+
+Workflow library also adds automatically generated scopes with names based on
+states names:
+
+    class Order < ActiveRecord::Base
+      include Workflow
+      workflow do
+        state :approved
+        state :pending
+      end
+    end
+
+    # returns all orders with `approved` state
+    Order.with_approved_state
+
+    # returns all orders with `pending` state
+    Order.with_pending_state
 
 
 ### Custom workflow database column
@@ -467,8 +494,9 @@ example][multiple_workflow_test]!
 Documenting with diagrams
 -------------------------
 
-You can generate a graphical representation of your workflow for
-documentation purposes e.g. as a rake task:
+You can generate a graphical representation of the workflow for
+a particular class for documentation purposes.
+Use `Workflow::create_workflow_diagram(class)` in your rake task like:
 
     namespace :doc do
       desc "Generate a workflow graph for a model passed e.g. as 'MODEL=Order'."
@@ -515,6 +543,18 @@ when using both a block and a callback method for an event, the block executes p
 
 Changelog
 ---------
+
+### New in the version 1.2.0
+
+* Fix issue #98 protected on\_\* callbacks in Ruby 2
+
+### New in the version 1.1.0
+
+* Tested with ActiveRecord 4.0 (Rails 4.0)
+* Tested with Ruby 2.0
+* automatically generated scopes with names based on state names
+* clean workflow definition override for class inheritance - undefining
+  the old convinience methods, s. <http://git.io/FZO02A>
 
 ### New in the version 1.0.0
 
