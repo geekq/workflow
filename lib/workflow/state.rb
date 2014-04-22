@@ -28,7 +28,7 @@ module Workflow
       include Comparable
       def <=>(other_state)
         states = spec.states.keys
-        raise ArgumentError, "state `#{other_state}' does not exist" unless other_state.in? states
+        raise ArgumentError, "state `#{other_state}' does not exist" unless states.include?(other_state.to_sym)
         states.index(self.to_sym) <=> states.index(other_state.to_sym)
       end
     end

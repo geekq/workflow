@@ -58,4 +58,25 @@ class AdvanceExamplesTest < ActiveRecordTestCase
     assert(a.new?, "should now be back in the 'new' state")
   end
 
+  test '#92 Load workflow specification' do
+    c = Class.new
+    c.class_eval do
+      include Workflow
+    end
+
+    # build a Specification (you can load it from yaml file too)
+    myspec = Workflow::Specification.new do
+      state :one do
+        event :dynamic_transition, :transitions_to => :one_a
+      end
+      state :one_a
+    end
+
+    c.send :assign_workflow, myspec
+
+    a = c.new
+    a.dynamic_transition!(1)
+    assert a.one_a?, 'Expected successful transition to a new state'
+  end
+
 end
