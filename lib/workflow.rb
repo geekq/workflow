@@ -1,9 +1,6 @@
 require 'rubygems'
 
 require 'workflow/specification'
-require 'workflow/adapters/active_record'
-require 'workflow/adapters/remodel'
-
 # See also README.markdown for documentation
 module Workflow
   module ClassMethods
@@ -263,13 +260,23 @@ module Workflow
     klass.extend ClassMethods
 
     if Object.const_defined?(:ActiveRecord)
+      require 'workflow/adapters/active_record'
+
       if klass < ActiveRecord::Base
         klass.send :include, Adapters::ActiveRecord::InstanceMethods
         klass.before_validation :write_initial_state
       end
+    elsif Object.const_defined?(:DataMapper)
+      require 'workflow/adapters/data_mapper'
+
+      if klass.included_modules.include? DataMapper::Resource
+        klass.send :include, Adapters::DataMapper::InstanceMethods
+      end
     elsif Object.const_defined?(:Remodel)
+      require 'workflow/adapters/remodel'
+
       if klass < Adapters::Remodel::Entity
-        klass.send :include, Remodel::InstanceMethods
+        klass.send :include, Adapters::Remodel::InstanceMethods
       end
     end
   end
