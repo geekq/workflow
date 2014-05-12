@@ -14,7 +14,7 @@ module Workflow
           end
         end
 
-        def before_save
+        def before_create
           write_initial_state
           super
         end
