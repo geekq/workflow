@@ -3,14 +3,13 @@ module Workflow
     module Sequel
       module InstanceMethods
         def load_workflow_state
-          self.class.workflow_column
+          send(self.class.workflow_column)
         end
 
         # On transition the new workflow state is immediately saved in the
         # database.
         def persist_workflow_state(new_value)
           if self.respond_to? :update
-            # Rails 3.1 or newer
             update(self.class.workflow_column => new_value)
           end
         end
@@ -27,7 +26,7 @@ module Workflow
         # state. That's why it is important to save the string with the name of the
         # initial state in all the new records.
         def write_initial_state
-          self.class.workflow_column = current_state.to_s
+          send("#{self.class.workflow_column}=".to_sym, current_state.to_s)
         end
       end
     end
