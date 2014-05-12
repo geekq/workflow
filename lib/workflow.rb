@@ -2,6 +2,7 @@ require 'rubygems'
 
 require 'workflow/specification'
 require 'workflow/adapters/active_record'
+require 'workflow/adapters/sequel'
 require 'workflow/adapters/remodel'
 
 # See also README.markdown for documentation
@@ -267,6 +268,10 @@ module Workflow
         klass.send :include, Adapter::ActiveRecord::InstanceMethods
         klass.send :extend, Adapter::ActiveRecord::Scopes
         klass.before_validation :write_initial_state
+      end
+    elsif Object.const_defined?(:Sequel)
+      if klass < Sequel::Model
+        klass.send :include, Adapter::Sequel::InstanceMethods
       end
     elsif Object.const_defined?(:Remodel)
       if klass < Adapter::Remodel::Entity
