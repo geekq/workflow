@@ -29,6 +29,28 @@ module Workflow
           send("#{self.class.workflow_column}=".to_sym, current_state.to_s)
         end
       end
+      module Subsets
+        def self.extended(object)
+          class << object
+            alias_method :workflow_without_subsets, :workflow unless method_defined?(:workflow_without_subsets)
+            alias_method :workflow, :workflow_with_subsets
+          end
+        end
+
+        def workflow_with_subsets(&specification)
+          workflow_without_subsets(&specification)
+          states     = workflow_spec.states.values
+          eigenclass = class << self; self; end
+
+          states.each do |state|
+            # Use eigenclass instead of `define_singleton_method`
+            # to be compatible with Ruby 1.8+
+            eigenclass.send(:define_method, "in_#{state}_state") do
+              where("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+            end
+          end
+        end
+      end
     end
   end
 end

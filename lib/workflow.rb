@@ -272,6 +272,7 @@ module Workflow
     elsif Object.const_defined?(:Sequel)
       if klass < Sequel::Model
         klass.send :include, Adapter::Sequel::InstanceMethods
+        klass.send :extend, Adapter::Sequel::Subsets
       end
     elsif Object.const_defined?(:Remodel)
       if klass < Adapter::Remodel::Entity
