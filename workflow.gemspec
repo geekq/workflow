@@ -21,7 +21,6 @@ Gem::Specification.new do |gem|
     "README.markdown"
   ]
 
-  gem.add_development_dependency 'minitest'
   gem.add_development_dependency 'rdoc',    [">= 3.12"]
   gem.add_development_dependency 'bundler', [">= 1.0.0"]
   gem.add_development_dependency 'activerecord'
