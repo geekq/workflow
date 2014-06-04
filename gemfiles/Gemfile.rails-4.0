@@ -1,13 +1,11 @@
 source "http://rubygems.org"
 
 group :development do
-  gem "minitest"
   gem "rdoc", ">= 3.12"
   gem "bundler", ">= 1.0.0"
-  gem "activerecord"
+  gem "activerecord", "~>4.0"
   gem "sqlite3"
   gem "mocha"
   gem "rake"
   gem "ruby-graphviz", ">= 1.0"
-  gem 'protected_attributes'
 end
