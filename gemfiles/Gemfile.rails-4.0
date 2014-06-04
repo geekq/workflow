@@ -1,6 +1,7 @@
 source "http://rubygems.org"
 
 group :development do
+  gem "minitest, "< 5.0.0" # 5.0.0 introduced incompatible changes renaming all the classes
   gem "rdoc", ">= 3.12"
   gem "bundler", ">= 1.0.0"
   gem "activerecord", "~>4.0"
