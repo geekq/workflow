@@ -1,9 +1,5 @@
 before_install:
   - sudo apt-get install -qq graphviz
-  - whoami
-  - touch /tmp/probe.txt
-  - ls -al /tmp
-  - env
 
 rvm:
   - 2.0.0
