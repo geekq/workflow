@@ -111,7 +111,7 @@ module Workflow
 
       begin
         return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
-      rescue Exception => e
+      rescue StandardError => e
         run_on_error(e, from, to, name, *args)
       end
 

@@ -544,6 +544,7 @@ Changelog
 ### New in the version 1.2.0
 
 * Fix issue #98 protected on\_\* callbacks in Ruby 2
+* #106 Inherit exceptions from StandardError instead of Exception
 
 ### New in the version 1.1.0
 
@@ -655,7 +656,9 @@ Support
 About
 -----
 
-Author: Vladimir Dobriakov, <http://www.innoq.com/blog/vd>, <http://blog.geekq.net/>
+Author: Vladimir Dobriakov, <http://www.mobile-web-consulting.de>, <http://blog.geekq.net/>
+
+Copyright (c) 2010-2014 Vladimir Dobriakov, www.mobile-web-consulting.de
 
 Copyright (c) 2008-2009 Vodafone
 

@@ -1,5 +1,5 @@
 module Workflow
-  class TransitionHalted < Exception
+  class TransitionHalted < StandardError
 
     attr_reader :halted_because
 
@@ -10,9 +10,9 @@ module Workflow
 
   end
 
-  class NoTransitionAllowed < Exception; end
+  class NoTransitionAllowed < StandardError; end
 
-  class WorkflowError < Exception; end
+  class WorkflowError < StandardError; end
 
-  class WorkflowDefinitionError < Exception; end
+  class WorkflowDefinitionError < StandardError; end
 end
