@@ -1,5 +1,9 @@
 before_install:
   - sudo apt-get install -qq graphviz
+  - ls -al /
+  - ls -al /tmp
+  - mkdir /tmp
+  - ls -al /tmp
 
 rvm:
   - 2.0.0
