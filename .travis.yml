@@ -2,8 +2,9 @@ before_install:
   - sudo apt-get install -qq graphviz
   - ls -al /
   - ls -al /tmp
-  - mkdir /tmp
+  - whoami
   - ls -al /tmp
+  - touch /tmp/probe.txt
 
 rvm:
   - 2.0.0
