@@ -28,13 +28,15 @@ class AdvanceExamplesTest < ActiveRecordTestCase
     spec.state_names.each do |state_name|
       state = spec.states[state_name]
 
-        (state.events.values.reject {|e| e.name.to_s =~ /^revert_/ }).each do |event|
+        (state.events.flat.reject {|e| e.name.to_s =~ /^revert_/ }).each do |event|
           event_name = event.name
           revert_event_name = "revert_" + event_name.to_s
 
           # Add revert events
-          spec.states[event.transitions_to.to_sym].events[revert_event_name.to_sym] =
-            Workflow::Event.new(revert_event_name, state, {})
+          spec.states[event.transitions_to.to_sym].events.push(
+            revert_event_name,
+            Workflow::Event.new(revert_event_name, state)
+          )
 
           # Add methods for revert events
           Article.module_eval do

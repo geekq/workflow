@@ -43,7 +43,7 @@ class Article < ActiveRecord::Base
         singleton = class << self; self end
         validations = Proc.new {}
 
-        meta = Article.workflow_spec.states[from].events[triggering_event].meta
+        meta = Article.workflow_spec.states[from].events[triggering_event].first.meta
         fields_to_validate = meta[:validates_presence_of]
         if fields_to_validate
           validations = Proc.new {

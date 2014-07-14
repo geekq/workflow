@@ -4,7 +4,7 @@ module Workflow
     attr_reader :spec
 
     def initialize(name, spec, meta = {})
-      @name, @spec, @events, @meta = name, spec, Hash.new, meta
+      @name, @spec, @events, @meta = name, spec, EventCollection.new, meta
     end
 
     def draw(graph)

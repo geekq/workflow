@@ -38,7 +38,7 @@ module Workflow
             undef_method "#{state_name}?"
           end
 
-          state.events.values.each do |event|
+          state.events.flat.each do |event|
             event_name = event.name
             module_eval do
               undef_method "#{event_name}!".to_sym
@@ -57,7 +57,7 @@ module Workflow
           end
         end
 
-        state.events.values.each do |event|
+        state.events.flat.each do |event|
           event_name = event.name
           module_eval do
             define_method "#{event_name}!".to_sym do |*args|
@@ -94,7 +94,7 @@ module Workflow
     end
 
     def process_event!(name, *args)
-      event = current_state.events[name.to_sym]
+      event = current_state.events.first_applicable(name, self)
       raise NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
         if event.nil?
