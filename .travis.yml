@@ -1,5 +1,7 @@
+language: ruby
 before_install:
   - sudo apt-get install -qq graphviz
+script: bundle exec rake test
 
 rvm:
   - 2.0.0
