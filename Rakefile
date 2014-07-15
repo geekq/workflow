@@ -1,13 +1,15 @@
 require 'rubygems'
-require 'rake/testtask'
-require 'rdoc/task'
-
 require 'bundler'
 Bundler.setup
 
-task :default => [:test]
-
 require 'rake'
+require 'rake/testtask'
+require 'rdoc/task'
+require 'wwtd/tasks'
+
+desc 'Default: run all tests via Travis-CI simulation (wwtd:local).'
+task :default => 'wwtd:local'
+
 Rake::TestTask.new do |t|
   t.libs << 'test'
   t.verbose = true
