@@ -516,12 +516,45 @@ class MainTest < ActiveRecordTestCase
           event :go_to_college, :transitions_to => :student
         end
         state :student
+        state :street
       end
     end
 
     human = c.new
     assert human.can_go_to_school?
     assert_equal false, human.can_go_to_college?
+  end
+
+  test 'can_<fire_event>? with conditions' do
+    c = Class.new do
+      include Workflow
+      workflow do
+        state :off do
+          event :turn_on, :transitions_to => :on, :if => proc { |obj| obj.battery > 10 }
+          event :turn_on, :transitions_to => :low_battery, :if => proc { |obj| obj.battery > 0 }
+        end
+        state :on
+        state :low_battery
+      end
+      attr_reader :battery
+      def initialize(battery)
+        @battery = battery
+      end
+    end
+
+    device = c.new 0
+    assert_equal false, device.can_turn_on?
+
+    device = c.new 5
+    assert device.can_turn_on?
+    device.turn_on!
+    assert device.low_battery?
+    assert_equal false, device.on?
+
+    device = c.new 50
+    assert device.can_turn_on?
+    device.turn_on!
+    assert device.on?
   end
 
   test 'workflow graph generation' do
