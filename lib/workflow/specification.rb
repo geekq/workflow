@@ -1,5 +1,6 @@
 require 'workflow/state'
 require 'workflow/event'
+require 'workflow/event_collection'
 require 'workflow/errors'
 
 module Workflow
@@ -30,11 +31,13 @@ module Workflow
 
     def event(name, args = {}, &action)
       target = args[:transitions_to] || args[:transition_to]
+      condition = args[:if]
       raise WorkflowDefinitionError.new(
         "missing ':transitions_to' in workflow event definition for '#{name}'") \
         if target.nil?
-      @scoped_state.events[name.to_sym] =
-        Workflow::Event.new(name, target, (args[:meta] or {}), &action)
+      @scoped_state.events.push(
+        name, Workflow::Event.new(name, target, condition, (args[:meta] or {}), &action)
+      )
     end
 
     def on_entry(&proc)
