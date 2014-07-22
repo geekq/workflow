@@ -147,9 +147,10 @@ be:
       end
     end
 
-`article.review!; article.reject!` will cause a state transition, persist the new state
-(if integrated with ActiveRecord) and invoke this user defined reject
-method.
+`article.review!; article.reject!` will cause state transition to
+`being_reviewed` state, persist the new state (if integrated with
+ActiveRecord), invoke this user defined `reject` method and finally
+persist the `rejected` state.
 
 Note: on successful transition from one state to another the workflow
 gem immediately persists the new workflow state with `update_column()`,
