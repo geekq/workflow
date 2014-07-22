@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow)
+[![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow) Tested with [different Ruby and Rails versions](https://travis-ci.org/geekq/workflow)
 
 
 What is workflow?
