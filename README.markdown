@@ -301,11 +301,6 @@ couchrest library.
 Please also have a look at
 [the full source code](http://github.com/geekq/workflow/blob/master/test/couchtiny_example.rb).
 
-Integration with Mongoid
-------------------------
-
-You can integrate with Mongoid following the example above for CouchDB, but there is a gem that does that for you (and includes extensive tests):
-[workflow_on_mongoid](http://github.com/bowsersenior/workflow_on_mongoid)
 
 Accessing your workflow specification
 -------------------------------------
