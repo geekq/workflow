@@ -302,6 +302,67 @@ Please also have a look at
 [the full source code](http://github.com/geekq/workflow/blob/master/test/couchtiny_example.rb).
 
 
+Adapters to support other databases
+-----------------------------------
+
+I get a lot of requests to integrate persistence support for different
+databases, object-relational adapters, column stores, document
+databases.
+
+To enable highest possible quality, avoid too many dependencies and to
+avoid unneeded maintenance burden on the `workflow` core it is best to
+implement such support as a separate gem.
+
+Only support for the ActiveRecord will remain for the foreseeable
+future. So Rails beginners can expect `workflow` to work with Rails out
+of the box. Other already included adapters stay for a while but should
+be extracted to separate gems.
+
+If you want to implement support for your favorite ORM mapper or your
+favorite NoSQL database, you just need to implement a module which
+overrides the persistence methods `load_workflow_state` and
+`persist_workflow_state`. Example:
+
+    module Workflow
+      module SuperCoolDb
+        module InstanceMethods
+          def load_workflow_state
+            # Load and return the workflow_state from some storage.
+            # You can use self.class.workflow_column configuration.
+          end
+
+          def persist_workflow_state(new_value)
+            # save the new_value workflow state
+          end
+        end
+
+        module ClassMethods
+          # class methods of your adapter go here
+        end
+
+        def self.included(klass)
+          klass.send :include, InstanceMethods
+          klass.extend ClassMethods
+        end
+      end
+    end
+
+The user of the adapter can use it then as:
+
+    class Article
+      include Workflow
+      include Workflow:SuperCoolDb
+      workflow do
+        state :submitted
+        # ...
+      end
+    end
+
+I can then link to your implementation from this README. Please let me
+also know, if you need any interface beyond `load_workflow_state` and
+`persist_workflow_state` methods to implement an adapter for your
+favorite database.
+
 Accessing your workflow specification
 -------------------------------------
 
