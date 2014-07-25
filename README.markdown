@@ -622,6 +622,9 @@ Changelog
 * Fix issue #98 protected on\_\* callbacks in Ruby 2
 * #106 Inherit exceptions from StandardError instead of Exception
 * #109 Conditional event transitions, contributed by [damncabbage](http://robhoward.id.au/)
+* New policy for supporting other databases - extract to separate
+  gems. See the README section above.
+
 
 ### New in the version 1.1.0
 
