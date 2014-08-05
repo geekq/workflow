@@ -644,6 +644,7 @@ Changelog
 * #109 Conditional event transitions, contributed by [damncabbage](http://robhoward.id.au/)
 * New policy for supporting other databases - extract to separate
   gems. See the README section above.
+* #111 Custom Versions of Existing Adapters by [damncabbage](http://robhoward.id.au/)
 
 
 ### New in the version 1.1.0
