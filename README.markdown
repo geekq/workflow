@@ -363,6 +363,26 @@ also know, if you need any interface beyond `load_workflow_state` and
 `persist_workflow_state` methods to implement an adapter for your
 favorite database.
 
+
+Custom Versions of Existing Adapters
+------------------------------------
+
+Other adapters (such as a custom ActiveRecord plugin) can be selected by adding a `workflow_adapter` class method, eg.
+
+```ruby
+class Example < ActiveRecord::Base
+  def self.workflow_adapter
+    MyCustomAdapter
+  end
+  include Workflow
+
+  # ...
+end
+```
+
+(The above will include `MyCustomAdapter` *instead* of `Workflow::Adapter::ActiveRecord`.)
+
+
 Accessing your workflow specification
 -------------------------------------
 

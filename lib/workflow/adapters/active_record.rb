@@ -1,6 +1,12 @@
 module Workflow
   module Adapter
     module ActiveRecord
+      def self.included(klass)
+        klass.send :include, Adapter::ActiveRecord::InstanceMethods
+        klass.send :extend, Adapter::ActiveRecord::Scopes
+        klass.before_validation :write_initial_state
+      end
+
       module InstanceMethods
         def load_workflow_state
           read_attribute(self.class.workflow_column)
