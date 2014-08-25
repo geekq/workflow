@@ -267,10 +267,10 @@ module Workflow
     if klass.respond_to?(:workflow_adapter)
       klass.send :include, klass.workflow_adapter
     else
-      if Object.const_defined?(:ActiveRecord) && klass < ActiveRecord::Base
+      if Object.const_defined?('ActiveRecord') && klass < ActiveRecord::Base
         klass.send :include, Adapter::ActiveRecord
       end
-      if Object.const_defined?(:Remodel) && klass < Adapter::Remodel::Entity
+      if Object.const_defined?('Remodel') && klass < Adapter::Remodel::Entity
         klass.send :include, Adapter::Remodel::InstanceMethods
       end
       if Object.const_defined?('Sequel') && klass < Sequel::Model
