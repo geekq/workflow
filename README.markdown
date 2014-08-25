@@ -380,7 +380,7 @@ The user of the adapter can use it then as:
 ```ruby
 class Article
   include Workflow
-  include Workflow:SuperCoolDb
+  include Workflow::SuperCoolDb
   workflow do
     state :submitted
     # ...
