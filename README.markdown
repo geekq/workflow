@@ -70,10 +70,10 @@ of possible events and other meta information:
 
 ```ruby
 article.current_state
-=> #<Workflow::State:0x7f1e3d6731f0 @events={
-  :submit=>#<Workflow::Event:0x7f1e3d6730d8 @action=nil,
-    @transitions_to=:awaiting_review, @name=:submit, @meta={}>},
-  name:new, meta{}
+# => #<Workflow::State:0x007fa1ab36f750
+#  @events={:submit=>#<Workflow::Event:0x007fa1ab36f638 @action=nil, @meta={}, @name=:submit, @transitions_to=:awaiting_review>},
+#  @meta={},
+#  @name=:new
 ```
 
 On Ruby 1.9 and above, you can check whether a state comes before or
@@ -103,7 +103,7 @@ state you're in, you'll have a different set of events used to
 transition to other states.
 
 It is also easy to check, if a certain transition is possible from the
-current state . `article.can_submit?` checks if there is a `:submit`
+current state. `article.can_submit?` checks if there is a `:submit`
 event (transition) defined for the current state.
 
 
