@@ -273,7 +273,7 @@ module Workflow
       if Object.const_defined?(:Remodel) && klass < Adapter::Remodel::Entity
         klass.send :include, Adapter::Remodel::InstanceMethods
       end
-      if Object.const_defined?('Sequel')) && klass < Sequel::Model
+      if Object.const_defined?('Sequel') && klass < Sequel::Model
         klass.send :include, Adapter::Sequel::InstanceMethods
       end
     end
