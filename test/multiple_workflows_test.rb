@@ -1,12 +1,11 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 require 'workflow'
 class MultipleWorkflowsTest < ActiveRecordTestCase
-
   test 'multiple workflows' do
 
     ActiveRecord::Schema.define do
       create_table :bookings do |t|
-        t.string :title, :null => false
+        t.string :title, null: false
         t.string :workflow_state
         t.string :workflow_type
       end
@@ -16,7 +15,6 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
     exec "INSERT INTO bookings(title, workflow_state, workflow_type) VALUES('booking2', 'initial', 'workflow_2')"
 
     class Booking < ActiveRecord::Base
-
       include Workflow
 
       def initialize_workflow
@@ -26,7 +24,7 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
           class << self
             workflow do
               state :initial do
-                event :progress, :transitions_to => :last
+                event :progress, transitions_to: :last
               end
               state :last
             end
@@ -35,7 +33,7 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
           class << self
             workflow do
               state :initial do
-                event :progress, :transitions_to => :intermediate
+                event :progress, transitions_to: :intermediate
               end
               state :intermediate
               state :last
@@ -44,12 +42,13 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
         end
       end
 
-      def metaclass; class << self; self; end; end
+      def metaclass
+        class << self; self; end
+      end
 
       def workflow_spec
         metaclass.workflow_spec
       end
-
     end
 
     booking1 = Booking.find_by_title('booking1')
@@ -78,7 +77,8 @@ class MultipleWorkflowsTest < ActiveRecordTestCase
 
   class Object
     # The hidden singleton lurks behind everyone
-    def metaclass; class << self; self; end; end
+    def metaclass
+      class << self; self; end
+    end
   end
-
 end

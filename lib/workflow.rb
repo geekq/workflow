@@ -9,7 +9,7 @@ module Workflow
   module ClassMethods
     attr_reader :workflow_spec
 
-    def workflow_column(column_name=nil)
+    def workflow_column(column_name = nil)
       if column_name
         @workflow_state_column_name = column_name.to_sym
       end
@@ -20,14 +20,13 @@ module Workflow
     end
 
     def workflow(&specification)
-      assign_workflow Specification.new(Hash.new, &specification)
+      assign_workflow Specification.new({}, &specification)
     end
 
     private
 
     # Creates the convinience methods like `my_transition!`
     def assign_workflow(specification_object)
-
       # Merging two workflow specifications can **not** be done automically, so
       # just make the latest specification win. Same for inheritance -
       # definition in the subclass wins.
@@ -74,7 +73,6 @@ module Workflow
   end
 
   module InstanceMethods
-
     def current_state
       loaded_state = load_workflow_state
       res = spec.states[loaded_state.to_sym] if loaded_state
@@ -89,13 +87,11 @@ module Workflow
 
     # @return the reason of the last transition abort as set by the previous
     # call of `halt` or `halt!` method.
-    def halted_because
-      @halted_because
-    end
+    attr_reader :halted_because
 
     def process_event!(name, *args)
       event = current_state.events.first_applicable(name, self)
-      raise NoTransitionAllowed.new(
+      fail NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
         if event.nil?
       @halted_because = nil
@@ -138,7 +134,7 @@ module Workflow
     def halt!(reason = nil)
       @halted_because = reason
       @halted = true
-      raise TransitionHalted.new(reason)
+      fail TransitionHalted.new(reason)
     end
 
     def spec
@@ -162,8 +158,8 @@ module Workflow
       # Create a meaningful error message instead of
       # "undefined method `on_entry' for nil:NilClass"
       # Reported by Kyle Burton
-      if !spec.states[event.transitions_to]
-        raise WorkflowError.new("Event[#{event.name}]'s " +
+      unless spec.states[event.transitions_to]
+        fail WorkflowError.new("Event[#{event.name}]'s " \
             "transitions_to[#{event.transitions_to}] is not a declared state.")
       end
     end
@@ -178,7 +174,7 @@ module Workflow
         instance_exec(error, from.name, to.name, event, *args, &spec.on_error_proc)
         halt(error.message)
       else
-        raise error
+        fail error
       end
     end
 
@@ -199,14 +195,14 @@ module Workflow
       # 1. public callback method or
       # 2. protected method somewhere in the class hierarchy or
       # 3. private in the immediate class (parent classes ignored)
-      self.respond_to?(action) or
-        self.class.protected_method_defined?(action) or
-        self.private_methods(false).map(&:to_sym).include?(action)
+      self.respond_to?(action) ||
+        self.class.protected_method_defined?(action) ||
+        private_methods(false).map(&:to_sym).include?(action)
     end
 
     def run_action_callback(action_name, *args)
       action = action_name.to_sym
-      self.send(action, *args) if has_callback?(action)
+      send(action, *args) if has_callback?(action)
     end
 
     def run_on_entry(state, prior_state, triggering_event, *args)
@@ -214,7 +210,7 @@ module Workflow
         instance_exec(prior_state.name, triggering_event, *args, &state.on_entry)
       else
         hook_name = "on_#{state}_entry"
-        self.send hook_name, prior_state, triggering_event, *args if has_callback?(hook_name)
+        send hook_name, prior_state, triggering_event, *args if has_callback?(hook_name)
       end
     end
 
@@ -224,7 +220,7 @@ module Workflow
           instance_exec(new_state.name, triggering_event, *args, &state.on_exit)
         else
           hook_name = "on_#{state}_exit"
-          self.send hook_name, new_state, triggering_event, *args if has_callback?(hook_name)
+          send hook_name, new_state, triggering_event, *args if has_callback?(hook_name)
         end
       end
     end
@@ -252,7 +248,7 @@ module Workflow
     if klass.superclass.respond_to?(:workflow_spec, true)
       klass.module_eval do
         # see http://stackoverflow.com/a/2495650/111995 for implementation explanation
-        pro = Proc.new { klass.superclass.workflow_spec }
+        pro = proc { klass.superclass.workflow_spec }
         singleton_class = class << self; self; end
         singleton_class.send(:define_method, :inherited_workflow_spec) do
           pro.call

@@ -7,7 +7,7 @@ class User < CouchTiny::Document
   include Workflow
   workflow do
     state :submitted do
-      event :activate_via_link, :transitions_to => :proved_email
+      event :activate_via_link, transitions_to: :proved_email
     end
     state :proved_email
   end
@@ -22,18 +22,16 @@ class User < CouchTiny::Document
   end
 end
 
-
 class CouchtinyExample < Test::Unit::TestCase
-
   def setup
-    db = CouchTiny::Database.url("http://127.0.0.1:5984/test-workflow")
+    db = CouchTiny::Database.url('http://127.0.0.1:5984/test-workflow')
     db.delete_database! rescue nil
     db.create_database!
     User.use_database db
   end
 
   test 'CouchDB persistence' do
-    user = User.new :email => 'manya@example.com'
+    user = User.new email: 'manya@example.com'
     user.save!
     assert user.submitted?
     user.activate_via_link!

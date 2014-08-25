@@ -5,18 +5,17 @@ class ComparableStatesOrder
   include Workflow
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
+      event :accept, transitions_to: :accepted, meta: { weight: 8 } do |_reviewer, _args|
       end
     end
     state :accepted do
-      event :ship, :transitions_to => :shipped
+      event :ship, transitions_to: :shipped
     end
     state :shipped
   end
 end
 
 class CompareStatesTest < Test::Unit::TestCase
-
   test 'compare states' do
     o = ComparableStatesOrder.new
     o.accept!
@@ -28,5 +27,4 @@ class CompareStatesTest < Test::Unit::TestCase
       o.current_state > :unknown
     end
   end
-
 end

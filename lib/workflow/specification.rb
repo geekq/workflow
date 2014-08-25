@@ -6,10 +6,10 @@ require 'workflow/errors'
 module Workflow
   class Specification
     attr_accessor :states, :initial_state, :meta,
-      :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
+                  :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
 
     def initialize(meta = {}, &specification)
-      @states = Hash.new
+      @states = {}
       @meta = meta
       instance_eval(&specification)
     end
@@ -20,7 +20,7 @@ module Workflow
 
     private
 
-    def state(name, meta = {:meta => {}}, &events_and_etc)
+    def state(name, meta = { meta: {} }, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
       new_state = Workflow::State.new(name, self, meta[:meta])
       @initial_state = new_state if @states.empty?
@@ -32,11 +32,11 @@ module Workflow
     def event(name, args = {}, &action)
       target = args[:transitions_to] || args[:transition_to]
       condition = args[:if]
-      raise WorkflowDefinitionError.new(
+      fail WorkflowDefinitionError.new(
         "missing ':transitions_to' in workflow event definition for '#{name}'") \
         if target.nil?
       @scoped_state.events.push(
-        name, Workflow::Event.new(name, target, condition, (args[:meta] or {}), &action)
+        name, Workflow::Event.new(name, target, condition, (args[:meta] || {}), &action)
       )
     end
 

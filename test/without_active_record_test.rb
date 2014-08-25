@@ -6,14 +6,14 @@ class WithoutWorkflowTest < Test::Unit::TestCase
     include Workflow
     workflow do
       state :new do
-        event :submit, :transitions_to => :awaiting_review
+        event :submit, transitions_to: :awaiting_review
       end
       state :awaiting_review do
-        event :review, :transitions_to => :being_reviewed
+        event :review, transitions_to: :being_reviewed
       end
       state :being_reviewed do
-        event :accept, :transitions_to => :accepted
-        event :reject, :transitions_to => :rejected
+        event :accept, transitions_to: :accepted
+        event :reject, transitions_to: :rejected
       end
       state :accepted
       state :rejected
@@ -31,7 +31,7 @@ class WithoutWorkflowTest < Test::Unit::TestCase
         include Workflow
         workflow do
           state :new do
-            event :event1, :transitionnn => :next # missing transitions_to target
+            event :event1, transitionnn: :next # missing transitions_to target
           end
           state :next
         end
@@ -44,11 +44,10 @@ class WithoutWorkflowTest < Test::Unit::TestCase
       include Workflow
       workflow do
         state :new do
-          event :event1, :transition_to => :next
+          event :event1, transition_to: :next
         end
         state :next
       end
     end
   end
 end
-

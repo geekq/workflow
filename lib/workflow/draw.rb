@@ -12,7 +12,6 @@ end
 
 module Workflow
   module Draw
-
     # Generates a `dot` graph of the workflow.
     # Prerequisite: the `dot` binary. (Download from http://www.graphviz.org/)
     # You can use this method in your own Rakefile like this:
@@ -40,17 +39,17 @@ module Workflow
     # @param klass A class with the Workflow mixin, for which you wish the graphical workflow representation
     # @param [String] target_dir Directory, where to save the dot and the pdf files
     # @param [String] graph_options You can change graph orientation, size etc. See graphviz documentation
-    def self.workflow_diagram(klass, options={})
+    def self.workflow_diagram(klass, options = {})
       options = {
-        :name => "#{klass.name.tableize}_workflow".gsub('/', '_'),
-        :path => '.',
-        :orientation => "landscape",
-        :ratio => "fill",
-        :format => 'png',
-        :font => 'Helvetica'
-        }.merge options
+        name: "#{klass.name.tableize}_workflow".gsub('/', '_'),
+        path: '.',
+        orientation: 'landscape',
+        ratio: 'fill',
+        format: 'png',
+        font: 'Helvetica'
+      }.merge(options)
 
-        graph = ::GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB', :ratio => options[:ratio])
+      graph = ::GraphViz.new('G', rankdir: options[:orientation] == 'landscape' ? 'LR' : 'TB', ratio: options[:ratio])
 
       # Add nodes
       klass.workflow_spec.states.each do |_, state|

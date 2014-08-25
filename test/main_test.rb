@@ -6,7 +6,7 @@ require 'sqlite3'
 require 'workflow'
 require 'mocha/setup'
 require 'stringio'
-#require 'ruby-debug'
+# require 'ruby-debug'
 
 ActiveRecord::Migration.verbose = false
 
@@ -14,11 +14,11 @@ class Order < ActiveRecord::Base
   include Workflow
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
+      event :accept, transitions_to: :accepted, meta: { weight: 8 } do |_reviewer, _args|
       end
     end
     state :accepted do
-      event :ship, :transitions_to => :shipped
+      event :ship, transitions_to: :shipped
     end
     state :shipped
   end
@@ -31,11 +31,11 @@ class LegacyOrder < ActiveRecord::Base
 
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
+      event :accept, transitions_to: :accepted, meta: { weight: 8 } do |_reviewer, _args|
       end
     end
     state :accepted do
-      event :ship, :transitions_to => :shipped
+      event :ship, transitions_to: :shipped
     end
     state :shipped
   end
@@ -48,7 +48,7 @@ class Image < ActiveRecord::Base
 
   workflow do
     state :unconverted do
-      event :convert, :transitions_to => :converted
+      event :convert, transitions_to: :converted
     end
     state :converted
   end
@@ -61,13 +61,12 @@ class SpecialSmallImage < SmallImage
 end
 
 class MainTest < ActiveRecordTestCase
-
   def setup
     super
 
     ActiveRecord::Schema.define do
       create_table :orders do |t|
-        t.string :title, :null => false
+        t.string :title, null: false
         t.string :workflow_state
       end
     end
@@ -76,7 +75,7 @@ class MainTest < ActiveRecordTestCase
 
     ActiveRecord::Schema.define do
       create_table :legacy_orders do |t|
-        t.string :title, :null => false
+        t.string :title, null: false
         t.string :foo_bar
       end
     end
@@ -85,7 +84,7 @@ class MainTest < ActiveRecordTestCase
 
     ActiveRecord::Schema.define do
       create_table :images do |t|
-        t.string :title, :null => false
+        t.string :title, null: false
         t.string :state
         t.string :type
       end
@@ -146,8 +145,8 @@ class MainTest < ActiveRecordTestCase
 
   test 'access workflow specification' do
     assert_equal 3, Order.workflow_spec.states.length
-    assert_equal ['submitted', 'accepted', 'shipped'].sort,
-      Order.workflow_spec.state_names.map{|n| n.to_s}.sort
+    assert_equal %w(submitted accepted shipped).sort,
+                 Order.workflow_spec.state_names.map { |n| n.to_s }.sort
   end
 
   test 'current state object' do
@@ -158,14 +157,14 @@ class MainTest < ActiveRecordTestCase
 
   test 'on_entry and on_exit invoked' do
     c = Class.new
-    callbacks = mock()
+    callbacks = mock
     callbacks.expects(:my_on_exit_new).once
     callbacks.expects(:my_on_entry_old).once
     c.class_eval do
       include Workflow
       workflow do
         state :new do
-          event :age, :transitions_to => :old
+          event :age, transitions_to: :old
         end
         on_exit do
           callbacks.my_on_exit_new
@@ -175,7 +174,7 @@ class MainTest < ActiveRecordTestCase
           callbacks.my_on_entry_old
         end
         on_exit do
-          fail "wrong on_exit executed"
+          fail 'wrong on_exit executed'
         end
       end
     end
@@ -186,17 +185,17 @@ class MainTest < ActiveRecordTestCase
   end
 
   test 'on_transition invoked' do
-    callbacks = mock()
+    callbacks = mock
     callbacks.expects(:on_tran).once # this is validated at the end
     c = Class.new
     c.class_eval do
       include Workflow
       workflow do
         state :one do
-          event :increment, :transitions_to => :two
+          event :increment, transitions_to: :two
         end
         state :two
-        on_transition do |from, to, triggering_event, *event_args|
+        on_transition do |_from, _to, _triggering_event, *_event_args|
           callbacks.on_tran
         end
       end
@@ -210,8 +209,8 @@ class MainTest < ActiveRecordTestCase
     c.class_eval do
       include Workflow
       workflow do
-        state :main, :meta => {:importance => 8}
-        state :supplemental, :meta => {:importance => 1}
+        state :main, meta: { importance: 8 }
+        state :supplemental, meta: { importance: 1 }
       end
     end
     assert_equal 1, c.workflow_spec.states[:supplemental].meta[:importance]
@@ -234,7 +233,7 @@ class MainTest < ActiveRecordTestCase
   end
 
   test 'initial state immediately set as ActiveRecord attribute for new objects' do
-    o = Order.create(:title => 'new object')
+    o = Order.create(title: 'new object')
     assert_equal 'submitted', o.read_attribute(:workflow_state)
   end
 
@@ -254,7 +253,7 @@ class MainTest < ActiveRecordTestCase
   test 'multiple events with the same name and different arguments lists from different states'
 
   test 'implicit transition callback' do
-    args = mock()
+    args = mock
     args.expects(:my_tran).once # this is validated at the end
     c = Class.new
     c.class_eval do
@@ -264,12 +263,13 @@ class MainTest < ActiveRecordTestCase
       end
       workflow do
         state :one do
-          event :my_transition, :transitions_to => :two
+          event :my_transition, transitions_to: :two
         end
         state :two
       end
 
       private
+
       def another_transition(args)
         args.another_tran
       end
@@ -279,14 +279,16 @@ class MainTest < ActiveRecordTestCase
   end
 
   test '#53 Support for non public transition callbacks' do
-    args = mock()
+    args = mock
     args.expects(:log).with('in private callback').once
     args.expects(:log).with('in protected callback in the base class').once
     args.expects(:log).with('in protected callback `on_assigned_entry`').once
 
     b = Class.new # the base class with a protected callback
     b.class_eval do
+
       protected
+
       def assign_old(args)
         args.log('in protected callback in the base class')
       end
@@ -298,19 +300,21 @@ class MainTest < ActiveRecordTestCase
       include Workflow
       workflow do
         state :new do
-          event :assign, :transitions_to => :assigned
-          event :assign_old, :transitions_to => :assigned_old
+          event :assign, transitions_to: :assigned
+          event :assign_old, transitions_to: :assigned_old
         end
         state :assigned
         state :assigned_old
       end
 
       protected
-      def on_assigned_entry(prev_state, event, args)
+
+      def on_assigned_entry(_prev_state, _event, args)
         args.log('in protected callback `on_assigned_entry`')
       end
 
       private
+
       def assign(args)
         args.log('in private callback')
       end
@@ -324,13 +328,13 @@ class MainTest < ActiveRecordTestCase
   end
 
   test '#58 Limited private transition callback lookup' do
-    args = mock()
+    args = mock
     c = Class.new
     c.class_eval do
       include Workflow
       workflow do
         state :new do
-          event :fail, :transitions_to => :failed
+          event :fail, transitions_to: :failed
         end
         state :failed
       end
@@ -383,7 +387,7 @@ class MainTest < ActiveRecordTestCase
       include Workflow
       workflow do
         state :initial do
-          event :solve, :transitions_to => :solved
+          event :solve, transitions_to: :solved
         end
       end
     end
@@ -420,16 +424,16 @@ class MainTest < ActiveRecordTestCase
       end
       workflow do
         state :new do
-          event :next, :transitions_to => :next_state
+          event :next, transitions_to: :next_state
         end
         state :next_state
       end
 
-      def on_next_state_entry(prior_state, event, *args)
+      def on_next_state_entry(prior_state, event, *_args)
         @history << "on_next_state_entry #{event} #{prior_state} ->"
       end
 
-      def on_new_exit(new_state, event, *args)
+      def on_new_exit(new_state, event, *_args)
         @history << "on_new_exit #{event} -> #{new_state}"
       end
     end
@@ -446,9 +450,9 @@ class MainTest < ActiveRecordTestCase
     begin
       $stdout = StringIO.new('', 'w')
       require 'workflow/draw'
-      Workflow::Draw::workflow_diagram(Order, :path => '/tmp')
+      Workflow::Draw.workflow_diagram(Order, path: '/tmp')
       assert_match(/run the following/, $stdout.string,
-        'PDF should be generate and a hint be given to the user.')
+                   'PDF should be generate and a hint be given to the user.')
     ensure
       $stdout = STDOUT
     end
@@ -459,12 +463,12 @@ class MainTest < ActiveRecordTestCase
       include Workflow
       workflow do
         state :young do
-          event :age, :transitions_to => :old
+          event :age, transitions_to: :old
         end
         state :old
       end
 
-      def age(by=1)
+      def age(by = 1)
         halt 'too fast' if by > 100
       end
     end
@@ -482,7 +486,7 @@ class MainTest < ActiveRecordTestCase
       attr_accessor :too_far
       workflow do
         state :new do
-          event :reject, :transitions_to => :rejected
+          event :reject, transitions_to: :rejected
         end
         state :rejected
       end
@@ -490,7 +494,7 @@ class MainTest < ActiveRecordTestCase
       def reject(reason)
         halt! 'We do not reject articles unless the reason is important' \
           unless reason =~ /important/i
-        self.too_far = "This line should not be executed"
+        self.too_far = 'This line should not be executed'
       end
     end
 
@@ -510,10 +514,10 @@ class MainTest < ActiveRecordTestCase
       include Workflow
       workflow do
         state :newborn do
-          event :go_to_school, :transitions_to => :schoolboy
+          event :go_to_school, transitions_to: :schoolboy
         end
         state :schoolboy do
-          event :go_to_college, :transitions_to => :student
+          event :go_to_college, transitions_to: :student
         end
         state :student
         state :street
@@ -530,8 +534,8 @@ class MainTest < ActiveRecordTestCase
       include Workflow
       workflow do
         state :off do
-          event :turn_on, :transitions_to => :on, :if => proc { |obj| obj.battery > 10 }
-          event :turn_on, :transitions_to => :low_battery, :if => proc { |obj| obj.battery > 0 }
+          event :turn_on, transitions_to: :on, if: proc { |obj| obj.battery > 10 }
+          event :turn_on, transitions_to: :low_battery, if: proc { |obj| obj.battery > 0 }
         end
         state :on
         state :low_battery
@@ -560,7 +564,7 @@ class MainTest < ActiveRecordTestCase
   test 'workflow graph generation' do
     Dir.chdir('/tmp') do
       capture_streams do
-        Workflow::Draw::workflow_diagram(Order, :path => '/tmp')
+        Workflow::Draw.workflow_diagram(Order, path: '/tmp')
       end
     end
   end
@@ -568,7 +572,7 @@ class MainTest < ActiveRecordTestCase
   test 'workflow graph generation in a path with spaces' do
     `mkdir -p '/tmp/Workflow test'`
     capture_streams do
-      Workflow::Draw::workflow_diagram(Order, :path => '/tmp/Workflow test')
+      Workflow::Draw.workflow_diagram(Order, path: '/tmp/Workflow test')
     end
   end
 
@@ -579,6 +583,4 @@ class MainTest < ActiveRecordTestCase
     $stdout = old_stdout
     captured_stdout
   end
-
 end
-

@@ -5,7 +5,7 @@ require 'rdoc/task'
 require 'bundler'
 Bundler.setup
 
-task :default => [:test]
+task default: [:test]
 
 require 'rake'
 Rake::TestTask.new do |t|
@@ -24,7 +24,6 @@ Rake::TestTask.new do |t|
 end
 
 Rake::RDocTask.new do |rdoc|
-  rdoc.rdoc_files.include("lib/**/*.rb")
-  rdoc.options << "-S"
+  rdoc.rdoc_files.include('lib/**/*.rb')
+  rdoc.options << '-S'
 end
-

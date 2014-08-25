@@ -9,10 +9,10 @@ module Workflow
 
     def draw(graph)
       defaults = {
-        :label => to_s,
-        :width => '1',
-        :height => '1',
-        :shape => 'ellipse'
+        label: to_s,
+        width: '1',
+        height: '1',
+        shape: 'ellipse'
       }
 
       node = graph.add_nodes(to_s, defaults.merge(meta))
@@ -23,13 +23,12 @@ module Workflow
       node
     end
 
-
     if RUBY_VERSION >= '1.9'
       include Comparable
       def <=>(other_state)
         states = spec.states.keys
-        raise ArgumentError, "state `#{other_state}' does not exist" unless states.include?(other_state.to_sym)
-        states.index(self.to_sym) <=> states.index(other_state.to_sym)
+        fail ArgumentError, "state `#{other_state}' does not exist" unless states.include?(other_state.to_sym)
+        states.index(to_sym) <=> states.index(other_state.to_sym)
       end
     end
 

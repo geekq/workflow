@@ -16,30 +16,28 @@ class AttrProtectedTestOrder < ActiveRecord::Base
 
   workflow do
     state :submitted do
-      event :accept, :transitions_to => :accepted, :meta => {:doc_weight => 8} do |reviewer, args|
+      event :accept, transitions_to: :accepted, meta: { doc_weight: 8 } do |_reviewer, _args|
       end
     end
     state :accepted do
-      event :ship, :transitions_to => :shipped
+      event :ship, transitions_to: :shipped
     end
     state :shipped
   end
 
   attr_accessible :title # protecting all the other attributes
-
 end
 
 AttrProtectedTestOrder.logger = Logger.new(STDOUT) # active_record 2.3 expects a logger instance
 AttrProtectedTestOrder.logger.level = Logger::WARN # switch to Logger::DEBUG to see the SQL statements
 
 class AttrProtectedTest < ActiveRecordTestCase
-
   def setup
     super
 
     ActiveRecord::Schema.define do
       create_table :attr_protected_test_orders do |t|
-        t.string :title, :null => false
+        t.string :title, null: false
         t.string :workflow_state
       end
     end
@@ -59,15 +57,15 @@ class AttrProtectedTest < ActiveRecordTestCase
   end
 
   test 'cannot mass-assign workflow_state if attr_protected' do
-     o = AttrProtectedTestOrder.find_by_title('order1')
-     assert_equal 'submitted', o.read_attribute(:workflow_state)
-     AttrProtectedTestOrder.logger.level = Logger::ERROR # ignore warnings
-     o.update_attributes :workflow_state => 'some_bad_value'
-     AttrProtectedTestOrder.logger.level = Logger::WARN
-     assert_equal 'submitted', o.read_attribute(:workflow_state)
-     o.update_attribute :workflow_state, 'some_overridden_value'
-     assert_equal 'some_overridden_value', o.read_attribute(:workflow_state)
-   end
+    o = AttrProtectedTestOrder.find_by_title('order1')
+    assert_equal 'submitted', o.read_attribute(:workflow_state)
+    AttrProtectedTestOrder.logger.level = Logger::ERROR # ignore warnings
+    o.update_attributes workflow_state: 'some_bad_value'
+    AttrProtectedTestOrder.logger.level = Logger::WARN
+    assert_equal 'submitted', o.read_attribute(:workflow_state)
+    o.update_attribute :workflow_state, 'some_overridden_value'
+    assert_equal 'some_overridden_value', o.read_attribute(:workflow_state)
+  end
 
   test 'immediately save the new workflow_state on state machine transition' do
     o = assert_state 'order2', 'accepted'
@@ -93,8 +91,8 @@ class AttrProtectedTest < ActiveRecordTestCase
 
   test 'access workflow specification' do
     assert_equal 3, AttrProtectedTestOrder.workflow_spec.states.length
-    assert_equal ['submitted', 'accepted', 'shipped'].sort,
-      AttrProtectedTestOrder.workflow_spec.state_names.map{|n| n.to_s}.sort
+    assert_equal %w(submitted accepted shipped).sort,
+                 AttrProtectedTestOrder.workflow_spec.state_names.map { |n| n.to_s }.sort
   end
 
   test 'current state object' do
@@ -102,6 +100,4 @@ class AttrProtectedTest < ActiveRecordTestCase
     assert_equal 'accepted', o.current_state.to_s
     assert_equal 1, o.current_state.events.length
   end
-
 end
-

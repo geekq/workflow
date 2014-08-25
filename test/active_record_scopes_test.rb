@@ -17,7 +17,6 @@ class Article < ActiveRecord::Base
 end
 
 class ActiveRecordScopesTest < ActiveRecordTestCase
-
   def setup
     super
 
@@ -46,4 +45,3 @@ class ActiveRecordScopesTest < ActiveRecordTestCase
     assert_respond_to Article, :with_accepted_state
   end
 end
-

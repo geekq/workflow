@@ -11,12 +11,12 @@ class BeforeTransitionTest < Test::Unit::TestCase
     include Workflow
     workflow do
       state :first do
-        event :forward, :transitions_to => :second do
+        event :forward, transitions_to: :second do
           @history << 'forward'
         end
       end
       state :second do
-        event :back, :transitions_to => :first do
+        event :back, transitions_to: :first do
           @history << 'back'
         end
       end
@@ -31,6 +31,6 @@ class BeforeTransitionTest < Test::Unit::TestCase
     flow = MyFlow.new
     flow.forward!
     flow.back!
-    assert flow.history == ['before', 'forward', 'on', 'after', 'before', 'back', 'on', 'after']
+    assert flow.history == %w(before forward on after before back on after)
   end
 end

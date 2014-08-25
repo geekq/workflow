@@ -11,7 +11,7 @@ class AdapterHookTest < ActiveRecordTestCase
       self.table_name = :examples
       include Workflow
       workflow do
-        state(:initial) { event :progress, :transitions_to => :last }
+        state(:initial) { event :progress, transitions_to: :last }
         state(:last)
       end
     end
@@ -24,6 +24,7 @@ class AdapterHookTest < ActiveRecordTestCase
           def load_workflow_state
             @foo if defined?(@foo)
           end
+
           def persist_workflow_state(new_value)
             @foo = new_value
           end
@@ -32,7 +33,7 @@ class AdapterHookTest < ActiveRecordTestCase
 
       include Workflow
       workflow do
-        state(:initial) { event :progress, :transitions_to => :last }
+        state(:initial) { event :progress, transitions_to: :last }
         state(:last)
       end
     end
