@@ -32,8 +32,8 @@ class InheritanceTest < ActiveRecordTestCase
       end
     end
 
-    assert_equal [:born, :conceived] , sort_sym_array(Animal.workflow_spec.states.keys)
-    assert_equal [:hiding, :upset], sort_sym_array(Cat.workflow_spec.states.keys), "Workflow definitions are not inherited"
+    assert_equal %i(born conceived), Animal.workflow_spec.states.keys.sort
+    assert_equal %i(hiding upset), Cat.workflow_spec.states.keys.sort, 'Workflow definitions are not inherited'
 
     animal = Animal.new
     cat = Cat.new
