@@ -421,13 +421,25 @@ representation of the workflow. See below.
 Conditional event transitions
 -----------------------------
 
-Conditions are procs or lambdas added to events, like so:
+Conditions are procs, lambdas, strings or symbols added to events, like so:
 
     state :off
+      event :turn_on, :transitions_to => :crashed_battery,
+                      :if => 'battery_crashed?'
+      event :turn_on, :transitions_to => :incorect_battery,
+                      :if => :battery_incorrect?
       event :turn_on, :transition_to => :on,
                       :if => proc { |device| device.battery_level > 0 }
       event :turn_on, :transition_to => :low_battery,
                       :if => proc { |device| device.battery_level > 10 }
+    end
+
+    def battery_crashed?
+      # ...
+    end
+
+    def battery_incorrect?
+      # ...
     end
 
 When calling a `device.can_<fire_event>?` check, or attempting a `device.<event>!`, each event is checked in turn:

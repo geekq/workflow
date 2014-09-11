@@ -530,15 +530,25 @@ class MainTest < ActiveRecordTestCase
       include Workflow
       workflow do
         state :off do
+          event :turn_on, :transitions_to => :crashed_battery, :if => 'battery_crashed?'
+          event :turn_on, :transitions_to => :incorect_battery, :if => :battery_incorrect?
           event :turn_on, :transitions_to => :on, :if => proc { |obj| obj.battery > 10 }
           event :turn_on, :transitions_to => :low_battery, :if => proc { |obj| obj.battery > 0 }
         end
         state :on
         state :low_battery
+        state :incorect_battery
+        state :crashed_battery
       end
       attr_reader :battery
       def initialize(battery)
         @battery = battery
+      end
+      def battery_incorrect?
+        battery < 0
+      end
+      def battery_crashed?
+        battery == nil
       end
     end
 
@@ -555,6 +565,16 @@ class MainTest < ActiveRecordTestCase
     assert device.can_turn_on?
     device.turn_on!
     assert device.on?
+
+    device = c.new -1
+    assert device.can_turn_on?
+    device.turn_on!
+    assert device.incorect_battery?
+
+    device = c.new nil
+    assert device.can_turn_on?
+    device.turn_on!
+    assert device.battery_crashed?
   end
 
   test 'workflow graph generation' do
