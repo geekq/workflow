@@ -11,7 +11,7 @@ module Workflow
       @condition = if condition.nil? || condition.respond_to?(:call)
                      condition
                    elsif condition.is_a?(Symbol) || condition.is_a?(String)
-                    ->(object) { object.public_send(condition) }
+                    proc { |object| object.public_send(condition) }
                    else
                      raise TypeError, 'condition must be nil or callable (eg. a proc or lambda)'
                    end
