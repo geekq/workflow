@@ -199,6 +199,7 @@ module Workflow
       # 1. public callback method or
       # 2. protected method somewhere in the class hierarchy or
       # 3. private in the immediate class (parent classes ignored)
+      action = action.to_sym
       self.respond_to?(action) or
         self.class.protected_method_defined?(action) or
         self.private_methods(false).map(&:to_sym).include?(action)
