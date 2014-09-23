@@ -1,5 +1,9 @@
 [![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow) Tested with [different Ruby and Rails versions](https://travis-ci.org/geekq/workflow)
 
+Note: this documentation is for the upcomming release / current state of
+the workflow library. For the documentation on the latest rubygems
+release click on the "Documentation" link at
+http://rubygems.org/gems/workflow
 
 What is workflow?
 -----------------
