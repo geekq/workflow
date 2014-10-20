@@ -32,8 +32,8 @@ class InheritanceTest < ActiveRecordTestCase
       end
     end
 
-    assert_equal [:born, :conceived] , sort_sym_array(Animal.workflow_spec.states.keys)
-    assert_equal [:hiding, :upset], sort_sym_array(Cat.workflow_spec.states.keys), "Workflow definitions are not inherited"
+    assert_equal [:born, :conceived], Animal.workflow_spec.states.keys.sort
+    assert_equal [:hiding, :upset], Cat.workflow_spec.states.keys.sort, 'Workflow definitions are not inherited'
 
     animal = Animal.new
     cat = Cat.new
@@ -48,13 +48,9 @@ class InheritanceTest < ActiveRecordTestCase
     assert_equal [:halt!, :process_event!, :scratch!], bang_methods(cat)
   end
 
-  def sort_sym_array(a)
-    a.sort { |a, b| a.to_s <=> b.to_s } # workaround for Ruby 1.8.7
-  end
-
   def bang_methods(obj)
-    non_trivial_methods = obj.public_methods-Object.public_methods
-    methods_with_bang = non_trivial_methods.select {|m| m =~ /!$/}
-    sort_sym_array(methods_with_bang).map {|m| m.to_sym}
+    non_trivial_methods = obj.public_methods - Object.public_methods
+    methods_with_bang = non_trivial_methods.select { |m| m =~ /!$/ }
+    methods_with_bang.map(&:to_sym).sort
   end
 end
