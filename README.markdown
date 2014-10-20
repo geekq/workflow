@@ -640,6 +640,8 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
+### New in the upcoming version 1.3.0
+
 ### New in the version 1.2.0
 
 * Fix issue #98 protected on\_\* callbacks in Ruby 2
