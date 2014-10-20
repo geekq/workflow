@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow) Tested with [different Ruby and Rails versions](https://travis-ci.org/geekq/workflow)
 
 Note: you can find documentation for specific workflow rubygem versions at
-http://rubygems.org/gems/workflow: select a version (optional, default
+http://rubygems.org/gems/workflow : select a version (optional, default
 is latest release), click "Documentation" link.
 
 What is workflow?
