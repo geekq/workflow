@@ -8,15 +8,23 @@ module Workflow
       @transitions_to = transitions_to.to_sym
       @meta = meta
       @action = action
-      @condition = if condition.nil? || condition.respond_to?(:call)
+      @condition = if condition.nil? || condition.is_a?(Symbol) || condition.respond_to?(:call)
                      condition
                    else
-                     raise TypeError, 'condition must be nil or callable (eg. a proc or lambda)'
+                     raise TypeError, 'condition must be nil, an instance method name symbol or a callable (eg. a proc or lambda)'
                    end
     end
 
     def condition_applicable?(object)
-      condition ? condition.call(object) : true
+      if condition
+        if condition.is_a?(Symbol)
+          object.send(condition)
+        else
+          condition.call(object)
+        end
+      else
+        true
+      end
     end
 
     def draw(graph, from_state)

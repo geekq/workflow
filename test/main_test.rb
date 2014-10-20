@@ -530,7 +530,7 @@ class MainTest < ActiveRecordTestCase
       include Workflow
       workflow do
         state :off do
-          event :turn_on, :transitions_to => :on, :if => proc { |obj| obj.battery > 10 }
+          event :turn_on, :transitions_to => :on, :if => :sufficient_battery_level?
           event :turn_on, :transitions_to => :low_battery, :if => proc { |obj| obj.battery > 0 }
         end
         state :on
@@ -539,6 +539,10 @@ class MainTest < ActiveRecordTestCase
       attr_reader :battery
       def initialize(battery)
         @battery = battery
+      end
+
+      def sufficient_battery_level?
+        @battery > 10
       end
     end
 

@@ -424,20 +424,26 @@ representation of the workflow. See below.
 Conditional event transitions
 -----------------------------
 
-Conditions are procs or lambdas added to events, like so:
+Conditions can be a "method name symbol" with a corresponding instance method, a `proc` or `lambda` which are added to events, like so:
 
     state :off
       event :turn_on, :transition_to => :on,
-                      :if => proc { |device| device.battery_level > 0 }
+                      :if => :sufficient_battery_level?
+
       event :turn_on, :transition_to => :low_battery,
-                      :if => proc { |device| device.battery_level > 10 }
+                      :if => proc { |device| device.battery_level > 0 }
+    end
+
+    # corresponding instance method
+    def sufficient_battery_level?
+      battery_level > 10
     end
 
 When calling a `device.can_<fire_event>?` check, or attempting a `device.<event>!`, each event is checked in turn:
 
-* With no :if check, proceed as usual.
-* If an :if check is present, proceed if it evaluates to true, or drop to the next event.
-* If you've run out of events to check (eg. battery_level == 0), then the transition isn't possible.
+* With no `:if` check, proceed as usual.
+* If an `:if` check is present, proceed if it evaluates to true, or drop to the next event.
+* If you've run out of events to check (eg. `battery_level == 0`), then the transition isn't possible.
 
 
 Advanced transition hooks
