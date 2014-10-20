@@ -642,6 +642,14 @@ Changelog
 
 ### New in the upcoming version 1.3.0
 
+Retiring Ruby 1.8.7 and Rails 2 support. If you still need this older
+versions despite security issues and missing updates, you can use
+workflow 1.2.0 or older. In your Gemfile put
+
+    gem 'workflow', '~> 1.2.0'
+
+or when using github source just reference the v1.2.0 tag.
+
 ### New in the version 1.2.0
 
 * Fix issue #98 protected on\_\* callbacks in Ruby 2
