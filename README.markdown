@@ -648,7 +648,7 @@ Changelog
 
 ### New in the upcoming version 1.3.0
 
-* #118 Retiring Ruby 1.8.7 and Rails 2 support. If you still need this older
+* Retiring Ruby 1.8.7 and Rails 2 support #118. If you still need this older
   versions despite security issues and missing updates, you can use
   workflow 1.2.0 or older. In your Gemfile put
 
