@@ -661,6 +661,7 @@ or when using github source just reference the v1.2.0 tag.
 * Fix issue #98 protected on\_\* callbacks in Ruby 2
 * #106 Inherit exceptions from StandardError instead of Exception
 * #109 Conditional event transitions, contributed by [damncabbage](http://robhoward.id.au/)
+  This introduces incompatible changes to the meta data API, see also #131.
 * New policy for supporting other databases - extract to separate
   gems. See the README section above.
 * #111 Custom Versions of Existing Adapters by [damncabbage](http://robhoward.id.au/)
