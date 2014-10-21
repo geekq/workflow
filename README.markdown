@@ -648,20 +648,21 @@ Changelog
 
 ### New in the upcoming version 1.3.0
 
-Retiring Ruby 1.8.7 and Rails 2 support. If you still need this older
-versions despite security issues and missing updates, you can use
-workflow 1.2.0 or older. In your Gemfile put
+* #118 Retiring Ruby 1.8.7 and Rails 2 support. If you still need this older
+  versions despite security issues and missing updates, you can use
+  workflow 1.2.0 or older. In your Gemfile put
 
-    gem 'workflow', '~> 1.2.0'
+      gem 'workflow', '~> 1.2.0'
 
-or when using github source just reference the v1.2.0 tag.
+  or when using github source just reference the v1.2.0 tag.
+* improved callback method handling: #113 and #125
 
 ### New in the version 1.2.0
 
 * Fix issue #98 protected on\_\* callbacks in Ruby 2
 * #106 Inherit exceptions from StandardError instead of Exception
 * #109 Conditional event transitions, contributed by [damncabbage](http://robhoward.id.au/)
-  This introduces incompatible changes to the meta data API, see also #131.
+  Please note: this introduces incompatible changes to the meta data API, see also #131.
 * New policy for supporting other databases - extract to separate
   gems. See the README section above.
 * #111 Custom Versions of Existing Adapters by [damncabbage](http://robhoward.id.au/)
