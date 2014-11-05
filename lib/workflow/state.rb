@@ -15,12 +15,22 @@ module Workflow
         :shape => 'ellipse'
       }
 
-      node = graph.add_nodes(to_s, defaults.merge(meta))
+      node = graph.add_nodes(to_s, defaults.merge(meta).slice(*GraphViz::Constants.getAttrsFor(/N/).keys.map(&:to_sym)))
 
       # Add open arrow for initial state
       # graph.add_edge(graph.add_node('starting_state', :shape => 'point'), node) if initial?
 
       node
+    end
+
+    def possible_events(object_context)
+      possible = []
+      @events.each do |name, events|
+        events.each do |ev|
+          possible << ev if ev.condition_applicable?(object_context)
+        end
+      end
+      possible
     end
 
 

@@ -66,7 +66,7 @@ module Workflow
       # Generate the graph
       filename = File.join(options[:path], "#{options[:name]}.#{options[:format]}")
 
-      graph.output options[:format] => "'#{filename}'"
+      graph.output options[:format] => "#{filename}"
 
       puts "
       Please run the following to open the generated file:
