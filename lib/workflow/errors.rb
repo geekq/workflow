@@ -15,4 +15,6 @@ module Workflow
   class WorkflowError < StandardError; end
 
   class WorkflowDefinitionError < StandardError; end
+
+  class WorkflowStateHasChanged < StandardError; end
 end
