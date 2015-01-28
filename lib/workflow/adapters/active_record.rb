@@ -37,8 +37,10 @@ module Workflow
       # Examples:
       #
       # Article.with_pending_state # => ActiveRecord::Relation
-      #
-      # Example above just adds `where(:state_column_name => 'pending')` to AR query and returns
+      # Payment.without_refunded_state # => ActiveRecord::Relation
+      #`
+      # Example above just adds `where(:state_column_name => 'pending')` or
+      # `where.not(:state_column_name => 'pending')` to AR query and returns
       # ActiveRecord::Relation.
       module Scopes
         def self.extended(object)
@@ -56,8 +58,13 @@ module Workflow
             define_singleton_method("with_#{state}_state") do
               where("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
             end
+
+            define_singleton_method("without_#{state}_state") do
+              where.not("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+            end
           end
         end
+
       end
     end
   end
