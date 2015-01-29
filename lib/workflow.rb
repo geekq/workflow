@@ -13,7 +13,7 @@ module Workflow
       if column_name
         @workflow_state_column_name = column_name.to_sym
       end
-      if !@workflow_state_column_name && superclass.respond_to?(:workflow_column)
+      if !instance_variable_defined?('@workflow_state_column_name') && superclass.respond_to?(:workflow_column)
         @workflow_state_column_name = superclass.workflow_column
       end
       @workflow_state_column_name ||= :workflow_state
