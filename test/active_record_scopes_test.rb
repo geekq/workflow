@@ -45,5 +45,14 @@ class ActiveRecordScopesTest < ActiveRecordTestCase
   test 'have "with_accepted_state" scope' do
     assert_respond_to Article, :with_accepted_state
   end
+
+  test 'have "without_new_state" scope' do
+    assert_respond_to Article, :without_new_state
+  end
+
+  test 'have "without_accepted_state" scope' do
+    assert_respond_to Article, :without_accepted_state
+  end
+
 end
 
