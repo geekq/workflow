@@ -95,9 +95,12 @@ module Workflow
 
     def process_event!(name, *args)
       event = current_state.events.first_applicable(name, self)
-      raise NoTransitionAllowed.new(
-        "There is no event #{name.to_sym} defined for the #{current_state} state") \
-        if event.nil?
+
+      if event.nil?
+        run_on_unavailable_transition(current_state, name, *args)
+        return
+      end
+
       @halted_because = nil
       @halted = false
 
@@ -179,6 +182,12 @@ module Workflow
         halt(error.message)
       else
         raise error
+      end
+    end
+
+    def run_on_unavailable_transition(from, to_name, *args)
+      if !spec.on_unavailable_transition_proc || !instance_exec(from.name, to_name.to_sym, *args, &spec.on_unavailable_transition_proc)
+        raise NoTransitionAllowed.new("There is no event #{to_name.to_sym} defined for the #{current_state} state")
       end
     end
 

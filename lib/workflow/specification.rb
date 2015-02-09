@@ -6,7 +6,7 @@ require 'workflow/errors'
 module Workflow
   class Specification
     attr_accessor :states, :initial_state, :meta,
-      :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
+      :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc, :on_unavailable_transition_proc
 
     def initialize(meta = {}, &specification)
       @states = Hash.new
@@ -63,5 +63,10 @@ module Workflow
     def on_error(&proc)
       @on_error_proc = proc
     end
+
+    def on_unavailable_transition(&proc)
+      @on_unavailable_transition_proc = proc
+    end
+
   end
 end

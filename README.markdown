@@ -499,6 +499,30 @@ If forward! results in an exception, `on_error` is invoked and the workflow stay
 is particularly useful if your errors are transient and you want to queue up a job to retry in the future without
 affecting the existing workflow state.
 
+Note: this is not triggered by Workflow::NoTransitionAllowed exceptions.
+
+### on_unavailable_transition
+
+If you want to do custom handling when an unavailable transition is called, you can define an 'on_unavailable_transition' hook
+in your workflow. For example
+
+    workflow do
+      state :first
+      state :second do
+        event :backward, :transitions_to => :first
+      end
+
+      on_unavailable_transition do |from, to_name, *args|
+        Log.warn "Workflow: #{from} does not have #{to_name} available to it"
+      end
+    end
+
+If backward! is called when in the `first` state, 'on_unavailable_transition' is invoked and workflow stays in a 'first' state.  This
+example surpresses the Workflow::NoTransitionAllowed exception from being raised, if you still want it to be raised you can simply
+call it yourself or return false.
+
+This is particularly useful when you don't want a processes to be aborted due to the workflow being in an unexpected state.
+
 ### Guards
 
 If you want to halt the transition conditionally, you can just raise an
