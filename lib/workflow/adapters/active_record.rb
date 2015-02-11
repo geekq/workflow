@@ -29,7 +29,11 @@ module Workflow
               raise WorkflowStateHasChanged.new 'The workflow state has been changed since this object was (re)loaded'
             end
             self.send("#{self.class.workflow_column}=", new_value)
-            self.changed_attributes.delete(self.class.workflow_column) if self.respond_to?(:changed_attributes)
+            if self.respond_to?(:clear_attribute_changes, true) # Rails >= 4.2 - changed_attributes is dynamically computed
+              clear_attribute_changes(self.class.workflow_column)
+            elsif self.respond_to?(:changed_attributes) # Rails < 4.2
+              self.changed_attributes.delete(self.class.workflow_column)
+            end
           else
             # Rails 3.1 or newer
             update_column self.class.workflow_column, new_value
