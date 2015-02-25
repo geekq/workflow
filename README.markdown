@@ -75,10 +75,11 @@ of possible events and other meta information:
 ```ruby
 article.current_state
 => #<Workflow::State:0x7f1e3d6731f0 @events={
-  :submit=>#<Workflow::Event:0x7f1e3d6730d8 @action=nil,
-    @transitions_to=:awaiting_review, @name=:submit, @meta={}>},
-  name:new, meta{}
+  :submit=>[#<Workflow::Event:0x7f1e3d6730d8 @action=nil,
+    @transitions_to=:awaiting_review, @name=:submit, @meta={}>}]
 ```
+
+Note that `events[:submit]` is an array here, because there can be [multiple events with the same name](#conditional-event-transitions).
 
 On Ruby 1.9 and above, you can check whether a state comes before or
 after another state (by the order they were defined):
@@ -418,7 +419,7 @@ the whole class or for the current object. Examples:
 
 ```ruby
 article2.current_state.events # lists possible events from here
-article2.current_state.events[:reject].transitions_to # => :rejected
+article2.current_state.events[:reject].first.transitions_to # => :rejected
 
 Article.workflow_spec.states.keys
 #=> [:rejected, :awaiting_review, :being_reviewed, :accepted, :new]
@@ -442,7 +443,7 @@ class MyProcess
   end
 end
 
-puts MyProcess.workflow_spec.states[:supplemental].meta[:importance] # => 1
+puts MyProcess.workflow_spec.states[:supplemental].first.meta[:importance] # => 1
 ```
 
 The workflow library itself uses this feature to tweak the graphical
