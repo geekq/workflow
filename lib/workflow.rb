@@ -76,8 +76,15 @@ module Workflow
   module InstanceMethods
 
     def current_state
-      loaded_state = load_workflow_state
-      res = spec.states[loaded_state.to_sym] if loaded_state
+      if $STOP 
+        require 'pry'; binding.pry
+      end
+      loaded_state_value = load_workflow_state
+      if loaded_state_value
+        loaded_state_name = spec.states.select{|k,v| v.value.to_s == loaded_state_value.to_s}.keys.first
+      end
+
+      res = spec.states[loaded_state_name.to_sym] if loaded_state_name
       res || spec.initial_state
     end
 
@@ -104,28 +111,29 @@ module Workflow
       check_transition(event)
 
       from = current_state
-      to = spec.states[event.transitions_to]
+      to_state = spec.states[event.transitions_to]
+      to_value = to_state.value
 
-      run_before_transition(from, to, name, *args)
+      run_before_transition(from, to_state, name, *args)
       return false if @halted
 
       begin
         return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
       rescue StandardError => e
-        run_on_error(e, from, to, name, *args)
+        run_on_error(e, from, to_state, name, *args)
       end
 
       return false if @halted
 
-      run_on_transition(from, to, name, *args)
+      run_on_transition(from, to_state, name, *args)
 
-      run_on_exit(from, to, name, *args)
+      run_on_exit(from, to_state, name, *args)
 
-      transition_value = persist_workflow_state to.to_s
+      transition_value = persist_workflow_state to_value
 
-      run_on_entry(to, from, name, *args)
+      run_on_entry(to_state, from, name, *args)
 
-      run_after_transition(from, to, name, *args)
+      run_after_transition(from, to_state, name, *args)
 
       return_value.nil? ? transition_value : return_value
     end
@@ -242,6 +250,7 @@ module Workflow
     end
 
     def persist_workflow_state(new_value)
+
       @workflow_state = new_value
     end
   end

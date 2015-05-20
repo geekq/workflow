@@ -20,9 +20,10 @@ module Workflow
 
     private
 
-    def state(name, meta = {:meta => {}}, &events_and_etc)
+    def state(name, value=nil, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
-      new_state = Workflow::State.new(name, self, meta[:meta])
+      value ||= name
+      new_state = Workflow::State.new(name, value, self, meta[:meta])
       @initial_state = new_state if @states.empty?
       @states[name.to_sym] = new_state
       @scoped_state = new_state

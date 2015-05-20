@@ -46,7 +46,8 @@ class AdapterHookTest < ActiveRecordTestCase
     hook = ChosenByHookAdapter.create
     assert hook.initial?
     hook.progress!
-    assert_equal hook.foo, 'last', 'should have "persisted" with custom adapter'
+    require 'pry'; binding.pry
+    assert_equal hook.foo, :last, 'should have "persisted" with custom adapter'
     assert ChosenByHookAdapter.find(hook.id).initial?, 'should not have persisted via ActiveRecord'
   end
 end
