@@ -34,12 +34,6 @@ class ActiveRecordScopesWithValuesTest < ActiveRecordTestCase
     end
   end
 
-  def assert_state(title, expected_state, klass = Order)
-    o = klass.find_by_title(title)
-    assert_equal expected_state, o.read_attribute(klass.workflow_column)
-    o
-  end
-
   test 'have "with_new_state" scope' do
     assert_respond_to EnumArticle, :with_new_state
   end
@@ -68,7 +62,7 @@ class ActiveRecordScopesWithValuesTest < ActiveRecordTestCase
     article = EnumArticle.create
     article.accept!
     assert_equal(article.workflow_state, 2)
-    assert_equal(EnumArticle.without_new_state.all, [article])
+    assert_equal(EnumArticle.without_new_state, [article])
   end
 
   test 'have "without_accepted_state" scope' do
@@ -78,7 +72,7 @@ class ActiveRecordScopesWithValuesTest < ActiveRecordTestCase
   test '"without_new_state" filters matching value' do
     article = EnumArticle.create
     assert_equal(article.workflow_state, 1)
-    assert_equal(EnumArticle.without_accepted_state.all, [article])
+    assert_equal(EnumArticle.without_accepted_state, [article])
   end
 
 end

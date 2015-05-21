@@ -60,7 +60,7 @@ module Workflow
             end
 
             define_singleton_method("without_#{state}_state") do
-              where.not("#{table_name}.#{self.workflow_column.to_sym} = ?", state.value)
+              where("#{table_name}.#{self.workflow_column.to_sym} != ?", state.value)
             end
           end
         end
