@@ -10,20 +10,33 @@ module Workflow
     attr_reader :workflow_spec
 
     def workflow_column(column_name=nil)
-      if column_name
-        @workflow_state_column_name = column_name.to_sym
-      end
-      if !instance_variable_defined?('@workflow_state_column_name') && superclass.respond_to?(:workflow_column)
+      #I guess we want to preserve the api???
+      @workflow_state_column_name ||= column_name
+      if @workflow_state_column_name.nil? && superclass.respond_to?(:workflow_column)
         @workflow_state_column_name = superclass.workflow_column
       end
       @workflow_state_column_name ||= :workflow_state
+
     end
 
-    def workflow(&specification)
+    def workflow(column=nil,&specification)
+      column = workflow_column(column)
       assign_workflow Specification.new(Hash.new, &specification)
+
+      inject_setter_for_state
     end
 
     private
+
+    #allow setting of workflow_state by name, and interpolate the value
+    def inject_setter_for_state
+      define_method("#{@workflow_state_column_name}=") do |val|
+        
+        matching_state = spec.states.select{|k,v| v.name.to_s == val.to_s}.values.first
+        val = matching_state.value if matching_state
+        super(val)
+      end
+    end
 
     # Creates the convinience methods like `my_transition!`
     def assign_workflow(specification_object)

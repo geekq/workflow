@@ -61,7 +61,7 @@ class ActiveRecordScopesWithValuesTest < ActiveRecordTestCase
   test '"without_new_state" filters matching value' do
     article = EnumArticle.create
     article.accept!
-    assert_equal(article.workflow_state, 2)
+    assert_equal(article.workflow_state, 3)
     assert_equal(EnumArticle.without_new_state, [article])
   end
 
@@ -69,7 +69,7 @@ class ActiveRecordScopesWithValuesTest < ActiveRecordTestCase
     assert_respond_to EnumArticle, :without_accepted_state
   end
 
-  test '"without_new_state" filters matching value' do
+  test '"without_accepted_state" filters matching value' do
     article = EnumArticle.create
     assert_equal(article.workflow_state, 1)
     assert_equal(EnumArticle.without_accepted_state, [article])
