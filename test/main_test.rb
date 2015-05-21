@@ -235,7 +235,7 @@ class MainTest < ActiveRecordTestCase
 
   test 'initial state immediately set as ActiveRecord attribute for new objects' do
     o = Order.create(:title => 'new object')
-    assert_equal 'submitted', o.read_attribute(:workflow_state)
+    assert_equal 'submitted', o.read_attribute(:workflow_state).to_s
   end
 
   test 'question methods for state' do
