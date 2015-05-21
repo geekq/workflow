@@ -104,7 +104,11 @@ event (transition) defined for the current state.
 Installation
 ------------
 
-    gem install workflow
+    `gem install workflow`
+    
+    `include Workflow` in your model.
+
+If you're using ActiveRecord, Workflow will by default use a "workflow_state" column on your model.
 
 **Important**: If you're interested in graphing your workflow state machine, you will also need to
 install the `activesupport` and `ruby-graphviz` gems.
@@ -446,6 +450,35 @@ When calling a `device.can_<fire_event>?` check, or attempting a `device.<event>
 * If an `:if` check is present, proceed if it evaluates to true, or drop to the next event.
 * If you've run out of events to check (eg. `battery_level == 0`), then the transition isn't possible.
 
+Enum values or other custom values
+-----------------------------------
+
+If you don't want to store your state as a string column, you can specify the value associated with each state.  YOu can use an int (like an enum) or a shorter string.
+
+Oh, you can 
+
+    Class Foo < ActiveRecord::Base
+      include Workflow
+    
+      workflow do
+        state :one, 1 do
+          event :increment, :transitions_to => :two
+        end
+        state :two, 2
+        on_transition do |from, to, triggering_event, *event_args|
+          Log.info "#{from} -> #{to}"
+        end
+      end
+    end
+
+Your database column will store the values 1, 2, etc.  But you'll still use the state symbols for querying.
+
+    foo = Foo.create
+    foo.current_state # => :one
+    foo.workflow_state # => 1 #You really shouldn't use this column directly...
+    foo.increment!
+    foo.two? # => true
+    foo.workflow_state # => true
 
 Advanced transition hooks
 -------------------------
