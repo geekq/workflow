@@ -24,10 +24,10 @@ module Workflow
         # Motivation: even if NULL is stored in the workflow_state database column,
         # the current_state is correctly recognized in the Ruby code. The problem
         # arises when you want to SELECT records filtering by the value of initial
-        # state. That's why it is important to save the string with the name of the
+        # state. That's why it is important to save the string with the value of the
         # initial state in all the new records.
         def write_initial_state
-          write_attribute self.class.workflow_column, current_state.to_s
+          write_attribute self.class.workflow_column, current_state.value
         end
       end
 
@@ -56,11 +56,11 @@ module Workflow
 
           states.each do |state|
             define_singleton_method("with_#{state}_state") do
-              where("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+              where("#{table_name}.#{self.workflow_column.to_sym} = ?", state.value)
             end
 
             define_singleton_method("without_#{state}_state") do
-              where.not("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+              where.not("#{table_name}.#{self.workflow_column.to_sym} = ?", state.value)
             end
           end
         end

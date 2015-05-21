@@ -76,9 +76,6 @@ module Workflow
   module InstanceMethods
 
     def current_state
-      if $STOP 
-        require 'pry'; binding.pry
-      end
       loaded_state_value = load_workflow_state
       if loaded_state_value
         loaded_state_name = spec.states.select{|k,v| v.value.to_s == loaded_state_value.to_s}.keys.first
