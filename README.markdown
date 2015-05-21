@@ -84,7 +84,7 @@ after another state (by the order they were defined):
     article.current_state >= :accepted
     => false
     article.current_state.between? :awaiting_review, :rejected
-    => false
+    => true
 
 Now we can call the submit event, which transitions to the
 <tt>:awaiting_review</tt> state:
