@@ -255,7 +255,16 @@ custom persistence column easily, e.g. for a legacy database schema:
                                # persistence
     end
 
+You can also set the column name inline into the workflow block:
 
+    class LegacyOrder < ActiveRecord::Base
+      include Workflow
+
+      workflow :foo_bar do
+        state :approved
+        state :pending
+      end
+    end
 
 ### Single table inheritance
 
