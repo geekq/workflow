@@ -453,9 +453,9 @@ When calling a `device.can_<fire_event>?` check, or attempting a `device.<event>
 Enum values or other custom values
 -----------------------------------
 
-If you don't want to store your state as a string column, you can specify the value associated with each state.  YOu can use an int (like an enum) or a shorter string.
+If you don't want to store your state as a string column, you can specify the value associated with each state.  Yu can use an int (like an enum) or a shorter string, or whatever you want.
 
-Oh, you can 
+Just pass the "value" for the state as the second parameter to the "state" method.
 
     Class Foo < ActiveRecord::Base
       include Workflow
@@ -479,6 +479,8 @@ Your database column will store the values 1, 2, etc.  But you'll still use the 
     foo.increment!
     foo.two? # => true
     foo.workflow_state # => true
+
+Hopefully obvious, but if you ever change the value of a state, you'll need to do a migration/address existing records in your data store.  However you are free to change the "name" of a state, willy-nilly.
 
 Advanced transition hooks
 -------------------------
