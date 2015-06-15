@@ -13,14 +13,14 @@ ActiveRecord::Migration.verbose = false
 class Order < ActiveRecord::Base
   include Workflow
   workflow do
-    state :submitted do
+    state :submitted, :meta => {refundable: true} do
       event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
       end
     end
-    state :accepted do
+    state :accepted, :meta => {refundable: true} do
       event :ship, :transitions_to => :shipped
     end
-    state :shipped
+    state :shipped, :meta => {refundable: false}
   end
 end
 
