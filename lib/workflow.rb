@@ -179,7 +179,7 @@ module Workflow
 
     def run_on_error(error, from, to, event, *args)
       if spec.on_error_proc
-        instance_exec(error, from.name, to.name, event, *args, &spec.on_error_proc)
+        instance_exec(error, from.name, ( to.name rescue nil ), event, *args, &spec.on_error_proc)
         halt(error.message)
       else
         raise error
