@@ -238,6 +238,12 @@ states names:
     # returns all orders with `pending` state
     Order.with_pending_state
 
+    # returns all orders except for those having `approved` state
+    Order.without_approved_state
+
+    # returns all orders except for those having `pending` state
+    Order.without_pending_state
+
 
 ### Custom workflow database column
 
