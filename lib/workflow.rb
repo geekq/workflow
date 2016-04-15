@@ -121,7 +121,7 @@ module Workflow
 
       run_on_exit(from, to, name, *args)
 
-      transition_value = persist_workflow_state to.to_s
+      transition_value = persist_workflow_state!(from, to, name, *args)
 
       run_on_entry(to, from, name, *args)
 
@@ -184,6 +184,14 @@ module Workflow
 
     def run_on_transition(from, to, event, *args)
       instance_exec(from.name, to.name, event, *args, &spec.on_transition_proc) if spec.on_transition_proc
+    end
+
+    def persist_workflow_state!(from, to, event, *args)
+      if self.method(:persist_workflow_state).arity == 1
+        persist_workflow_state(to.to_s)
+      else
+        persist_workflow_state(to.to_s, event, *args)
+      end
     end
 
     def run_after_transition(from, to, event, *args)

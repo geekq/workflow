@@ -37,6 +37,27 @@ class AdapterHookTest < ActiveRecordTestCase
       end
     end
 
+    class AnotherChosenByHookAdapter < ActiveRecord::Base
+      self.table_name = :examples
+      attr_reader :foo
+      def self.workflow_adapter
+        Module.new do
+          def load_workflow_state
+            @foo if defined?(@foo)
+          end
+          def persist_workflow_state(new_value, event=nil, *event_args)
+            @foo = new_value
+          end
+        end
+      end
+
+      include Workflow
+      workflow do
+        state(:initial) { event :progress, :transitions_to => :last }
+        state(:last)
+      end
+    end
+
     default = DefaultAdapter.create
     assert default.initial?
     default.progress!
@@ -48,5 +69,11 @@ class AdapterHookTest < ActiveRecordTestCase
     hook.progress!
     assert_equal hook.foo, 'last', 'should have "persisted" with custom adapter'
     assert ChosenByHookAdapter.find(hook.id).initial?, 'should not have persisted via ActiveRecord'
+
+    another_hook = AnotherChosenByHookAdapter.create
+    assert another_hook.initial?
+    another_hook.progress!
+    assert_equal another_hook.foo, 'last', 'should have "persisted" with custom adapter'
+    assert AnotherChosenByHookAdapter.find(another_hook.id).initial?, 'should not have persisted via ActiveRecord'
   end
 end
