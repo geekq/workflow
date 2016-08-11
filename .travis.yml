@@ -1,7 +1,6 @@
 before_install:
   - sudo apt-get install -qq graphviz
 before_script:
-  - gem --help
   - gem list
   - bundle show
 
