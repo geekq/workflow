@@ -7,7 +7,11 @@ require 'sqlite3'
 require 'workflow'
 require 'mocha/setup'
 require 'stringio'
+
 require 'protected_attributes' if ActiveRecord::VERSION::MAJOR == 4
+
+# protected_attributes only supported until Rails 5.0
+if ActiveRecord::VERSION::MAJOR <= 4
 
 ActiveRecord::Migration.verbose = false
 
@@ -105,3 +109,4 @@ class AttrProtectedTest < ActiveRecordTestCase
 
 end
 
+end

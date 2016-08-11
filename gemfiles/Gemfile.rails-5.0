@@ -1,11 +1,10 @@
 source "http://rubygems.org"
 
 group :development do
-  gem "minitest", "< 5.0.0" # 5.0.0 introduced incompatible changes renaming all the classes
   gem "rdoc", ">= 3.12"
   gem "bundler", ">= 1.0.0"
   gem "activerecord", "~>5.0"
-  gem 'protected_attributes'
+  # gem 'protected_attributes' only supported until Rails 5.0
   gem "sqlite3"
   gem "mocha"
   gem "rake"
