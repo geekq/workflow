@@ -1,5 +1,7 @@
 before_install:
   - sudo apt-get install -qq graphviz
+before_script:
+  - gem list
 
 rvm:
   - 2.0.0
