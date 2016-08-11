@@ -1,10 +1,12 @@
 before_install:
   - sudo apt-get install -qq graphviz
 before_script:
+  - gem --help
   - gem list
+  - bundle show
 
 rvm:
-  - 2.0.0
+  - 2.3.1
 gemfile:
   - gemfiles/Gemfile.rails-edge
 
@@ -19,5 +21,8 @@ matrix:
     - rvm: 2.0.0
       gemfile: gemfiles/Gemfile.rails-4.0
 
-    - rvm: 2.1.0
-      gemfile: gemfiles/Gemfile.rails-3.x
+    - rvm: 2.3.1
+      gemfile: gemfiles/Gemfile.rails-4.0
+
+    - rvm: 2.3.1
+      gemfile: gemfiles/Gemfile.rails-5.0
