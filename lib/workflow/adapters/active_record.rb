@@ -1,6 +1,9 @@
 module Workflow
   module Adapter
     module ActiveRecord
+      TRANSACTIONAL_TRANSITIONS_KEY   = :transactional.freeze
+      TRANSACTIONAL_TRANSITIONS_CVAR  = '@@transactional_transition'.freeze
+
       def self.included(klass)
         klass.send :include, Adapter::ActiveRecord::InstanceMethods
         klass.send :extend, Adapter::ActiveRecord::Scopes
@@ -20,6 +23,14 @@ module Workflow
         end
 
         private
+
+        def transition_wrapper(&block)
+          if self.class.class_variable_get(TRANSACTIONAL_TRANSITIONS_CVAR)
+            with_lock(& block)
+          else
+            yield
+          end
+        end
 
         # Motivation: even if NULL is stored in the workflow_state database column,
         # the current_state is correctly recognized in the Ruby code. The problem
@@ -50,8 +61,10 @@ module Workflow
           end
         end
 
-        def workflow_with_scopes(&specification)
-          workflow_without_scopes(&specification)
+        def workflow_with_scopes(meta=nil, &specification)
+          meta ||= Hash.new
+          self.class_variable_set TRANSACTIONAL_TRANSITIONS_CVAR, !!meta.delete(TRANSACTIONAL_TRANSITIONS_KEY)
+          workflow_without_scopes(meta, &specification)
           states = workflow_spec.states.values
 
           states.each do |state|

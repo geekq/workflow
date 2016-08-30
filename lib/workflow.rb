@@ -19,8 +19,9 @@ module Workflow
       @workflow_state_column_name ||= :workflow_state
     end
 
-    def workflow(&specification)
-      assign_workflow Specification.new(Hash.new, &specification)
+    def workflow(meta=nil, &specification)
+      meta ||= Hash.new
+      assign_workflow Specification.new(meta, &specification)
     end
 
     private
@@ -106,28 +107,34 @@ module Workflow
       from = current_state
       to = spec.states[event.transitions_to]
 
-      run_before_transition(from, to, name, *args)
-      return false if @halted
+      transition_wrapper do
+        run_before_transition(from, to, name, *args)
+        return false if @halted
 
-      begin
-        return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
-      rescue StandardError => e
-        run_on_error(e, from, to, name, *args)
+        begin
+          return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
+        rescue StandardError => e
+          run_on_error(e, from, to, name, *args)
+        end
+
+        return false if @halted
+
+        run_on_transition(from, to, name, *args)
+
+        run_on_exit(from, to, name, *args)
+
+        transition_value = persist_workflow_state to.to_s
+
+        run_on_entry(to, from, name, *args)
+
+        run_after_transition(from, to, name, *args)
+
+        return_value.nil? ? transition_value : return_value
       end
+    end
 
-      return false if @halted
-
-      run_on_transition(from, to, name, *args)
-
-      run_on_exit(from, to, name, *args)
-
-      transition_value = persist_workflow_state to.to_s
-
-      run_on_entry(to, from, name, *args)
-
-      run_after_transition(from, to, name, *args)
-
-      return_value.nil? ? transition_value : return_value
+    def transition_wrapper(&block)
+      yield
     end
 
     def halt(reason = nil)

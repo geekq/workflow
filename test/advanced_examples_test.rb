@@ -1,6 +1,20 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 require 'workflow'
 class AdvanceExamplesTest < ActiveRecordTestCase
+  def setup
+    super
+
+    ActiveRecord::Schema.define do
+      create_table :article_with_transactional_transitions do |t|
+        t.string :title
+        t.string :body
+        t.string :blame_reason
+        t.string :reject_reason
+        t.string :workflow_state
+        t.string :type
+      end
+    end
+  end
 
   class Article
     include Workflow
@@ -19,6 +33,30 @@ class AdvanceExamplesTest < ActiveRecordTestCase
       end
       state :rejected do
       end
+    end
+  end
+
+  class ArticleWithTransactionalTransition < ActiveRecord::Base
+    include Workflow
+    attr_accessor :rolled_back
+    def set_rollback
+      self.rolled_back = true
+    end
+    after_rollback :set_rollback
+    workflow transactional: true do
+      on_transition do |from, to, triggering_event, updated_attributes, *other_args|
+        self.attributes = updated_attributes if updated_attributes
+        self.save!
+      end
+
+      after_transition do |from, to, triggering_event, updated_attributes, *other_args|
+        raise "Major Error" if self.title == "Invalid Title"
+      end
+
+      state :new do
+        event :submit, transitions_to: :awaiting_review
+      end
+      state :awaiting_review
     end
   end
 
@@ -81,4 +119,22 @@ class AdvanceExamplesTest < ActiveRecordTestCase
     assert a.one_a?, 'Expected successful transition to a new state'
   end
 
+  test "Transactional Behavior Unchanged In Absence Of Error" do
+    a = ArticleWithTransactionalTransition.create
+    assert_equal nil, a.title
+    a.process_event! :submit, {title: 'Article Title'}
+    assert_equal 'Article Title', a.title
+    assert_false a.title_changed?
+  end
+
+  test "Changes Rolled Back On Error For Transactional Workflow" do
+    a = ArticleWithTransactionalTransition.create
+    assert_raise RuntimeError, "Major Error" do
+      a.process_event! :submit, {title: 'Invalid Title'}
+    end
+    assert_equal 'Invalid Title', a.title # Note that the title was set
+    assert_true a.rolled_back
+    a.reload
+    assert_nil a.title # But the change was not persisted.
+  end
 end
