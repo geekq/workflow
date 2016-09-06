@@ -57,4 +57,38 @@ class InheritanceTest < ActiveRecordTestCase
     methods_with_bang = non_trivial_methods.select {|m| m =~ /!$/}
     sort_sym_array(methods_with_bang).map {|m| m.to_sym}
   end
+
+  test 'inheritance with workflow states with same event names' do
+    class Mail
+      include Workflow
+      workflow do
+        state :unread do
+          event :open, transitions_to: :read
+          event :burn, transitions_to: :burned
+        end
+        state :read do
+          event :burn, transitions_to: :burned
+        end
+        state :burned
+      end
+    end
+
+    assert_nothing_raised { create_child_class }
+  end
+
+  def create_child_class
+    Class.new(Mail) do
+      include Workflow
+      workflow do
+        state :unread do
+          event :open, transitions_to: :read
+          event :delete, transitions_to: :deleted
+        end
+        state :read do
+          event :delete, transitions_to: :deleted
+        end
+        state :deleted
+      end
+    end
+  end
 end

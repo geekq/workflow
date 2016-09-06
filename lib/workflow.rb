@@ -41,8 +41,8 @@ module Workflow
           state.events.flat.each do |event|
             event_name = event.name
             module_eval do
-              undef_method "#{event_name}!".to_sym
-              undef_method "can_#{event_name}?"
+              undef_method("#{event_name}!") if method_defined? "#{event_name}!"
+              undef_method("can_#{event_name}?") if method_defined? "can_#{event_name}?"
             end
           end
         end
