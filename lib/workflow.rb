@@ -23,6 +23,10 @@ module Workflow
       assign_workflow Specification.new(Hash.new, &specification)
     end
 
+    def reassign_workflow!
+      assign_workflow workflow_spec
+    end
+
     private
 
     # Creates the convinience methods like `my_transition!`
