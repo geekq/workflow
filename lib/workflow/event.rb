@@ -34,5 +34,25 @@ module Workflow
     def to_s
       @name.to_s
     end
+
+    def as_json(*)
+      {
+          name: name,
+          transitions_to: transitions_to,
+          meta: meta,
+          action: action,
+          condition: condition
+      }
+    end
+
+    def from_json!(json_obj)
+      @name = json_obj['name'].to_sym
+      @transitions_to = json_obj['transitions_to'].to_sym
+      @meta = json_obj['meta']
+      @action = json_obj['action']
+
+      # TODO: Pending condition object. Review action...
+      #@condition = json_obj[:condition]
+    end
   end
 end

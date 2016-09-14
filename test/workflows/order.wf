@@ -1,0 +1,84 @@
+{
+  "states": {
+    "open": {
+      "name": "open",
+      "meta": {},
+      "events": {
+        "contacted": [
+          {
+            "name": "contacted",
+            "transitions_to": "awaiting_review",
+            "meta": {},
+            "action": null,
+            "condition": null
+          }
+        ]
+      }
+    },
+    "awaiting_review": {
+      "name": "awaiting_review",
+      "meta": {},
+      "events": {
+        "review": [
+          {
+            "name": "review",
+            "transitions_to": "being_reviewed",
+            "meta": {},
+            "action": null,
+            "condition": null
+          }
+        ]
+      }
+    },
+    "being_reviewed": {
+      "name": "being_reviewed",
+      "meta": {},
+      "events": {
+        "accept": [
+          {
+            "name": "accept",
+            "transitions_to": "accepted",
+            "meta": {},
+            "action": null,
+            "condition": null
+          }
+        ],
+        "reject": [
+          {
+            "name": "reject",
+            "transitions_to": "rejected",
+            "meta": {},
+            "action": null,
+            "condition": null
+          }
+        ]
+      }
+    },
+    "accepted": {
+      "name": "accepted",
+      "meta": {},
+      "events": {}
+    },
+    "rejected": {
+      "name": "rejected",
+      "meta": {},
+      "events": {}
+    }
+  },
+  "initial_state": {
+    "name": "open",
+    "meta": {},
+    "events": {
+      "contacted": [
+        {
+          "name": "contacted",
+          "transitions_to": "awaiting_review",
+          "meta": {},
+          "action": null,
+          "condition": null
+        }
+      ]
+    }
+  },
+  "meta": {}
+}

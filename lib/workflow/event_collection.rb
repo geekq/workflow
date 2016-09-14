@@ -32,5 +32,14 @@ module Workflow
       end
     end
 
+    def from_json!(json_obj)
+      json_obj.each do |key, val_array|
+        val_array.each do |val|
+          new_event = Workflow::Event.new(nil,'dummy')
+          new_event.from_json!(val)
+          push(key,new_event)
+        end
+      end
+    end
   end
 end

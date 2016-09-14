@@ -11,11 +11,52 @@ module Workflow
     def initialize(meta = {}, &specification)
       @states = Hash.new
       @meta = meta
-      instance_eval(&specification)
+      instance_eval(&specification) if specification
     end
 
     def state_names
       states.keys
+    end
+
+    def as_json(*)
+      {
+          states: states,
+          initial_state: initial_state,
+          meta: meta
+      }
+    end
+
+    def from_json_file! json_filename
+
+      ret = File.exist?(json_filename) & File.readable?(json_filename)
+
+      if ret
+        File.open(json_filename, 'r') do |json_file|
+          self.from_json! json_file.read
+        end
+      end
+
+      ret
+    end
+
+    def from_json! json_str
+      @states = Hash.new
+      @meta = {}
+
+      JSON.load(json_str).each do |var, val|
+        if var.eql?('states')
+          val.each do |state_key, state_val|
+            wkf_state = Workflow::State.new(nil,self)
+            wkf_state.from_json!(state_val)
+            @scoped_state = wkf_state
+            @states[state_key.to_sym] = wkf_state
+          end
+        elsif var.eql?('initial_state')
+          @initial_state = @states[val['name'].to_sym] if val['name'] && @states
+        else
+          self.instance_variable_set "@#{var}", val
+        end
+      end
     end
 
     private

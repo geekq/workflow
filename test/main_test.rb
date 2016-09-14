@@ -98,6 +98,32 @@ class MainTest < ActiveRecordTestCase
     o
   end
 
+  test 'Order workflow persists as JSON' do
+    assert_equal Order.workflow_spec.to_json, '{"states":{"submitted":{"name":"submitted","meta":{},"events":{"accept":'\
+    '[{"name":"accept","transitions_to":"accepted","meta":{"weight":8},"action":{},"condition":null}]}},'\
+    '"accepted":{"name":"accepted","meta":{},"events":{"ship":[{"name":"ship","transitions_to":"shipped",'\
+    '"meta":{},"action":null,"condition":null}]}},"shipped":{"name":"shipped","meta":{},"events":{}}},'\
+    '"initial_state":{"name":"submitted","meta":{},"events":{"accept":[{"name":"accept","transitions_to":"accepted",'\
+    '"meta":{"weight":8},"action":{},"condition":null}]}},"meta":{}}'
+  end
+
+  test 'LegacyOrder workflow persists as JSON' do
+    assert_equal LegacyOrder.workflow_spec.to_json, '{"states":{"submitted":{"name":"submitted","meta":{},'\
+    '"events":{"accept":[{"name":"accept","transitions_to":"accepted","meta":{"weight":8},"action":{},'\
+    '"condition":null}]}},"accepted":{"name":"accepted","meta":{},"events":{"ship":[{"name":"ship",'\
+    '"transitions_to":"shipped","meta":{},"action":null,"condition":null}]}},"shipped":{"name":"shipped",'\
+    '"meta":{},"events":{}}},"initial_state":{"name":"submitted","meta":{},"events":{"accept":[{"name":"accept",'\
+    '"transitions_to":"accepted","meta":{"weight":8},"action":{},"condition":null}]}},"meta":{}}'
+  end
+
+  test 'Image workflow persists as JSON' do
+    assert_equal Image.workflow_spec.to_json, '{"states":{"unconverted":{"name":"unconverted",'\
+    '"meta":{},"events":{"convert":[{"name":"convert","transitions_to":"converted","meta":{},"action":null,'\
+    '"condition":null}]}},"converted":{"name":"converted","meta":{},"events":{}}},"initial_state":'\
+    '{"name":"unconverted","meta":{},"events":{"convert":[{"name":"convert","transitions_to":"converted",'\
+    '"meta":{},"action":null,"condition":null}]}},"meta":{}}'
+  end
+
   test 'immediately save the new workflow_state on state machine transition' do
     o = assert_state 'some order', 'accepted'
     assert o.ship!

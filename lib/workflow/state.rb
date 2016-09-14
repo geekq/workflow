@@ -40,5 +40,20 @@ module Workflow
     def to_sym
       name.to_sym
     end
+
+    def as_json(*)
+      {
+          name: name,
+          meta: meta,
+          events: events
+      }
+    end
+
+    def from_json!(json_obj)
+      @name = json_obj['name'].to_sym
+      @meta = json_obj['meta']
+      @events = Workflow::EventCollection.new
+      @events.from_json!(json_obj['events']) if json_obj['events']
+    end
   end
 end
