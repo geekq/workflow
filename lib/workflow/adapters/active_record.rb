@@ -25,7 +25,7 @@ module Workflow
         private
 
         def transition_wrapper(&block)
-          if self.class.class_variable_get(TRANSACTIONAL_TRANSITIONS_CVAR)
+          if self.class.transactional_transitions?
             with_lock(& block)
           else
             yield
@@ -61,9 +61,15 @@ module Workflow
           end
         end
 
+        def transactional_transitions?
+          class_variable_defined?(TRANSACTIONAL_TRANSITIONS_CVAR) &&
+          class_variable_get(TRANSACTIONAL_TRANSITIONS_CVAR)
+        end
+
         def workflow_with_scopes(meta=nil, &specification)
           meta ||= Hash.new
-          self.class_variable_set TRANSACTIONAL_TRANSITIONS_CVAR, !!meta.delete(TRANSACTIONAL_TRANSITIONS_KEY)
+
+          class_variable_set TRANSACTIONAL_TRANSITIONS_CVAR, !!meta.delete(TRANSACTIONAL_TRANSITIONS_KEY)
           workflow_without_scopes(meta, &specification)
           states = workflow_spec.states.values
 
