@@ -124,7 +124,7 @@ class AdvanceExamplesTest < ActiveRecordTestCase
     assert_equal nil, a.title
     a.process_event! :submit, {title: 'Article Title'}
     assert_equal 'Article Title', a.title
-    assert_false a.title_changed?
+    assert !a.title_changed?
   end
 
   test "Changes Rolled Back On Error For Transactional Workflow" do
@@ -133,7 +133,7 @@ class AdvanceExamplesTest < ActiveRecordTestCase
       a.process_event! :submit, {title: 'Invalid Title'}
     end
     assert_equal 'Invalid Title', a.title # Note that the title was set
-    assert_true a.rolled_back
+    assert a.rolled_back
     a.reload
     assert_nil a.title # But the change was not persisted.
   end
