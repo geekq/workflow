@@ -4,6 +4,7 @@ require 'workflow/specification'
 require 'workflow/adapters/active_record'
 require 'workflow/adapters/basic_callbacks'
 require 'workflow/adapters/remodel'
+require 'workflow/adapters/active_record_validations'
 
 # See also README.markdown for documentation
 module Workflow
@@ -209,6 +210,7 @@ module Workflow
     else
       if Object.const_defined?(:ActiveRecord) && klass < ActiveRecord::Base
         klass.send :include, Adapter::ActiveRecord
+        klass.send :include, Adapter::ActiveRecordValidations
       end
       if Object.const_defined?(:Remodel) && klass < Adapter::Remodel::Entity
         klass.send :include, Adapter::Remodel::InstanceMethods

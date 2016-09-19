@@ -125,10 +125,11 @@ module Workflow
           end
         end
       end
+
       private
 
       def execute_transition!(from, to, event_name, event, *args)
-        @transition_context = TransitionContext.new \
+        @transition_context = Workflow::Adapter::ActiveRecordValidations::TransitionContext.new \
           from: from.name,
           to: to.name,
           event: event_name,
@@ -146,18 +147,5 @@ module Workflow
 
     end
 
-    class TransitionContext
-      attr_reader :from, :to, :event, :event_args
-      def initialize(from:, to:, event:, event_args:)
-        @from = from
-        @to = to
-        @event = event
-        @event_args = event_args
-      end
-
-      def values
-        [from, to, event, event_args]
-      end
-    end
   end
 end

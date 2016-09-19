@@ -8,17 +8,7 @@ require 'workflow/adapters/active_support_callbacks'
 
 ActiveRecord::Migration.verbose = false
 
-# Transition based validation
-# ---------------------------
-# If you are using ActiveRecord you might want to define different validations
-# for different transitions. There is a `validates_presence_of` hook that let's
-# you specify the attributes that need to be present for an successful transition.
-# If the object is not valid at the end of the transition event the transition
-# is halted and a TransitionHalted exception is thrown.
-#
-# Here is a sample that illustrates how to use the presence validation:
-# (use case suggested by http://github.com/southdesign)
-class Article < ActiveRecord::Base
+class ActiveSupportArticle < ActiveRecord::Base
   include Workflow
 
   def wrap_in_transaction?
@@ -31,7 +21,7 @@ class Article < ActiveRecord::Base
     singleton = class << self; self end
     validations = Proc.new {}
 
-    meta = Article.workflow_spec.states[from].events[triggering_event].first.meta
+    meta = ActiveSupportArticle.workflow_spec.states[from].events[triggering_event].first.meta
     fields_to_validate = meta[:validates_presence_of]
     if fields_to_validate
       validations = Proc.new {
@@ -73,7 +63,13 @@ class Article < ActiveRecord::Base
     raise "There was an error" if transition_context.event_args&.first&.fetch(:raise_after_transition, false)
   end
 
-  around_transition :wrap_in_transaction, if: :wrap_in_transaction?
+  # around_transition :wrap_in_transaction, if: :wrap_in_transaction?
+  around_transition if: :wrap_in_transaction? do |article, transition|
+    article.with_lock do
+      transition.call
+    end
+  end
+
   around_transition :check_for_halt_message
   before_transition :set_attributes_from_event_args, :in_transition_validations
   after_transition :raise_error_if_flagged
@@ -105,13 +101,13 @@ class Article < ActiveRecord::Base
   end
 end
 
-class AdvancedHooksAndValidationTest < ActiveRecordTestCase
+class ActiveSupportCallbacksTest < ActiveRecordTestCase
 
   def setup
     super
 
     ActiveRecord::Schema.define do
-      create_table :articles do |t|
+      create_table :active_support_articles do |t|
         t.string :title
         t.string :body
         t.string :blame_reason
@@ -120,9 +116,9 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
       end
     end
 
-    exec "INSERT INTO articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('new1', NULL, NULL, NULL, 'new')"
-    exec "INSERT INTO articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('new2', 'some content', NULL, NULL, 'new')"
-    exec "INSERT INTO articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('accepted1', 'some content', NULL, NULL, 'accepted')"
+    exec "INSERT INTO active_support_articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('new1', NULL, NULL, NULL, 'new')"
+    exec "INSERT INTO active_support_articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('new2', 'some content', NULL, NULL, 'new')"
+    exec "INSERT INTO active_support_articles(title, body, blame_reason, reject_reason, workflow_state) VALUES('accepted1', 'some content', NULL, NULL, 'accepted')"
 
   end
 
@@ -132,79 +128,80 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
     o
   end
 
-  test 'deny transition from new to accepted because of the missing presence of the body' do
-    a = Article.find_by_title('new1');
+  test 'It will deny transition from new to accepted because of the missing presence of the body' do
+    a = ActiveSupportArticle.find_by_title('new1');
     assert_raise Workflow::TransitionHalted do
       a.accept!
     end
-    assert_state 'new1', 'new', Article
+    assert_state 'new1', 'new', ActiveSupportArticle
   end
 
-  test 'allow transition from new to accepted because body is present this time' do
-    a = Article.find_by_title('new2');
+  test 'It will allow transition from new to accepted because body is present this time' do
+    a = ActiveSupportArticle.find_by_title('new2');
     assert a.accept!
-    assert_state 'new2', 'accepted', Article
+    assert_state 'new2', 'accepted', ActiveSupportArticle
   end
 
-  test 'allow transition from accepted to blamed because of a blame_reason' do
-    a = Article.find_by_title('accepted1');
+  test 'It will allow transition from accepted to blamed because of a blame_reason' do
+    a = ActiveSupportArticle.find_by_title('accepted1');
     a.blame_reason = "Provocant thesis"
     assert a.blame!
-    assert_state 'accepted1', 'blamed', Article
+    assert_state 'accepted1', 'blamed', ActiveSupportArticle
   end
 
-  test 'deny transition from accepted to blamed because of no blame_reason' do
-    a = Article.find_by_title('accepted1');
+  test 'It will deny transition from accepted to blamed because of no blame_reason' do
+    a = ActiveSupportArticle.find_by_title('accepted1');
     assert_raise Workflow::TransitionHalted do
       assert a.blame!
     end
-    assert_state 'accepted1', 'accepted', Article
+    assert_state 'accepted1', 'accepted', ActiveSupportArticle
   end
 
-  test "Around transition can halt the execution" do
-    a = Article.new
+  test "The around transition can halt the execution" do
+    a = ActiveSupportArticle.new
     assert_raise RuntimeError, "This is a problem" do
       a.accept! halted: true
     end
     assert a.new?, "The transition should be halted."
   end
 
-  test "With a lock, validations don't work on attributes set but not persisted" do
-    a = Article.find_by_title('new1')
+  test "It will with a lock, validations don't work on attributes set but not persisted" do
+    a = ActiveSupportArticle.find_by_title('new1')
     a.body = 'Blah'
     assert_raise Workflow::TransitionHalted do
       a.accept! lock: true
     end
   end
 
-  test "Validations will work on anything that was persisted" do
-    a = Article.find_by_title('new1')
+  test "The validations will work on anything that was persisted" do
+    a = ActiveSupportArticle.find_by_title('new1')
     a.update body: 'Blah'
     a.accept! lock: true
-    assert_state 'new1', 'accepted', Article
+    assert_state 'new1', 'accepted', ActiveSupportArticle
   end
 
-  test "Around transition executes the transition" do
-    a = Article.find_by_title('new1')
+  test "The around transition executes the transition" do
+    a = ActiveSupportArticle.find_by_title('new1')
+    # byebug
     a.accept! lock: true, attributes: {body: 'Blah'}, save: true
-    assert_state 'new1', 'accepted', Article
+    assert_state 'new1', 'accepted', ActiveSupportArticle
     a.reload
     assert_equal 'Blah', a.body
   end
 
-  test "Exception raised later in the chain rolls back the transaction" do
-    a = Article.find_by_title('new1')
+  test "Any exception raised later in the chain rolls back the transaction" do
+    a = ActiveSupportArticle.find_by_title('new1')
     assert_raise RuntimeError, "There was an error" do
       a.accept! lock: true, attributes: {body: 'Blah'}, save: true, raise_after_transition: true
     end
-    assert_state 'new1', 'new', Article
+    assert_state 'new1', 'new', ActiveSupportArticle
     assert_equal 'Blah', a.body, 'The body text was set'
     a.reload
     assert_nil a.body, 'But the body text was not persisted.'
   end
 
-  test "Event-specific transition callbacks" do
-    article = Article.find_by_title 'new1'
+  test "Event-specific transition callbacks will run" do
+    article = ActiveSupportArticle.find_by_title 'new1'
     article.reject!
     assert_nil article.message
     article.delete!
@@ -212,7 +209,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
   end
 
   test "Halting the transition chain in a before_transition" do
-    subclass = Class.new(Article)
+    subclass = Class.new(ActiveSupportArticle)
     subclass.prepend_before_transition only: :delete do |article|
       throw :abort
     end
