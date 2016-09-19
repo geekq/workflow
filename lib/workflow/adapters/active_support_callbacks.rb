@@ -8,7 +8,8 @@ module Workflow
       included do
         include ActiveSupport::Callbacks
         attr_reader :transition_context
-        define_callbacks :transition
+        define_callbacks :transition,
+          skip_after_callbacks_if_terminated: true
       end
 
       module ClassMethods
