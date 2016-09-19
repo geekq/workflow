@@ -4,10 +4,7 @@ $VERBOSE = false
 require 'active_record'
 require 'sqlite3'
 require 'workflow'
-
-if Workflow::Adapter.const_defined? :ActiveSupportCallbacks
-  Workflow::Adapter.send(:remove_const, :ActiveSupportCallbacks)
-end
+require 'workflow/adapters/active_support_callbacks'
 
 ActiveRecord::Migration.verbose = false
 
@@ -23,6 +20,70 @@ ActiveRecord::Migration.verbose = false
 # (use case suggested by http://github.com/southdesign)
 class Article < ActiveRecord::Base
   include Workflow
+
+  def wrap_in_transaction?
+    transition_context.event_args&.first&.fetch(:lock, false)
+  end
+
+  def in_transition_validations
+    from, to, triggering_event, event_args = transition_context.values
+
+    singleton = class << self; self end
+    validations = Proc.new {}
+
+    meta = Article.workflow_spec.states[from].events[triggering_event].first.meta
+    fields_to_validate = meta[:validates_presence_of]
+    if fields_to_validate
+      validations = Proc.new {
+        #  Don't use deprecated behavior in ActiveRecord 5.
+        if ActiveRecord::VERSION::MAJOR == 5
+          fields_to_validate.each do |field|
+            errors.add(field, :empty) if self[field].blank?
+          end
+        else
+          errors.add_on_blank(fields_to_validate) if fields_to_validate
+        end
+      }
+    end
+
+    singleton.send :define_method, :validate_for_transition, &validations
+    validate_for_transition
+    halt! "Event[#{triggering_event}]'s transitions_to[#{to}] is not valid." unless self.errors.empty?
+    save! if event_args.first&.fetch(:save, false)
+  end
+
+  def wrap_in_transaction(&block)
+    with_lock(&block)
+  end
+
+  def check_for_halt_message
+    if transition_context.event_args&.first&.fetch(:halted, false)
+      raise "This is a problem"
+    else
+      yield
+    end
+  end
+
+  def set_attributes_from_event_args
+    args = transition_context.event_args.first || {}
+    self.attributes = args[:attributes] if args[:attributes]
+  end
+
+  def raise_error_if_flagged
+    raise "There was an error" if transition_context.event_args&.first&.fetch(:raise_after_transition, false)
+  end
+
+  around_transition :wrap_in_transaction, if: :wrap_in_transaction?
+  around_transition :check_for_halt_message
+  before_transition :set_attributes_from_event_args, :in_transition_validations
+  after_transition :raise_error_if_flagged
+
+  before_transition only: :delete do |article|
+    article.message = "Ran transition"
+  end
+
+  attr_accessor :message
+
   workflow do
     state :new do
       event :accept, :transitions_to => :accepted, :meta => {:validates_presence_of => [:title, :body]}
@@ -41,51 +102,6 @@ class Article < ActiveRecord::Base
     state :deleted do
       event :accept, :transitions_to => :accepted
     end
-
-    around_transition do |from, to, event, transition, params, *other_args|
-      if params&.fetch(:halted, false)
-        raise "This is a problem"
-      elsif params&.fetch(:lock, false)
-        with_lock do
-          self.attributes = params&.fetch(:attributes, {})
-          transition.call
-        end
-      else
-        transition.call
-      end
-    end
-
-    on_transition do |from, to, triggering_event, *event_args|
-      if self.class.superclass.to_s.split("::").first == "ActiveRecord"
-        singleton = class << self; self end
-        validations = Proc.new {}
-
-        meta = Article.workflow_spec.states[from].events[triggering_event].first.meta
-        fields_to_validate = meta[:validates_presence_of]
-        if fields_to_validate
-          validations = Proc.new {
-            #  Don't use deprecated behavior in ActiveRecord 5.
-            if ActiveRecord::VERSION::MAJOR == 5
-              fields_to_validate.each do |field|
-                errors.add(field, :empty) if self[field].blank?
-              end
-            else
-              errors.add_on_blank(fields_to_validate) if fields_to_validate
-            end
-          }
-        end
-
-        singleton.send :define_method, :validate_for_transition, &validations
-        validate_for_transition
-        halt! "Event[#{triggering_event}]'s transitions_to[#{to}] is not valid." unless self.errors.empty?
-        save! if event_args.first&.fetch(:save, false)
-      end
-    end
-
-    after_transition do |from, to, triggering_event, params, *other_args|
-      raise "There was an error" if params&.fetch(:raise_after_transition, false)
-    end
-
   end
 end
 
@@ -185,5 +201,25 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
     assert_equal 'Blah', a.body, 'The body text was set'
     a.reload
     assert_nil a.body, 'But the body text was not persisted.'
+  end
+
+  test "Event-specific transition callbacks" do
+    article = Article.find_by_title 'new1'
+    article.reject!
+    assert_nil article.message
+    article.delete!
+    assert_equal 'Ran transition', article.message
+  end
+
+  test "Halting the transition chain in a before_transition" do
+    subclass = Class.new(Article)
+    subclass.prepend_before_transition only: :delete do |article|
+      throw :abort
+    end
+    article = subclass.find_by_title 'new1'
+    assert article.reject!
+    assert_nil article.message
+    assert !article.delete!
+    assert_nil article.message
   end
 end

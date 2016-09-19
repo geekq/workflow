@@ -1,5 +1,8 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 require 'workflow'
+if Workflow::Adapter.const_defined? :ActiveSupportCallbacks
+  Workflow::Adapter.send(:remove_const, :ActiveSupportCallbacks)
+end
 
 class BeforeTransitionTest < Test::Unit::TestCase
   class MyFlow

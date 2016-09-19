@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'test/unit'
 require 'active_record'
+require 'byebug'
 
 class << Test::Unit::TestCase
   def test(name, &block)
@@ -36,4 +37,3 @@ class ActiveRecordTestCase < Test::Unit::TestCase
   def default_test
   end
 end
-
