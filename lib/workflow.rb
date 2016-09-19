@@ -117,8 +117,6 @@ module Workflow
           run_on_error(e, from, to, name, *args)
         end
 
-        return false if @halted
-
         run_on_transition(from, to, name, *args)
 
         run_on_exit(from, to, name, *args)
@@ -191,6 +189,14 @@ module Workflow
 
     def run_on_transition(from, to, event, *args)
       instance_exec(from.name, to.name, event, *args, &spec.on_transition_proc) if spec.on_transition_proc
+    end
+
+    def run_around_transition(from, to, event, *args, &transition)
+      if spec.around_transition_proc
+        instance_exec(from.name, to.name, event, transition, *args, &spec.around_transition_proc)
+      else
+        yield
+      end
     end
 
     def run_after_transition(from, to, event, *args)

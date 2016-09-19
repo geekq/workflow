@@ -38,6 +38,19 @@ class Article < ActiveRecord::Base
       event :accept, :transitions_to => :accepted
     end
 
+    around_transition do |from, to, event, transition, params, *other_args|
+      if params&.fetch(:halted, false)
+        raise "This is a problem"
+      elsif params&.fetch(:lock, false)
+        with_lock do
+          self.attributes = params&.fetch(:attributes, {})
+          transition.call
+        end
+      else
+        transition.call
+      end
+    end
+
     on_transition do |from, to, triggering_event, *event_args|
       if self.class.superclass.to_s.split("::").first == "ActiveRecord"
         singleton = class << self; self end
@@ -47,15 +60,28 @@ class Article < ActiveRecord::Base
         fields_to_validate = meta[:validates_presence_of]
         if fields_to_validate
           validations = Proc.new {
-            errors.add_on_blank(fields_to_validate) if fields_to_validate
+            #  Don't use deprecated behavior in ActiveRecord 5.
+            if ActiveRecord::VERSION::MAJOR == 5
+              fields_to_validate.each do |field|
+                errors.add(field, :empty) if self[field].blank?
+              end
+            else
+              errors.add_on_blank(fields_to_validate) if fields_to_validate
+            end
           }
         end
 
         singleton.send :define_method, :validate_for_transition, &validations
         validate_for_transition
         halt! "Event[#{triggering_event}]'s transitions_to[#{to}] is not valid." unless self.errors.empty?
+        save! if event_args.first&.fetch(:save, false)
       end
     end
+
+    after_transition do |from, to, triggering_event, params, *other_args|
+      raise "There was an error" if params&.fetch(:raise_after_transition, false)
+    end
+
   end
 end
 
@@ -115,5 +141,45 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
     assert_state 'accepted1', 'accepted', Article
   end
 
-end
+  test "Around transition can halt the execution" do
+    a = Article.new
+    assert_raise RuntimeError, "This is a problem" do
+      a.accept! halted: true
+    end
+    assert a.new?, "The transition should be halted."
+  end
 
+  test "With a lock, validations don't work on attributes set but not persisted" do
+    a = Article.find_by_title('new1')
+    a.body = 'Blah'
+    assert_raise Workflow::TransitionHalted do
+      a.accept! lock: true
+    end
+  end
+
+  test "Validations will work on anything that was persisted" do
+    a = Article.find_by_title('new1')
+    a.update body: 'Blah'
+    a.accept! lock: true
+    assert_state 'new1', 'accepted', Article
+  end
+
+  test "Around transition executes the transition" do
+    a = Article.find_by_title('new1')
+    a.accept! lock: true, attributes: {body: 'Blah'}, save: true
+    assert_state 'new1', 'accepted', Article
+    a.reload
+    assert_equal 'Blah', a.body
+  end
+
+  test "Exception raised later in the chain rolls back the transaction" do
+    a = Article.find_by_title('new1')
+    assert_raise RuntimeError, "There was an error" do
+      a.accept! lock: true, attributes: {body: 'Blah'}, save: true, raise_after_transition: true
+    end
+    assert_state 'new1', 'new', Article
+    assert_equal 'Blah', a.body, 'The body text was set'
+    a.reload
+    assert_nil a.body, 'But the body text was not persisted.'
+  end
+end
