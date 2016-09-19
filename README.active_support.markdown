@@ -135,7 +135,7 @@ from `new` to `awaiting_review`.
 
     #  This will create a transition callback which will stop the event
     #  and return false if validations fail.
-    halt_unless_valid!
+    halt_transition_unless_valid!
 
 ### Checking A Transition
 

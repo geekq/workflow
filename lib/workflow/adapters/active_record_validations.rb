@@ -90,9 +90,17 @@ module Workflow
       end
 
       module ClassMethods
-        def halt_unless_valid!
+        def halt_transition_unless_valid!
           before_transition unless: :valid? do |model|
             throw :abort
+          end
+        end
+
+        def wrap_transition_in_transaction!
+          around_transition do |model, transition|
+            model.with_lock do
+              transition.call
+            end
           end
         end
       end

@@ -29,7 +29,7 @@ class ActiveRecordArticle < ActiveRecord::Base
     validates attr, presence: true, if: :transitioning_via_event_blame?
   end
 
-  halt_unless_valid!
+  halt_transition_unless_valid!
 
   workflow do
     state :new do
