@@ -1,10 +1,12 @@
 require 'rubygems'
-
+require 'workflow/version'
 require 'workflow/specification'
 require 'workflow/adapters/active_record'
 require 'workflow/adapters/basic_callbacks'
 require 'workflow/adapters/remodel'
 require 'workflow/adapters/active_record_validations'
+require 'workflow/adapters/active_support_callbacks'
+require 'workflow/transition_context'
 
 # See also README.markdown for documentation
 module Workflow

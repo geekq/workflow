@@ -16,7 +16,10 @@ module Workflow
         ##
         # :method: before_transition
         #
-        # :call-seq: before_transition(names, block)
+        # :call-seq:
+        #   before_transition(*instance_method_names, options={})
+        #   before_transition(*instance_method_names)
+        #   before_transition(*instance_method_names)
         #
         # Append a callback before transitions. See _insert_callbacks for parameter details.
 
@@ -58,7 +61,10 @@ module Workflow
         ##
         # :method: around_transition
         #
-        # :call-seq: around_transition(names, block)
+        # :call-seq:
+        #   around_transition(*instance_method_names, options)
+        #   around_transition(options) {}
+        #
         #
         # Append a callback around transitions. See _insert_callbacks for parameter details.
 
@@ -128,9 +134,8 @@ module Workflow
       end
 
       private
-
       def execute_transition!(from, to, event_name, event, *args)
-        @transition_context = Workflow::Adapter::ActiveRecordValidations::TransitionContext.new \
+        @transition_context = TransitionContext.new \
           from: from.name,
           to: to.name,
           event: event_name,

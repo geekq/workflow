@@ -2,16 +2,36 @@ require 'workflow/state'
 require 'workflow/event'
 require 'workflow/event_collection'
 require 'workflow/errors'
+require 'active_support/callbacks'
 
 module Workflow
   class Specification
+    include ActiveSupport::Callbacks
+
     attr_accessor :states, :initial_state, :meta, :around_transition_proc,
       :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
+
+    define_callbacks :spec_definition
+
+    set_callback(:spec_definition, :after, if: :define_revert_events?) do |spec|
+      spec.state_names.each do |state_name|
+        state = spec.states[state_name]
+
+        state.events.flat.reject{|e| e.name.to_s =~ /^revert_/ }.each do |event|
+          revert_event_name = "revert_#{event.name}"
+          revert_event = Workflow::Event.new(revert_event_name, state)
+          from_state_for_revert = spec.states[event.transitions_to.to_sym]
+          from_state_for_revert.events.push revert_event_name, revert_event
+        end
+      end
+    end
 
     def initialize(meta = {}, &specification)
       @states = Hash.new
       @meta = meta
-      instance_eval(&specification)
+      run_callbacks :spec_definition do
+        instance_eval(&specification)
+      end
     end
 
     def state_names
@@ -19,6 +39,14 @@ module Workflow
     end
 
     private
+
+    def define_revert_events!
+      @define_revert_events = true
+    end
+
+    def define_revert_events?
+      !!@define_revert_events
+    end
 
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah

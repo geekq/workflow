@@ -5,20 +5,6 @@ module Workflow
     module ActiveRecordValidations
       extend ActiveSupport::Concern
 
-      class TransitionContext
-        attr_reader :from, :to, :event, :event_args
-        def initialize(from:, to:, event:, event_args:)
-          @from = from
-          @to = to
-          @event = event
-          @event_args = event_args
-        end
-
-        def values
-          [from, to, event, event_args]
-        end
-      end
-
       ###
       #
       # Captures instance method calls of the form `:transitioning_from_<state_name>`

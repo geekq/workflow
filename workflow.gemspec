@@ -1,35 +1,48 @@
-# -*- encoding: utf-8 -*-
+# coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'workflow/version'
+Gem::Specification.new do |spec|
+  spec.name          = "rails-workflow"
+  spec.version       = Workflow::VERSION
+  spec.authors       = ["Tyler Gannon"]
+  spec.email         = ["tyler@aprilseven.co"]
 
-Gem::Specification.new do |gem|
-  gem.name          = "workflow"
-  gem.version       = Workflow::VERSION
-  gem.authors       = ["Vladimir Dobriakov"]
-  gem.email         = ["vladimir@geekq.net"]
-  gem.description = "    Workflow is a finite-state-machine-inspired API for modeling and interacting\n    with what we tend to refer to as 'workflow'.\n\n    * nice DSL to describe your states, events and transitions\n    * robust integration with ActiveRecord and non relational data stores\n    * various hooks for single transitions, entering state etc.\n    * convenient access to the workflow specification: list states, possible events\n      for particular state\n"
-  gem.summary       = %q{A replacement for acts_as_state_machine.}
-  gem.homepage = "http://www.geekq.net/workflow/"
+  spec.summary       = %q{A finite-state-machine-inspired API for managing state changes in ActiveModel objects.  Based on Vladimir Dobriakov's Workflow gem (https://github.com/geekq/workflow)}
+  spec.description   = %q{Workflow specifically for ActiveModel objects.}
+  spec.homepage      = "https://github.com/tylergannon/rails-workflow"
+  spec.license       = "MIT"
 
-  gem.files         = `git ls-files`.split($/)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.require_paths = ["lib"]
+  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
+  # to allow pushing to a single host or delete this section to allow pushing to any host.
+  if spec.respond_to?(:metadata)
+    spec.metadata['allowed_push_host'] = "https://rubygems.org"
+  else
+    raise "RubyGems 2.0 or newer is required to protect against " \
+      "public gem pushes."
+  end
 
-  gem.extra_rdoc_files = [
+  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+    f.match(%r{^(test|spec|features|doc)/})
+  end
+  spec.bindir        = "exe"
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.require_paths = ["lib"]
+  spec.extra_rdoc_files = [
     "README.markdown"
   ]
 
-  gem.add_development_dependency 'rdoc',    [">= 3.12"]
-  gem.add_development_dependency 'bundler', [">= 1.0.0"]
-  gem.add_development_dependency 'activerecord'
-  gem.add_development_dependency 'activesupport'
-  gem.add_development_dependency 'sqlite3'
-  gem.add_development_dependency 'mocha'
-  gem.add_development_dependency 'rake'
-  gem.add_development_dependency 'test-unit'
-  gem.add_development_dependency 'ruby-graphviz', ['~> 1.0.0']
+  spec.add_dependency 'activerecord'
+  spec.add_dependency 'activesupport'
 
-  gem.required_ruby_version = '>= 1.9.2'
+  spec.add_development_dependency 'rdoc',    [">= 3.12"]
+  spec.add_development_dependency 'sqlite3'
+  spec.add_development_dependency 'mocha'
+  spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'test-unit'
+  spec.add_development_dependency 'ruby-graphviz', ['~> 1.0.0']
+  spec.add_development_dependency "bundler", "~> 1.13"
+  spec.add_development_dependency "rspec", "~> 3.0"
+  spec.required_ruby_version = '>= 2.3'
+
 end
