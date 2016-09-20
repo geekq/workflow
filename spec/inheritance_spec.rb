@@ -17,7 +17,7 @@ RSpec.describe "Workflow Class Inheritance" do
   end
 
   class Cat < Animal
-    include Workflow
+    prepend Workflow
     workflow do
 
       state :upset do

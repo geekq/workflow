@@ -20,7 +20,7 @@ RSpec.configure do |config|
   config.shared_context_metadata_behavior = :apply_to_host_groups
   config.include_context "ActiveRecord Setup"
 
-  # config.alias_it_should_behave_like_to :it_has_the_behavior_of, 'has the behavior:'
+  config.alias_it_should_behave_like_to :it_has_the_behavior_of, 'has the behavior:'
 
   # VCR.configure do |config|
   #   config.cassette_library_dir = "support/cassettes"

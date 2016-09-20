@@ -141,13 +141,16 @@ module Workflow
           event: event_name,
           event_args: args
 
-        callback_value, transition_value = [nil, nil]
-        run_callbacks :transition do
-          callback_value   = run_action_callback event_name, *args
-          transition_value = persist_workflow_state to.to_s
-        end
 
-        callback_value || transition_value
+        run_callbacks :transition do
+          return_value = false
+          catch(:halt) do
+            callback_value   = run_action_callback event_name, *args
+            return_value   = callback_value
+            return_value ||= persist_workflow_state(to.to_s)
+          end
+          return_value
+        end
       end
     end
   end
