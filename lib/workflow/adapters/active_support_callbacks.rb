@@ -18,69 +18,163 @@ module Workflow
         #
         # :call-seq:
         #   before_transition(*instance_method_names, options={})
-        #   before_transition(*instance_method_names)
-        #   before_transition(*instance_method_names)
+        #   before_transition(options={}, &block)
         #
-        # Append a callback before transitions. See _insert_callbacks for parameter details.
+        # Append a callback before transition.
+        # Instance methods used for `before` and `after` transitions
+        # receive no parameters.  Instance methods for `around` transitions will be given a block,
+        # which must be yielded/called in order for the sequence to continue.
+        #
+        # Using a block notation, the first parameter will be an instance of the object
+        # under transition, while the second parameter (`around` transition only) will be
+        # the block which should be called for the sequence to continue.
+        #
+        # == Options
+        #
+        # === If / Unless
+        #
+        # The callback will run `if` or `unless` the named method returns a truthy value.
+        #
+        #    #  Assuming some_instance_method returns a boolean,
+        #    before_transition :do_something, if: :some_instance_method
+        #    before_transition :do_something_else, unless: :some_instance_method
+        #
+        # === Only / Except
+        #
+        # The callback will run `if` or `unless` the event being processed is in the list given
+        #
+        #     #  Run this callback only on the `accept` and `publish` events.
+        #     before_transition :do_something, only: [:accept, :publish]
+        #     #  Run this callback on events other than the `accept` and `publish` events.
+        #     before_transition :do_something_else, except: [:accept, :publish]
+        #
 
         ##
         # :method: prepend_before_transition
         #
-        # :call-seq: prepend_before_transition(names, block)
+        # :call-seq:
+        #   prepend_before_transition(*instance_method_names, options={})
+        #   prepend_before_transition(options={}, &block)
         #
-        # Prepend a callback before transitions. See _insert_callbacks for parameter details.
+        # Prepend a callback before transition, making it the first before transition called.
+        # Options are the same as for the standard #before_transition method.
 
         ##
         # :method: skip_before_transition
         #
         # :call-seq: skip_before_transition(names)
         #
-        # Skip a callback before transitions. See _insert_callbacks for parameter details.
+        # Skip a callback before transition.
+        # Options are the same as for the standard #before_transition method.
 
         ##
         # :method: after_transition
         #
-        # :call-seq: after_transition(names, block)
+        # :call-seq:
+        #   after_transition(*instance_method_names, options={})
+        #   after_transition(options={}, &block)
         #
-        # Append a callback after transitions. See _insert_callbacks for parameter details.
+        # Append a callback after transition.
+        # Instance methods used for `before` and `after` transitions
+        # receive no parameters.  Instance methods for `around` transitions will be given a block,
+        # which must be yielded/called in order for the sequence to continue.
+        #
+        # Using a block notation, the first parameter will be an instance of the object
+        # under transition, while the second parameter (`around` transition only) will be
+        # the block which should be called for the sequence to continue.
+        #
+        # == Options
+        #
+        # === If / Unless
+        #
+        # The callback will run `if` or `unless` the named method returns a truthy value.
+        #
+        #    #  Assuming some_instance_method returns a boolean,
+        #    after_transition :do_something, if: :some_instance_method
+        #    after_transition :do_something_else, unless: :some_instance_method
+        #
+        # === Only / Except
+        #
+        # The callback will run `if` or `unless` the event being processed is in the list given
+        #
+        #     #  Run this callback only on the `accept` and `publish` events.
+        #     after_transition :do_something, only: [:accept, :publish]
+        #     #  Run this callback on events other than the `accept` and `publish` events.
+        #     after_transition :do_something_else, except: [:accept, :publish]
+        #
 
         ##
         # :method: prepend_after_transition
         #
-        # :call-seq: prepend_after_transition(names, block)
+        # :call-seq:
+        #   prepend_after_transition(*instance_method_names, options={})
+        #   prepend_after_transition(options={}, &block)
         #
-        # Prepend a callback after transitions. See _insert_callbacks for parameter details.
+        # Prepend a callback after transition, making it the first after transition called.
+        # Options are the same as for the standard #after_transition method.
 
         ##
         # :method: skip_after_transition
         #
         # :call-seq: skip_after_transition(names)
         #
-        # Skip a callback after transitions. See _insert_callbacks for parameter details.
+        # Skip a callback after transition.
+        # Options are the same as for the standard #after_transition method.
 
         ##
         # :method: around_transition
         #
         # :call-seq:
-        #   around_transition(*instance_method_names, options)
-        #   around_transition(options) {}
+        #   around_transition(*instance_method_names, options={})
+        #   around_transition(options={}, &block)
         #
+        # Append a callback around transition.
+        # Instance methods used for `before` and `after` transitions
+        # receive no parameters.  Instance methods for `around` transitions will be given a block,
+        # which must be yielded/called in order for the sequence to continue.
         #
-        # Append a callback around transitions. See _insert_callbacks for parameter details.
+        # Using a block notation, the first parameter will be an instance of the object
+        # under transition, while the second parameter (`around` transition only) will be
+        # the block which should be called for the sequence to continue.
+        #
+        # == Options
+        #
+        # === If / Unless
+        #
+        # The callback will run `if` or `unless` the named method returns a truthy value.
+        #
+        #    #  Assuming some_instance_method returns a boolean,
+        #    around_transition :do_something, if: :some_instance_method
+        #    around_transition :do_something_else, unless: :some_instance_method
+        #
+        # === Only / Except
+        #
+        # The callback will run `if` or `unless` the event being processed is in the list given
+        #
+        #     #  Run this callback only on the `accept` and `publish` events.
+        #     around_transition :do_something, only: [:accept, :publish]
+        #     #  Run this callback on events other than the `accept` and `publish` events.
+        #     around_transition :do_something_else, except: [:accept, :publish]
+        #
 
         ##
         # :method: prepend_around_transition
         #
-        # :call-seq: prepend_around_transition(names, block)
+        # :call-seq:
+        #   prepend_around_transition(*instance_method_names, options={})
+        #   prepend_around_transition(options={}, &block)
         #
-        # Prepend a callback around transitions. See _insert_callbacks for parameter details.
+        # Prepend a callback around transition, making it the first around transition called.
+        # Options are the same as for the standard #around_transition method.
 
         ##
         # :method: skip_around_transition
         #
         # :call-seq: skip_around_transition(names)
         #
-        # Skip a callback around transitions. See _insert_callbacks for parameter details.
+        # Skip a callback around transition.
+        # Options are the same as for the standard #around_transition method.
+
 
         [:before, :after, :around].each do |callback|
           define_method "#{callback}_transition" do |*names, &blk|
@@ -139,7 +233,8 @@ module Workflow
           from: from.name,
           to: to.name,
           event: event_name,
-          event_args: args
+          event_args: args,
+          named_arguments: spec.named_arguments
 
 
         run_callbacks :transition do

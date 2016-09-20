@@ -8,8 +8,7 @@ module Workflow
   class Specification
     include ActiveSupport::Callbacks
 
-    attr_accessor :states, :initial_state, :meta, :around_transition_proc,
-      :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
+    attr_accessor :states, :initial_state, :meta, :named_arguments
 
     define_callbacks :spec_definition
 
@@ -40,6 +39,10 @@ module Workflow
 
     private
 
+    def event_args(*names)
+      @named_arguments = names
+    end
+
     def define_revert_events!
       @define_revert_events = true
     end
@@ -57,43 +60,15 @@ module Workflow
       instance_eval(&events_and_etc) if events_and_etc
     end
 
-    def event(name, args = {}, &action)
+    def event(name, args = {})
       target = args[:transitions_to] || args[:transition_to]
       condition = args[:if]
       raise WorkflowDefinitionError.new(
         "missing ':transitions_to' in workflow event definition for '#{name}'") \
         if target.nil?
       @scoped_state.events.push(
-        name, Workflow::Event.new(name, target, condition, (args[:meta] or {}), &action)
+        name, Workflow::Event.new(name, target, condition, (args[:meta] or {}))
       )
-    end
-
-    def on_entry(&proc)
-      @scoped_state.on_entry = proc
-    end
-
-    def on_exit(&proc)
-      @scoped_state.on_exit = proc
-    end
-
-    def after_transition(&proc)
-      @after_transition_proc = proc
-    end
-
-    def around_transition(&proc)
-      @around_transition_proc = proc
-    end
-
-    def before_transition(&proc)
-      @before_transition_proc = proc
-    end
-
-    def on_transition(&proc)
-      @on_transition_proc = proc
-    end
-
-    def on_error(&proc)
-      @on_error_proc = proc
     end
   end
 end
