@@ -38,7 +38,7 @@ module Workflow
         # state. That's why it is important to save the string with the name of the
         # initial state in all the new records.
         def write_initial_state
-          write_attribute self.class.workflow_column, current_state.to_s
+          write_attribute self.class.workflow_column, current_state.name
         end
       end
 
@@ -61,29 +61,20 @@ module Workflow
           end
         end
 
-        def transactional_transitions?
-          class_variable_defined?(TRANSACTIONAL_TRANSITIONS_CVAR) &&
-          class_variable_get(TRANSACTIONAL_TRANSITIONS_CVAR)
-        end
+        def workflow_with_scopes(&specification)
+          workflow_without_scopes(&specification)
+          states = workflow_spec.states
 
-        def workflow_with_scopes(meta=nil, &specification)
-          meta ||= Hash.new
-
-          class_variable_set TRANSACTIONAL_TRANSITIONS_CVAR, !!meta.delete(TRANSACTIONAL_TRANSITIONS_KEY)
-          workflow_without_scopes(meta, &specification)
-          states = workflow_spec.states.values
-
-          states.each do |state|
+          states.map(&:name).each do |state|
             define_singleton_method("with_#{state}_state") do
-              where("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+              where(self.workflow_column.to_sym => state.to_s)
             end
 
             define_singleton_method("without_#{state}_state") do
-              where.not("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+              where.not(self.workflow_column.to_sym => state.to_s)
             end
           end
         end
-
       end
     end
   end

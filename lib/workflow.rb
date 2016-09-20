@@ -38,7 +38,7 @@ module Workflow
   # @return [State] Current workflow state
   def current_state
     loaded_state = load_workflow_state
-    res = workflow_spec.states[loaded_state.to_sym] if loaded_state
+    res = workflow_spec.states.find{|t| t.name==loaded_state.to_sym} if loaded_state
     res || workflow_spec.initial_state
   end
 
@@ -58,9 +58,9 @@ module Workflow
   # @param [Mixed] *args Arguments passed to state transition. Available also to callbacks
   # @return [Type] description of returned object
   def process_event!(name, *args)
-    event = current_state.events.first_applicable(name, self)
+    event = current_state.select_event(name, self)
     raise NoTransitionAllowed.new(
-      "There is no event #{name.to_sym} defined for the #{current_state} state") \
+      "There is no event #{name} defined for the #{current_state.name} state") \
       if event.nil?
     @halted_because = nil
     @halted = false
@@ -68,8 +68,7 @@ module Workflow
     check_transition(event)
 
     from = current_state
-    to = workflow_spec.states[event.transitions_to]
-    execute_transition!(from, to, name, event, *args)
+    execute_transition!(from, event.transitions_to, name, event, *args)
   end
 
 
@@ -145,9 +144,9 @@ module Workflow
     # Create a meaningful error message instead of
     # "undefined method `on_entry' for nil:NilClass"
     # Reported by Kyle Burton
-    if !workflow_spec.states[event.transitions_to]
+    unless workflow_spec.states.include?(event.transitions_to)
       raise WorkflowError.new("Event[#{event.name}]'s " +
-          "transitions_to[#{event.transitions_to}] is not a declared state.")
+          "transitions_to[#{event.transitions_to.name}] is not a declared state.")
     end
   end
 
@@ -233,7 +232,7 @@ module Workflow
       end
 
       @workflow_spec = specification_object
-      @workflow_spec.states.values.each do |state|
+      @workflow_spec.states.each do |state|
         state_name = state.name
         module_eval do
           define_method "#{state_name}?" do
@@ -241,7 +240,7 @@ module Workflow
           end
         end
 
-        state.events.flat.each do |event|
+        state.uniq_events.each do |event|
           event_name = event.name
           module_eval do
             define_method "#{event_name}!".to_sym do |*args|
@@ -249,7 +248,7 @@ module Workflow
             end
 
             define_method "can_#{event_name}?" do
-              return !!current_state.events.first_applicable(event_name, self)
+              return !!current_state.select_event(event_name, self)
             end
           end
         end
@@ -257,13 +256,13 @@ module Workflow
     end
 
     def undefine_methods_defined_by_workflow_spec(inherited_workflow_spec)
-      inherited_workflow_spec.states.values.each do |state|
+      inherited_workflow_spec.states.each do |state|
         state_name = state.name
         module_eval do
           undef_method "#{state_name}?"
         end
 
-        state.events.flat.each do |event|
+        state.uniq_events.each do |event|
           event_name = event.name
           module_eval do
             undef_method "#{event_name}!".to_sym

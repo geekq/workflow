@@ -250,6 +250,7 @@ module Workflow
 
     private
     def execute_transition!(from, to, event_name, event, *args)
+      # byebug
       @transition_context = TransitionContext.new \
         from: from.name,
         to: to.name,
@@ -260,9 +261,10 @@ module Workflow
       run_callbacks :transition do
         return_value = false
         catch(:abort) do
+          # byebug
           callback_value   = run_action_callback event_name, *args
           return_value   = callback_value
-          return_value ||= persist_workflow_state(to.to_s)
+          return_value ||= persist_workflow_state(to.name)
         end
         return_value
       end

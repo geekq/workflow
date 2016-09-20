@@ -24,7 +24,7 @@ RSpec.shared_examples "Basic Database Operations" do
   end
 
   let(:workflow_state_names) {
-    subject.class.workflow_spec.states.keys.map{|n| n.to_s}.to_set
+    subject.class.workflow_spec.states.map(&:name).map{|n| n.to_s}.to_set
   }
 
   it 'can access workflow specification' do
@@ -172,7 +172,7 @@ RSpec.describe Workflow do
         state :supplemental, :meta => {:importance => 1}
       end
     }
-    let(:state_importance) {subject.workflow_spec.states[:supplemental].meta[:importance]}
+    let(:state_importance) {subject.workflow_spec.find_state(:supplemental).meta[:importance]}
     it "should be able to read the meta" do
       expect(state_importance).to eq 1
     end

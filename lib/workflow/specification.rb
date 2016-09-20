@@ -1,6 +1,5 @@
 require 'workflow/state'
 require 'workflow/event'
-require 'workflow/event_collection'
 require 'workflow/errors'
 require 'active_support/callbacks'
 
@@ -26,19 +25,34 @@ module Workflow
     attr_reader :named_arguments
 
     define_callbacks :spec_definition
-
     set_callback(:spec_definition, :after, if: :define_revert_events?) do |spec|
-      spec.states.keys.each do |state_name|
-        state = spec.states[state_name]
-
-        state.events.flat.reject{|e| e.name.to_s =~ /^revert_/ }.each do |event|
-          revert_event_name = "revert_#{event.name}"
-          revert_event = Workflow::Event.new(revert_event_name, state)
-          from_state_for_revert = spec.states[event.transitions_to.to_sym]
-          from_state_for_revert.events.push revert_event_name, revert_event
+      spec.states.each do |state|
+        state.uniq_events.reject{|e| e.name.to_s =~ /^revert_/ }.each do |event|
+          revert_event_name = "revert_#{event.name}".to_sym
+          from_state_for_revert = event.transitions_to
+          from_state_for_revert.event revert_event_name, transitions_to: state
         end
       end
     end
+
+    set_callback(:spec_definition, :after) do |spec|
+      spec.states.each do |state|
+        state.uniq_events.each do |event|
+          destination_state = spec.states.find{|t| t.name == event.transitions_to}
+          unless destination_state.present?
+            raise Workflow::Errors::WorkflowError.new("Event #{event.name} transitions_to #{event.transitions_to} but there is no such state.")
+          end
+          event.transitions_to = destination_state
+        end
+      end
+    end
+
+    def find_state(name)
+      states.find{|t| t.name == name.to_sym}
+    end
+
+
+
 
     # @api private
     #
@@ -46,7 +60,7 @@ module Workflow
     # @yield [] Block for workflow definition
     # @return [Specification]
     def initialize(meta = {}, &specification)
-      @states = Hash.new
+      @states = []
       @meta = meta
       run_callbacks :spec_definition do
         instance_eval(&specification)
@@ -60,47 +74,13 @@ module Workflow
     # @yield [] block defining events for this state.
     # @return [nil]
     def state(name, meta: {}, &events)
+      name = name.to_sym
       new_state = Workflow::State.new(name, self, meta)
       @initial_state ||= new_state
-      @states[name.to_sym] = new_state
-      @scoped_state = new_state
-      instance_eval(&events) if block_given?
+      @states << new_state
+      new_state.instance_eval(&events) if block_given?
     end
 
-    # Define an event on this specification.
-    # Must be called within the scope of the block within a call to {#state}.
-    #
-    # @param [Symbol] name The name of the event
-    # @param [Hash] args
-    # @option args [Symbol] :transitions_to The state this event transitions to.
-    # @option args [Symbol] :if optional instance method name or [Proc] that will receive the object when called.
-    # @option args [Hash] :meta Optional metadata to be stored on the event object
-    # @return [nil]
-    #
-    #```ruby
-    #workflow do
-    #  state :new do
-    #    event :foo, transitions_to: :next_state
-    #    # If event `bar` is called for, the first transition with a matching condition will be executed.
-    #    #   An error will be raised of no transition is currently allowable by that name.
-    #    event :bar, if: :bar_is_ready?, transitions_to: :the_bar
-    #    event :bar, if: -> (obj) {obj.is_okay?}, transitions_to: :the_bazzle
-    #  end
-    #
-    #  state :next_state
-    #  state :the_bar
-    #  state :the_bazzle
-    #end
-    #```
-    def event(name, args = {})
-      target = args[:transitions_to] || args[:transition_to]
-      condition = args[:if]
-      raise WorkflowDefinitionError.new(
-        "missing ':transitions_to' in workflow event definition for '#{name}'") \
-        if target.nil?
-      @scoped_state.add_event name,
-        Workflow::Event.new(name, target, condition, (args[:meta] || {}))
-    end
 
 
     # Specify attributes to make available on the {TransitionContext} object

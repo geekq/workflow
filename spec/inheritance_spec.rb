@@ -30,7 +30,7 @@ RSpec.describe "Workflow Class Inheritance" do
     end
   end
 
-  let(:states) {subject.class.workflow_spec.states.keys}
+  let(:states) {subject.class.workflow_spec.states.map(&:name)}
 
   describe Animal do
     it "should have these states state" do

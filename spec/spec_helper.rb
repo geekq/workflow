@@ -3,6 +3,7 @@ require "workflow"
 require 'active_record'
 require 'sqlite3'
 require 'workflow'
+require 'byebug'
 require_relative 'support/active_record_setup'
 
 ActiveRecord::Migration.verbose = false

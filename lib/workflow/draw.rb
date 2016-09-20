@@ -57,7 +57,7 @@ module Workflow
         node = state.draw(graph)
         node.fontname = options[:font]
 
-        state.events.flat.each do |event|
+        state.uniq_events.each do |event|
           edge = event.draw(graph, state)
           edge.fontname = options[:font]
         end

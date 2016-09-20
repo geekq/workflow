@@ -50,7 +50,7 @@ RSpec.describe "Adapter Hooks" do
 
     it "should progress with custom functionality" do
       subject.progress!
-      expect(subject.foo).to eq 'last'
+      expect(subject.foo).to eq :last
       expect(subject).not_to have_persisted_state('last')
     end
   end

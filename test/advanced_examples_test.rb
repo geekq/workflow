@@ -66,7 +66,7 @@ class AdvanceExamplesTest < ActiveRecordTestCase
     spec.state_names.each do |state_name|
       state = spec.states[state_name]
 
-        (state.events.flat.reject {|e| e.name.to_s =~ /^revert_/ }).each do |event|
+        (state.uniq_events.reject {|e| e.name.to_s =~ /^revert_/ }).each do |event|
           event_name = event.name
           revert_event_name = "revert_" + event_name.to_s
 

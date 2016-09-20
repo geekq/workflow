@@ -5,7 +5,7 @@ module Workflow
 
     def initialize(name, transitions_to, condition = nil, meta = {})
       @name = name
-      @transitions_to = transitions_to.to_sym
+      @transitions_to = transitions_to
       @meta = meta
       @condition = if condition.nil? || condition.is_a?(Symbol) || condition.respond_to?(:call)
                      condition
@@ -14,7 +14,7 @@ module Workflow
                    end
     end
 
-    def condition_applicable?(object)
+    def conditions_apply?(object)
       if condition
         if condition.is_a?(Symbol)
           object.send(condition)
@@ -24,10 +24,6 @@ module Workflow
       else
         true
       end
-    end
-
-    def draw(graph, from_state)
-      graph.add_edges(from_state.name.to_s, transitions_to.to_s, meta.merge(:label => to_s))
     end
 
     def to_s
