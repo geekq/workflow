@@ -66,7 +66,7 @@ module Workflow
   def halt(reason = nil)
     @halted_because = reason
     @halted = true
-    throw :halt
+    throw :abort
   end
 
   def halt!(reason = nil)

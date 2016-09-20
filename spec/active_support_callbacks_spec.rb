@@ -166,10 +166,10 @@ RSpec.describe "Callbacks" do
         end
       end
 
-      describe "when there is an :abort thrown" do
+      describe "when halt is called" do
         before do
           subclass.prepend_before_transition only: :reject do |article|
-            throw :abort
+            halt
           end
         end
         it "should not complete the :reject transition" do

@@ -211,7 +211,7 @@ class ActiveSupportCallbacksTest < ActiveRecordTestCase
   test "Halting the transition chain in a before_transition" do
     subclass = Class.new(ActiveSupportArticle)
     subclass.prepend_before_transition only: :delete do |article|
-      throw :abort
+      halt
     end
     article = subclass.find_by_title 'new1'
     assert article.reject!
