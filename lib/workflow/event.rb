@@ -1,13 +1,12 @@
 module Workflow
   class Event
 
-    attr_accessor :name, :transitions_to, :meta, :action, :condition
+    attr_accessor :name, :transitions_to, :meta, :condition
 
-    def initialize(name, transitions_to, condition = nil, meta = {}, &action)
+    def initialize(name, transitions_to, condition = nil, meta = {})
       @name = name
       @transitions_to = transitions_to.to_sym
       @meta = meta
-      @action = action
       @condition = if condition.nil? || condition.is_a?(Symbol) || condition.respond_to?(:call)
                      condition
                    else

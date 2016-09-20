@@ -13,7 +13,7 @@ module Workflow
 
     def flat
       self.values.flatten.uniq do |event|
-        [:name, :transitions_to, :meta, :action].map { |m| event.send(m) }
+        [:name, :transitions_to, :meta].map { |m| event.send(m) }
       end
     end
 
