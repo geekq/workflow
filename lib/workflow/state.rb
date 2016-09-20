@@ -7,6 +7,10 @@ module Workflow
       @name, @spec, @events, @meta = name, spec, EventCollection.new, meta
     end
 
+    def add_event(name, event)
+      (events[name] ||= []) << event
+    end
+
     def draw(graph)
       defaults = {
         :label => to_s,

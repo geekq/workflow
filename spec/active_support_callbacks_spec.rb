@@ -115,7 +115,7 @@ RSpec.describe "Callbacks" do
 
   it 'should deny transition from new to accepted because of the missing presence of the body' do
     a = ActiveSupportArticle.find_by_title('new1');
-    expect {a.accept!}.to raise_error(Workflow::TransitionHalted)
+    expect {a.accept!}.to raise_error(Workflow::TransitionHaltedError)
     expect(a).to have_persisted_state(:new)
   end
 
@@ -138,7 +138,7 @@ RSpec.describe "Callbacks" do
     expect {
       expect {
         assert a.blame!
-      }.to raise_error(Workflow::TransitionHalted)
+      }.to raise_error(Workflow::TransitionHaltedError)
     }.not_to change {ActiveSupportArticle.find_by_title('accepted1').workflow_state}
   end
 
@@ -199,7 +199,7 @@ RSpec.describe "Callbacks" do
         it "should halt the transition" do
           expect {
             subject.accept! lock: true
-          }.to raise_error(Workflow::TransitionHalted)
+          }.to raise_error(Workflow::TransitionHaltedError)
         end
       end
 

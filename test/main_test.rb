@@ -387,7 +387,7 @@ class MainTest < ActiveRecordTestCase
         end
       end
     end
-    assert_raise Workflow::WorkflowError do
+    assert_raise Workflow::Errors::WorkflowError do
       Problem.new.solve!
     end
   end
@@ -496,7 +496,7 @@ class MainTest < ActiveRecordTestCase
 
     article = article_class.new
     assert article.new?
-    assert_raise Workflow::TransitionHalted do
+    assert_raise Workflow::TransitionHaltedError do
       article.reject! 'Too funny'
     end
     assert_nil article.too_far

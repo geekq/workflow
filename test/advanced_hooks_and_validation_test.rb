@@ -17,7 +17,7 @@ ActiveRecord::Migration.verbose = false
 # for different transitions. There is a `validates_presence_of` hook that let's
 # you specify the attributes that need to be present for an successful transition.
 # If the object is not valid at the end of the transition event the transition
-# is halted and a TransitionHalted exception is thrown.
+# is halted and a TransitionHaltedError exception is thrown.
 #
 # Here is a sample that illustrates how to use the presence validation:
 # (use case suggested by http://github.com/southdesign)
@@ -118,7 +118,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
 
   test 'deny transition from new to accepted because of the missing presence of the body' do
     a = Article.find_by_title('new1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raise Workflow::TransitionHaltedError do
       a.accept!
     end
     assert_state 'new1', 'new', Article
@@ -139,7 +139,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
 
   test 'deny transition from accepted to blamed because of no blame_reason' do
     a = Article.find_by_title('accepted1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raise Workflow::TransitionHaltedError do
       assert a.blame!
     end
     assert_state 'accepted1', 'accepted', Article
@@ -156,7 +156,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
   test "With a lock, validations don't work on attributes set but not persisted" do
     a = Article.find_by_title('new1')
     a.body = 'Blah'
-    assert_raise Workflow::TransitionHalted do
+    assert_raise Workflow::TransitionHaltedError do
       a.accept! lock: true
     end
   end

@@ -130,7 +130,7 @@ class ActiveSupportCallbacksTest < ActiveRecordTestCase
 
   test 'It will deny transition from new to accepted because of the missing presence of the body' do
     a = ActiveSupportArticle.find_by_title('new1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raise Workflow::TransitionHaltedError do
       a.accept!
     end
     assert_state 'new1', 'new', ActiveSupportArticle
@@ -151,7 +151,7 @@ class ActiveSupportCallbacksTest < ActiveRecordTestCase
 
   test 'It will deny transition from accepted to blamed because of no blame_reason' do
     a = ActiveSupportArticle.find_by_title('accepted1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raise Workflow::TransitionHaltedError do
       assert a.blame!
     end
     assert_state 'accepted1', 'accepted', ActiveSupportArticle
@@ -168,7 +168,7 @@ class ActiveSupportCallbacksTest < ActiveRecordTestCase
   test "It will with a lock, validations don't work on attributes set but not persisted" do
     a = ActiveSupportArticle.find_by_title('new1')
     a.body = 'Blah'
-    assert_raise Workflow::TransitionHalted do
+    assert_raise Workflow::TransitionHaltedError do
       a.accept! lock: true
     end
   end

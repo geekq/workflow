@@ -30,7 +30,7 @@ module Workflow
   # If you pass fewer parameters, the later ones will simply be nil.
   class TransitionContext
     attr_reader :from, :to, :event, :event_args, :named_arguments
-    def initialize(from:, to:, event:, event_args:, named_arguments:)
+    def initialize(from:, to:, event:, event_args:, named_arguments: [])
       @from = from
       @to = to
       @event = event

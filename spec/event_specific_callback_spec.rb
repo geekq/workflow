@@ -35,7 +35,7 @@ RSpec.describe "Event-Specific Callback Method" do
 
   describe "no parameters" do
     it "should throw an error if called with params" do
-      expect {subject.start0! :nice}.to raise_error(Workflow::CallbackArityError)
+      expect {subject.start0! :nice}.to raise_error(Workflow::Errors::CallbackArityError)
     end
     it "should succeed if called with no params" do
       expect {subject.start0!}.not_to raise_error
@@ -48,17 +48,17 @@ RSpec.describe "Event-Specific Callback Method" do
     end
 
     it "should throw error when called with none" do
-      expect {subject.start1!}.to raise_error(Workflow::CallbackArityError)
+      expect {subject.start1!}.to raise_error(Workflow::Errors::CallbackArityError)
     end
 
     it "should throw error when called with two" do
-      expect {subject.start1! :a, :b}.to raise_error(Workflow::CallbackArityError)
+      expect {subject.start1! :a, :b}.to raise_error(Workflow::Errors::CallbackArityError)
     end
   end
 
   describe "minus three" do
     it "should throw error when called with 1" do
-      expect {subject.start_minus3! :a}.to raise_error(Workflow::CallbackArityError)
+      expect {subject.start_minus3! :a}.to raise_error(Workflow::Errors::CallbackArityError)
     end
     it "should succeed if called with two params" do
       expect {subject.start_minus3! :a, :b}.not_to raise_error

@@ -24,7 +24,7 @@ RSpec.shared_examples "Basic Database Operations" do
   end
 
   let(:workflow_state_names) {
-    subject.class.workflow_spec.state_names.map{|n| n.to_s}.to_set
+    subject.class.workflow_spec.states.keys.map{|n| n.to_s}.to_set
   }
 
   it 'can access workflow specification' do
@@ -311,7 +311,7 @@ RSpec.describe Workflow do
     it "should raise an error" do
       expect {
         subject.solve!
-      }.to raise_error(Workflow::WorkflowError)
+      }.to raise_error(Workflow::Errors::WorkflowError)
     end
   end
 
@@ -346,7 +346,7 @@ RSpec.describe Workflow do
 
     describe "#halt!" do
       it "raises an exception" do
-        expect {subject.reject!('it is stupid')}.to raise_error(Workflow::TransitionHalted)
+        expect {subject.reject!('it is stupid')}.to raise_error(Workflow::TransitionHaltedError)
       end
     end
   end

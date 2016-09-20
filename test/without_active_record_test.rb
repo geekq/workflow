@@ -26,7 +26,7 @@ class WithoutWorkflowTest < Test::Unit::TestCase
   end
 
   test 'better error message on transitions_to typo' do
-    assert_raise Workflow::WorkflowDefinitionError do
+    assert_raise Workflow::Errors::WorkflowDefinitionError do
       Class.new do
         include Workflow
         workflow do

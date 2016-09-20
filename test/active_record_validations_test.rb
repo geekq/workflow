@@ -14,7 +14,7 @@ ActiveRecord::Migration.verbose = false
 # for different transitions. There is a `validates_presence_of` hook that let's
 # you specify the attributes that need to be present for an successful transition.
 # If the object is not valid at the end of the transition event the transition
-# is halted and a TransitionHalted exception is thrown.
+# is halted and a TransitionHaltedError exception is thrown.
 #
 # Here is a sample that illustrates how to use the presence validation:
 # (use case suggested by http://github.com/southdesign)

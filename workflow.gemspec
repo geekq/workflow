@@ -38,6 +38,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rdoc',    [">= 3.12"]
   spec.add_development_dependency 'sqlite3'
   spec.add_development_dependency 'mocha'
+  spec.add_development_dependency 'yard'
+  spec.add_development_dependency 'redcarpet'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'test-unit'
   spec.add_development_dependency 'ruby-graphviz', ['~> 1.0.0']

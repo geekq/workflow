@@ -1,22 +1,22 @@
 module Workflow
-  class Error < StandardError; end
+  module Errors
+    class TransitionHaltedError < StandardError
 
-  class TransitionHalted < Error
+      attr_reader :halted_because
 
-    attr_reader :halted_because
+      def initialize(msg = nil)
+        @halted_because = msg
+        super msg
+      end
 
-    def initialize(msg = nil)
-      @halted_because = msg
-      super msg
     end
 
+    class NoTransitionAllowed < StandardError; end
+
+    class WorkflowError < StandardError; end
+
+    class CallbackArityError < StandardError; end
+
+    class WorkflowDefinitionError < StandardError; end
   end
-
-  class NoTransitionAllowed < Error; end
-
-  class WorkflowError < Error; end
-
-  class CallbackArityError < Error; end
-
-  class WorkflowDefinitionError < Error; end
 end

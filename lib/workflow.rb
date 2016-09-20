@@ -2,19 +2,22 @@ require 'rubygems'
 require 'active_support/concern'
 require 'workflow/version'
 require 'workflow/specification'
+require 'workflow/callbacks'
 require 'workflow/adapters/active_record'
-require 'workflow/adapters/basic_callbacks'
 require 'workflow/adapters/remodel'
 require 'workflow/adapters/active_record_validations'
-require 'workflow/adapters/active_support_callbacks'
 require 'workflow/transition_context'
 
 # See also README.markdown for documentation
 module Workflow
+  # @!parse include Callbacks
+  # @!parse extend Callbacks::ClassMethods
+
   extend ActiveSupport::Concern
+  include Callbacks
+  include Errors
 
   included do
-    include Adapter::ActiveSupportCallbacks
 
     # Look for a hook; otherwise detect based on ancestor class.
     if respond_to?(:workflow_adapter)
@@ -30,24 +33,30 @@ module Workflow
     end
   end
 
+  # Returns a state object representing the current workflow state.
+  #
+  # @return [State] Current workflow state
   def current_state
     loaded_state = load_workflow_state
-    res = spec.states[loaded_state.to_sym] if loaded_state
-    res || spec.initial_state
+    res = workflow_spec.states[loaded_state.to_sym] if loaded_state
+    res || workflow_spec.initial_state
   end
 
-  # See the 'Guards' section in the README
+  # Deprecated.  Check for false return value from {#process_event!}
   # @return true if the last transition was halted by one of the transition callbacks.
   def halted?
     @halted
   end
 
-  # @return the reason of the last transition abort as set by the previous
-  # call of `halt` or `halt!` method.
-  def halted_because
-    @halted_because
-  end
+  # Returns the reason given to a call to {#halt} or {#halt!}, if any.
+  # @return [String] The reason the transition was aborted.
+  attr_reader :halted_because
 
+  # Initiates state transition via the named event
+  #
+  # @param [Symbol] name name of event to initiate
+  # @param [Mixed] *args Arguments passed to state transition. Available also to callbacks
+  # @return [Type] description of returned object
   def process_event!(name, *args)
     event = current_state.events.first_applicable(name, self)
     raise NoTransitionAllowed.new(
@@ -59,23 +68,36 @@ module Workflow
     check_transition(event)
 
     from = current_state
-    to = spec.states[event.transitions_to]
+    to = workflow_spec.states[event.transitions_to]
     execute_transition!(from, to, name, event, *args)
   end
 
+
+  # Stop the current transition and set the reason for the abort.
+  #
+  # @param optional [String] reason Reason for halting transition.
+  # @return [void]
   def halt(reason = nil)
     @halted_because = reason
     @halted = true
     throw :abort
   end
 
+  # Sets halt reason and raises [TransitionHaltedError] error.
+  #
+  # @param optional [String] reason Reason for halting
+  # @return [void]
   def halt!(reason = nil)
     @halted_because = reason
     @halted = true
-    raise TransitionHalted.new(reason)
+    raise TransitionHaltedError.new(reason)
   end
 
-  def spec
+  #   The specification for this object.
+  #   Could be set on a singleton for the object, on the object's class,
+  #   Or else on a superclass of the object.
+  # @return [Specification] The Specification that applies to this object.
+  def workflow_spec
     # check the singleton class first
     class << self
       return workflow_spec if workflow_spec
@@ -123,7 +145,7 @@ module Workflow
     # Create a meaningful error message instead of
     # "undefined method `on_entry' for nil:NilClass"
     # Reported by Kyle Burton
-    if !spec.states[event.transitions_to]
+    if !workflow_spec.states[event.transitions_to]
       raise WorkflowError.new("Event[#{event.name}]'s " +
           "transitions_to[#{event.transitions_to}] is not a declared state.")
     end
@@ -148,6 +170,10 @@ module Workflow
   module ClassMethods
     attr_reader :workflow_spec
 
+    # Instructs Workflow which column to use to persist workflow state.
+    #
+    # @param optional [Symbol] column_name name of column on table
+    # @return [void]
     def workflow_column(column_name=nil)
       if column_name
         @workflow_state_column_name = column_name.to_sym
@@ -158,9 +184,41 @@ module Workflow
       @workflow_state_column_name ||= :workflow_state
     end
 
-    def workflow(meta=nil, &specification)
-      meta ||= Hash.new
-      assign_workflow Specification.new(meta, &specification)
+
+    ##
+    # Define workflow for the class.
+    #
+    # @yield [] Specification of workflow. Example below and in README.markdown
+    # @return [nil]
+    #
+    # Workflow definition takes place inside the yielded block.
+    # @see Specification::state
+    # @see Specification::event
+    #
+    # ~~~ruby
+    #
+    # class Article
+    #   include Workflow
+    #   workflow do
+    #     state :new do
+    #       event :submit, :transitions_to => :awaiting_review
+    #     end
+    #     state :awaiting_review do
+    #       event :review, :transitions_to => :being_reviewed
+    #     end
+    #     state :being_reviewed do
+    #       event :accept, :transitions_to => :accepted
+    #       event :reject, :transitions_to => :rejected
+    #     end
+    #     state :accepted
+    #     state :rejected
+    #   end
+    # end
+    #
+    #~~~
+    #
+    def workflow(&specification)
+      assign_workflow Specification.new(Hash.new, &specification)
     end
 
     private
