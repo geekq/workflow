@@ -16,5 +16,7 @@ module Workflow
 
   class WorkflowError < Error; end
 
+  class CallbackArityError < Error; end
+
   class WorkflowDefinitionError < Error; end
 end

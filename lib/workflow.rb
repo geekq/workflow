@@ -104,7 +104,19 @@ module Workflow
 
   def run_action_callback(action_name, *args)
     action = action_name.to_sym
-    self.send(action, *args) if has_callback?(action)
+    if has_callback?(action)
+      meth = method(action)
+      check_method_arity! meth, *args
+      meth.call *args
+    end
+  end
+
+  def check_method_arity!(method, *args)
+    arity = method.arity
+
+    unless (arity >= 0 && args.length == arity) || (arity < 0 && (args.length + 1) >= arity.abs)
+      raise CallbackArityError.new("Method #{method.name} has arity #{arity} but was called with #{args.length} arguments.")
+    end
   end
 
   def check_transition(event)
