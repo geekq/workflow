@@ -158,7 +158,7 @@ module Workflow
       # Merging two workflow specifications can **not** be done automically, so
       # just make the latest specification win. Same for inheritance -
       # definition in the subclass wins.
-      if self.superclass.respond_to?(:workflow_spec, true)
+      if self.superclass.respond_to?(:workflow_spec, true) && self.superclass.workflow_spec
         undefine_methods_defined_by_workflow_spec superclass.workflow_spec
       end
 
