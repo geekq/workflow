@@ -72,9 +72,25 @@ module Workflow
     end
 
     from = current_state
-    execute_transition!(from, target, name, event, *args)
-  end
+    return_value = false
+    begin
+      @transition_context = TransitionContext.new \
+        from: from.name,
+        to: target.name,
+        event: name,
+        event_args: args,
+        named_arguments: workflow_spec.named_arguments
 
+      run_all_callbacks do
+        callback_value = run_action_callback name, *args
+        return_value   = callback_value
+        return_value ||= persist_workflow_state(target.name) || true
+      end
+    ensure
+      @transition_context = nil
+    end
+    return_value
+  end
 
   # Stop the current transition and set the reason for the abort.
   #

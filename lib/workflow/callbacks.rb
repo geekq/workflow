@@ -261,28 +261,14 @@ module Workflow
     def halted_callback_hook(filter)
     end
 
-    def execute_transition!(from, to, event_name, event, *args)
-      # byebug
-      @transition_context = TransitionContext.new \
-        from: from.name,
-        to: to.name,
-        event: event_name,
-        event_args: args,
-        named_arguments: workflow_spec.named_arguments
-
-      return_value = false
+    def run_all_callbacks(&block)
       catch(:abort) do
         run_callbacks :transition do
           throw(:abort) if false == run_callbacks(:exit) do
-            throw(:abort) if false == run_callbacks(:enter) do
-              callback_value = run_action_callback event_name, *args
-              return_value   = callback_value
-              return_value ||= persist_workflow_state(to.name) || true
-            end
+            throw(:abort) if false == run_callbacks(:enter, &block)
           end
         end
       end
-      return_value
     end
   end
 end
