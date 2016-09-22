@@ -15,7 +15,7 @@ RSpec.describe "Callbacks" do
       singleton = class << self; self end
       validations = Proc.new {}
 
-      meta = ActiveSupportArticle.workflow_spec.find_state(from).events[triggering_event].first.meta
+      meta = ActiveSupportArticle.workflow_spec.find_state(from).find_event(triggering_event).meta
       fields_to_validate = meta[:validates_presence_of]
       if fields_to_validate
         validations = Proc.new {
@@ -76,21 +76,21 @@ RSpec.describe "Callbacks" do
 
     workflow do
       state :new do
-        event :accept, :transitions_to => :accepted, :meta => {:validates_presence_of => [:title, :body]}
-        event :reject, :transitions_to => :rejected
+        on :accept, to: :accepted, :meta => {:validates_presence_of => [:title, :body]}
+        on :reject, to: :rejected
       end
       state :accepted do
-        event :blame, :transitions_to => :blamed, :meta => {:validates_presence_of => [:title, :body, :blame_reason]}
-        event :delete, :transitions_to => :deleted
+        on :blame, to: :blamed, :meta => {:validates_presence_of => [:title, :body, :blame_reason]}
+        on :delete, to: :deleted
       end
       state :rejected do
-        event :delete, :transitions_to => :deleted
+        on :delete, to: :deleted
       end
       state :blamed do
-        event :delete, :transitions_to => :deleted
+        on :delete, to: :deleted
       end
       state :deleted do
-        event :accept, :transitions_to => :accepted
+        on :accept, to: :accepted
       end
     end
   end

@@ -6,14 +6,14 @@ RSpec.describe "Advanced Examples" do
     workflow do
       define_revert_events!
       state :new do
-        event :submit, :transitions_to => :awaiting_review
+        on :submit, to: :awaiting_review
       end
       state :awaiting_review do
-        event :review, :transitions_to => :being_reviewed
+        on :review, to: :being_reviewed
       end
       state :being_reviewed do
-        event :accept, :transitions_to => :accepted
-        event :reject, :transitions_to => :rejected
+        on :accept, to: :accepted
+        on :reject, to: :rejected
       end
       state :accepted do
       end
@@ -38,8 +38,8 @@ RSpec.describe "Advanced Examples" do
         subject.submit!
       end
       it "should have an additional event for reverting the submit" do
-        expect(subject.current_state.events.keys).to include(:revert_submit)
-        expect(subject.current_state.events.keys).to include(:review)
+        expect(subject.current_state.events.map(&:name)).to include(:revert_submit)
+        expect(subject.current_state.events.map(&:name)).to include(:review)
       end
 
       it "should be able to revert the submit" do
@@ -62,7 +62,7 @@ RSpec.describe "Advanced Examples" do
     let(:workflow_spec) {
       Workflow::Specification.new do
         state :one do
-          event :dynamic_transition, :transitions_to => :one_a
+          on :dynamic_transition, to: :one_a
         end
         state :one_a
       end
@@ -83,7 +83,7 @@ RSpec.describe "Advanced Examples" do
     end
 
     it "should not have a revert event" do
-      states = adhoc_class.workflow_spec.states.collect(&:events).flatten.collect(&:keys).flatten.uniq.map(&:to_s)
+      states = adhoc_class.workflow_spec.states.collect(&:events).flatten.collect(&:name).flatten.uniq.map(&:to_s)
       expect(states.select{|t| t =~ /^revert/}).to be_empty
     end
 
@@ -92,14 +92,14 @@ RSpec.describe "Advanced Examples" do
         Workflow::Specification.new do
           define_revert_events!
           state :one do
-            event :dynamic_transition, :transitions_to => :one_a
+            on :dynamic_transition, to: :one_a
           end
           state :one_a
         end
       }
 
       it "should have revert events" do
-        states = adhoc_class.workflow_spec.states.collect(&:events).flatten.collect(&:keys).flatten.uniq.map(&:to_s)
+        states = adhoc_class.workflow_spec.states.collect(&:events).flatten.collect(&:name).flatten.uniq.map(&:to_s)
         expect(states.select{|t| t =~ /^revert/}).not_to be_empty
       end
     end

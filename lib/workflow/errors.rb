@@ -11,12 +11,19 @@ module Workflow
 
     end
 
-    class NoTransitionAllowed < StandardError; end
+    class NoMatchingTransitionError < StandardError
+    end
 
-    class WorkflowError < StandardError; end
+    class NoTransitionAllowed < StandardError
+    end
 
-    class CallbackArityError < StandardError; end
+    class WorkflowError < StandardError
+    end
 
-    class WorkflowDefinitionError < StandardError; end
+    class CallbackArityError < StandardError
+    end
+
+    class WorkflowDefinitionError < StandardError
+    end
   end
 end

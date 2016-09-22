@@ -27,22 +27,26 @@ module Workflow
     define_callbacks :spec_definition
     set_callback(:spec_definition, :after, if: :define_revert_events?) do |spec|
       spec.states.each do |state|
-        state.uniq_events.reject{|e| e.name.to_s =~ /^revert_/ }.each do |event|
+        state.events.reject{ |e|
+          e.name.to_s =~ /^revert_/
+        }.select{|e| e.transitions.length == 1}.each do |event|
           revert_event_name = "revert_#{event.name}".to_sym
-          from_state_for_revert = event.transitions_to
-          from_state_for_revert.event revert_event_name, transitions_to: state
+          from_state_for_revert = event.transitions.first.target_state
+          from_state_for_revert.on revert_event_name, to: state
         end
       end
     end
 
     set_callback(:spec_definition, :after) do |spec|
       spec.states.each do |state|
-        state.uniq_events.each do |event|
-          destination_state = spec.states.find{|t| t.name == event.transitions_to}
-          unless destination_state.present?
-            raise Workflow::Errors::WorkflowError.new("Event #{event.name} transitions_to #{event.transitions_to} but there is no such state.")
+        state.events.each do |event|
+          event.transitions.each do |transition|
+            target_state = spec.find_state(transition.target_state)
+            unless target_state.present?
+              raise Workflow::Errors::WorkflowDefinitionError.new("Event #{event.name} transitions to #{transition.target_state} but there is no such state.")
+            end
+            transition.target_state = target_state
           end
-          event.transitions_to = destination_state
         end
       end
     end

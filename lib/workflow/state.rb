@@ -1,22 +1,16 @@
 module Workflow
   class State
+    include Comparable
+
     attr_accessor :name, :events, :meta, :on_entry, :on_exit
-    attr_reader :spec
+    attr_reader :sequence
 
-    def initialize(name, spec, meta = {})
-      @name, @spec, @events, @meta = name.to_sym, spec, {}, meta
+    def initialize(name, sequence, **meta)
+      @name, @sequence, @events, @meta = name.to_sym, sequence, [], meta
     end
 
-    def select_event(name, entity)
-      events.fetch(name, []).find do |event|
-        event.conditions_apply?(entity)
-      end
-    end
-
-    def uniq_events
-      events.values.flatten.uniq do |event|
-        [event.name, event.transitions_to, event.meta]
-      end
+    def find_event(name)
+      events.find{|t| t.name == name}
     end
 
     # Define an event on this specification.
@@ -32,34 +26,63 @@ module Workflow
     #```ruby
     #workflow do
     #  state :new do
-    #    event :foo, transitions_to: :next_state
-    #    # If event `bar` is called for, the first transition with a matching condition will be executed.
-    #    #   An error will be raised of no transition is currently allowable by that name.
-    #    event :bar, if: :bar_is_ready?, transitions_to: :the_bar
-    #    event :bar, if: -> (obj) {obj.is_okay?}, transitions_to: :the_bazzle
-    #  end
+    #    on :review, to: :being_reviewed
     #
-    #  state :next_state
+    #    on :submit do
+    #      to :submitted,
+    #        if:     [ "name == 'The Dude'", :abides?, -> (rug) {rug.tied_the_room_together?}],
+    #        unless: :nihilist?
+    #
+    #      to :trash, unless: :body?
+    #      to :another_place do |article|
+    #        article.foo?
+    #      end
+    #   end
+    # end
+    #
+    #  state :kitchen
     #  state :the_bar
-    #  state :the_bazzle
+    #  state :the_diner
     #end
     #```
-    def event(name, args = {})
-      target = args[:transitions_to] || args[:transition_to]
-      condition = args[:if]
-      raise WorkflowDefinitionError.new(
-        "missing ':transitions_to' in workflow event definition for '#{name}'") \
-        if target.nil?
+    def on(name, to: nil, meta: nil, &transitions)
+      if to && block_given?
+        raise Errors::WorkflowDefinitionError.new("Event target can only be received in the method call or the block, not both.")
+      end
 
-      (events[name] ||= []) << Workflow::Event.new(name, target, condition, (args[:meta] || {}))
+      unless to || block_given?
+        raise Errors::WorkflowDefinitionError.new("No event target given for event #{name}")
+      end
+
+      if find_event(name)
+        raise Errors::WorkflowDefinitionError.new("Already defined an event [#{name}] for state[#{self.name}]")
+      end
+
+      event = Workflow::Event.new(name, meta)
+
+      if to
+        event.to to
+      else
+        event.instance_eval(&transitions)
+      end
+
+      if event.transitions.empty?
+        raise Errors::WorkflowDefinitionError.new("No transitions defined for event [#{name}] on state [#{self.name}]")
+      end
+
+      events << event
+      nil
     end
 
-    if RUBY_VERSION >= '1.9'
-      include Comparable
-      def <=>(other_state)
-        raise ArgumentError, "state `#{other_state.name}' does not exist" unless spec.states.include?(other_state)
-        spec.states.index(self) <=> spec.states.index(other_state)
+    def inspect
+      "<State name=#{name.inspect} events(#{events.length})=#{events.inspect}>"
+    end
+
+    def <=>(other_state)
+      unless other_state.is_a?(State)
+        raise StandardError.new "Other State #{other_state} is a #{other_state.class}.  I can only be compared with a Workflow::State."
       end
+      self.sequence <=> other_state.sequence
     end
   end
 end

@@ -80,21 +80,21 @@ RSpec.describe "Active Record Validations" do
 
     workflow do
       state :new do
-        event :accept, :transitions_to => :accepted
-        event :reject, :transitions_to => :rejected
+        on :accept, to: :accepted
+        on :reject, to: :rejected
       end
       state :accepted do
-        event :blame, :transitions_to => :blamed
-        event :delete, :transitions_to => :deleted
+        on :blame, to: :blamed
+        on :delete, to: :deleted
       end
       state :rejected do
-        event :delete, :transitions_to => :deleted
+        on :delete, to: :deleted
       end
       state :blamed do
-        event :delete, :transitions_to => :deleted
+        on :delete, to: :deleted
       end
       state :deleted do
-        event :accept, :transitions_to => :accepted
+        on :accept, to: :accepted
       end
     end
   end

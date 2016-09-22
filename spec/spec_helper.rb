@@ -5,6 +5,7 @@ require 'sqlite3'
 require 'workflow'
 require 'byebug'
 require_relative 'support/active_record_setup'
+require_relative 'support/helpers'
 
 ActiveRecord::Migration.verbose = false
 
@@ -20,6 +21,7 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.shared_context_metadata_behavior = :apply_to_host_groups
   config.include_context "ActiveRecord Setup"
+  config.include_context "Shared Helpers"
 
   config.alias_it_should_behave_like_to :it_has_the_behavior_of, 'has the behavior:'
 

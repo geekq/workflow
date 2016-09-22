@@ -34,13 +34,15 @@ module Workflow
       # end
 
       def can_transition?(event_id)
-        return false unless current_state.events[event_id]
+        event = current_state.find_event(event_id)
+        return false unless event
 
-        event = current_state.events[event_id].first
-        transitions_to = event.transitions_to
-        state_name = current_state.name
+        from = current_state.name
+        to = event.evaluate(self)
 
-        within_transition(state_name, transitions_to, event_id) do
+        return false unless to
+
+        within_transition(from, to, event_id) do
           valid?
         end
       end

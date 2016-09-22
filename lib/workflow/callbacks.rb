@@ -4,17 +4,23 @@ module Workflow
     extend ActiveSupport::Concern
     include ActiveSupport::Callbacks
 
+    CALLBACK_MAP =   {
+      transition: :event,
+      exit: :from,
+      enter: :to
+    }.freeze
+
     # @!attribute [r] transition_context
     #   During state transition events, contains a {TransitionContext} representing the transition underway.
     #   @return [TransitionContext] representation of current state transition
     #
     included do
       attr_reader :transition_context
-      define_callbacks :transition,
-        skip_after_callbacks_if_terminated: true
+      CALLBACK_MAP.keys.each do |type|
+        define_callbacks type,
+          skip_after_callbacks_if_terminated: true
+      end
     end
-
-
 
     module ClassMethods
       ##
@@ -198,50 +204,52 @@ module Workflow
       # Options are the same as for the standard #around_transition method.
 
       [:before, :after, :around].each do |callback|
-        define_method "#{callback}_transition" do |*names, &blk|
-          _insert_callbacks(names, blk) do |name, options|
-            set_callback(:transition, callback, name, options)
+        CALLBACK_MAP.each do |type, context_attribute|
+          define_method "#{callback}_#{type}" do |*names, &blk|
+            _insert_callbacks(names, context_attribute, blk) do |name, options|
+              set_callback(type, callback, name, options)
+            end
           end
-        end
 
-        define_method "prepend_#{callback}_transition" do |*names, &blk|
-          _insert_callbacks(names, blk) do |name, options|
-            set_callback(:transition, callback, name, options.merge(prepend: true))
+          define_method "prepend_#{callback}_#{type}" do |*names, &blk|
+            _insert_callbacks(names, context_attribute, blk) do |name, options|
+              set_callback(type, callback, name, options.merge(prepend: true))
+            end
           end
-        end
 
-        # Skip a before, after or around callback. See _insert_callbacks
-        # for details on the allowed parameters.
-        define_method "skip_#{callback}_transition" do |*names|
-          _insert_callbacks(names) do |name, options|
-            skip_callback(:transition, callback, name, options)
+          # Skip a before, after or around callback. See _insert_callbacks
+          # for details on the allowed parameters.
+          define_method "skip_#{callback}_#{type}" do |*names|
+            _insert_callbacks(names, context_attribute) do |name, options|
+              skip_callback(type, callback, name, options)
+            end
           end
-        end
 
-        # *_action is the same as append_*_action
-        alias_method :"append_#{callback}_transition", :"#{callback}_transition"
+          # *_action is the same as append_*_action
+          alias_method :"append_#{callback}_#{type}", :"#{callback}_#{type}"
+        end
       end
 
       private
-      def _insert_callbacks(callbacks, block = nil)
+      def _insert_callbacks(callbacks, context_attribute, block = nil)
         options = callbacks.extract_options!
-        _normalize_callback_options(options)
+        _normalize_callback_options(options, context_attribute)
         callbacks.push(block) if block
         callbacks.each do |callback|
           yield callback, options
         end
       end
 
-      def _normalize_callback_options(options)
-        _normalize_callback_option(options, :only, :if)
-        _normalize_callback_option(options, :except, :unless)
+      def _normalize_callback_options(options, context_attribute)
+        _normalize_callback_option(options, context_attribute, :only, :if)
+        _normalize_callback_option(options, context_attribute, :except, :unless)
       end
 
-      def _normalize_callback_option(options, from, to) # :nodoc:
+      def _normalize_callback_option(options, context_attribute, from, to) # :nodoc:
         if from = options[from]
-          _from = Array(from).map(&:to_s).to_set
+          _from = Array(from).map(&:to_sym).to_set
           from = proc { |record|
-            _from.include? record.transition_context.event.to_s
+            _from.include? record.transition_context.send(context_attribute).to_sym
           }
           options[to] = Array(options[to]).unshift(from)
         end
@@ -249,6 +257,10 @@ module Workflow
     end
 
     private
+    #  TODO: Do something here.
+    def halted_callback_hook(filter)
+    end
+
     def execute_transition!(from, to, event_name, event, *args)
       # byebug
       @transition_context = TransitionContext.new \
@@ -258,16 +270,19 @@ module Workflow
         event_args: args,
         named_arguments: workflow_spec.named_arguments
 
-      run_callbacks :transition do
-        return_value = false
-        catch(:abort) do
-          # byebug
-          callback_value   = run_action_callback event_name, *args
-          return_value   = callback_value
-          return_value ||= persist_workflow_state(to.name)
+      return_value = false
+      catch(:abort) do
+        run_callbacks :transition do
+          throw(:abort) if false == run_callbacks(:exit) do
+            throw(:abort) if false == run_callbacks(:enter) do
+              callback_value = run_action_callback event_name, *args
+              return_value   = callback_value
+              return_value ||= persist_workflow_state(to.name) || true
+            end
+          end
         end
-        return_value
       end
+      return_value
     end
   end
 end

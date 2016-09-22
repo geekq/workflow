@@ -62,11 +62,10 @@ RSpec.describe Workflow do
     include Workflow
     workflow do
       state :submitted do
-        event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
-        end
+        on :accept, to: :accepted, :meta => {:weight => 8}
       end
       state :accepted do
-        event :ship, :transitions_to => :shipped
+        on :ship, to: :shipped
       end
       state :shipped
     end
@@ -79,11 +78,10 @@ RSpec.describe Workflow do
 
     workflow do
       state :submitted do
-        event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
-        end
+        on :accept, to: :accepted, :meta => {:weight => 8}
       end
       state :accepted do
-        event :ship, :transitions_to => :shipped
+        on :ship, to: :shipped
       end
       state :shipped
     end
@@ -141,7 +139,7 @@ RSpec.describe Workflow do
 
         workflow do
           state :new do
-            event :age, :transitions_to => :old
+            on :age, to: :old
           end
           state :old
         end
@@ -199,7 +197,7 @@ RSpec.describe Workflow do
   it "implicit transition callback" do
     klass = new_workflow_class do
       state :one do
-        event :my_transition, :transitions_to => :two
+        on :my_transition, to: :two
       end
       state :two
     end
@@ -218,7 +216,7 @@ RSpec.describe Workflow do
     let(:base_class) do
       new_workflow_class do
         state :new do
-          event :assign, :transitions_to => :assigned
+          on :assign, to: :assigned
         end
         state :assigned
       end
@@ -300,27 +298,12 @@ RSpec.describe Workflow do
     it {is_expected.to be_start_big}
   end
 
-  describe "When an event transitions to a non-existing state" do
-    subject {
-      new_workflow_class do
-        state :initial do
-          event :solve, :transitions_to => :solved
-        end
-      end.new
-    }
-    it "should raise an error" do
-      expect {
-        subject.solve!
-      }.to raise_error(Workflow::Errors::WorkflowError)
-    end
-  end
-
   describe "#halt" do
     subject {
       klass = new_workflow_class do
         state :young do
-          event :age, :transitions_to => :old
-          event :reject, transitions_to: :old
+          on :age, to: :old
+          on :reject, to: :old
         end
         state :old
       end
@@ -355,10 +338,10 @@ RSpec.describe Workflow do
     subject do
       new_workflow_class do
         state :newborn do
-          event :go_to_school, :transitions_to => :schoolboy
+          on :go_to_school, to: :schoolboy
         end
         state :schoolboy do
-          event :go_to_college, :transitions_to => :student
+          on :go_to_college, to: :student
         end
         state :student
         state :street
@@ -378,8 +361,10 @@ RSpec.describe Workflow do
       subject do
         klass = new_workflow_class do
           state :off do
-            event :turn_on, :transitions_to => :on, :if => :sufficient_battery_level?
-            event :turn_on, :transitions_to => :low_battery, :if => proc { |obj| obj.battery > 0 }
+            on :turn_on do
+              to :on, if: :sufficient_battery_level?
+              to :low_battery, if: -> (obj) {obj.battery > 0}
+            end
           end
           state :on
           state :low_battery

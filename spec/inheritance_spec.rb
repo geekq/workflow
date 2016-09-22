@@ -7,7 +7,7 @@ RSpec.describe "Workflow Class Inheritance" do
     workflow do
 
       state :conceived do
-        event :birth, :transition_to => :born
+        on :birth, to: :born
       end
 
       state :born do
@@ -21,7 +21,7 @@ RSpec.describe "Workflow Class Inheritance" do
     workflow do
 
       state :upset do
-        event :scratch, :transition_to => :hiding
+        on :scratch, to: :hiding
       end
 
       state :hiding do

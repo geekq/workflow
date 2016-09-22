@@ -1,9 +1,10 @@
+require 'spec_helper'
 RSpec.describe "Adapter Hooks" do
   class DefaultAdapter < ActiveRecord::Base
     self.table_name = :examples
     include Workflow
     workflow do
-      state(:initial) { event :progress, :transitions_to => :last }
+      state(:initial) { on :progress, to: :last }
       state(:last)
     end
   end
@@ -24,10 +25,32 @@ RSpec.describe "Adapter Hooks" do
 
     include Workflow
     workflow do
-      state(:initial) { event :progress, :transitions_to => :last }
+      state(:initial) { on :progress, to: :last }
       state(:last)
     end
   end
+  # 
+  # class Article < ActiveRecord::Base
+  #   include Workflow
+  #   include Workflow::CanCan
+  #
+  #   workflow do
+  #     state :new do
+  #       on :review, to: :being_reviewed
+  #
+  #       on :submit do
+  #         to :submitted,
+  #           if:     [ "name == 'The Dude'", :abides?, -> (rug) {rug.tied_the_room_together?}],
+  #           unless: :nihilist?
+  #
+  #         to :trash, unless: :body?
+  #         to :another_place do |article|
+  #           article.foo?
+  #         end
+  #       end
+  #     end
+  #   end
+  # end
 
   before do
     ActiveRecord::Schema.define do

@@ -24,7 +24,7 @@ RSpec.describe "Multiple Workflows" do
         class << self
           workflow do
             state :initial do
-              event :progress, :transitions_to => :last
+              on :progress, to: :last
             end
             state :last
           end
@@ -33,7 +33,7 @@ RSpec.describe "Multiple Workflows" do
         class << self
           workflow do
             state :initial do
-              event :progress, :transitions_to => :intermediate
+              on :progress, to: :intermediate
             end
             state :intermediate
             state :last

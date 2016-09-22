@@ -20,13 +20,13 @@ RSpec.describe "Event-Specific Callback Method" do
     end
     workflow do
       state :initial do
-        event :start0, transitions_to: :started
-        event :start1, transitions_to: :started
-        event :start2, transitions_to: :started
-        event :start3, transitions_to: :started
-        event :start_minus1, transitions_to: :started
-        event :start_minus2, transitions_to: :started
-        event :start_minus3, transitions_to: :started
+        on :start0, to: :started
+        on :start1, to: :started
+        on :start2, to: :started
+        on :start3, to: :started
+        on :start_minus1, to: :started
+        on :start_minus2, to: :started
+        on :start_minus3, to: :started
       end
       state :started
     end

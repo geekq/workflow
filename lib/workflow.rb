@@ -58,17 +58,21 @@ module Workflow
   # @param [Mixed] *args Arguments passed to state transition. Available also to callbacks
   # @return [Type] description of returned object
   def process_event!(name, *args)
-    event = current_state.select_event(name, self)
+    event = current_state.find_event(name)
     raise NoTransitionAllowed.new(
       "There is no event #{name} defined for the #{current_state.name} state") \
       if event.nil?
+
     @halted_because = nil
     @halted = false
 
-    check_transition(event)
+    target = event.evaluate(self)
+    unless target
+      raise NoMatchingTransitionError.new("No matching transition found on #{name} for target #{target}.  Consider adding a catchall transition.")
+    end
 
     from = current_state
-    execute_transition!(from, event.transitions_to, name, event, *args)
+    execute_transition!(from, target, name, event, *args)
   end
 
 
@@ -139,17 +143,6 @@ module Workflow
       raise CallbackArityError.new("Method #{method.name} has arity #{arity} but was called with #{args.length} arguments.")
     end
   end
-
-  def check_transition(event)
-    # Create a meaningful error message instead of
-    # "undefined method `on_entry' for nil:NilClass"
-    # Reported by Kyle Burton
-    unless workflow_spec.states.include?(event.transitions_to)
-      raise WorkflowError.new("Event[#{event.name}]'s " +
-          "transitions_to[#{event.transitions_to.name}] is not a declared state.")
-    end
-  end
-
 
   # load_workflow_state and persist_workflow_state
   # can be overriden to handle the persistence of the workflow state.
@@ -240,7 +233,7 @@ module Workflow
           end
         end
 
-        state.uniq_events.each do |event|
+        state.events.each do |event|
           event_name = event.name
           module_eval do
             define_method "#{event_name}!".to_sym do |*args|
@@ -248,7 +241,7 @@ module Workflow
             end
 
             define_method "can_#{event_name}?" do
-              return !!current_state.select_event(event_name, self)
+              return !!current_state.find_event(event_name)&.evaluate(self)
             end
           end
         end
@@ -262,7 +255,7 @@ module Workflow
           undef_method "#{state_name}?"
         end
 
-        state.uniq_events.each do |event|
+        state.events.each do |event|
           event_name = event.name
           module_eval do
             undef_method "#{event_name}!".to_sym
