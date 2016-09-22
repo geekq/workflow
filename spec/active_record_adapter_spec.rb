@@ -27,6 +27,13 @@ RSpec.describe "Active Record Scopes", type: :active_record_examples do
     end
   end
 
+  describe "#load_workflow_state" do
+    it "should return nil if the database value is nil" do
+      a = Article.new(workflow_state: nil)
+      expect(a.current_state).not_to be_nil
+    end
+  end
+
   describe "#persist_workflow_state" do
     describe "when the object has not been persisted" do
       it "sets the attribute on the object" do

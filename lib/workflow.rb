@@ -19,7 +19,7 @@ module Workflow
   include Errors
 
   def self.configure(&block)
-    block.call(config)
+    block.call(config) if block_given?
   end
 
   def self.config
@@ -67,6 +67,7 @@ module Workflow
   # @param [Mixed] *args Arguments passed to state transition. Available also to callbacks
   # @return [Type] description of returned object
   def process_event!(name, *args, **attributes)
+    name = name.to_sym
     event = current_state.find_event(name)
     raise NoTransitionAllowed.new(
       "There is no event #{name} defined for the #{current_state.name} state") \

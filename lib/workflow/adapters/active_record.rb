@@ -9,7 +9,7 @@ module Workflow
 
       module InstanceMethods
         def load_workflow_state
-          read_attribute(self.class.workflow_column)
+          read_attribute(self.class.workflow_column)&.to_sym
         end
 
         # On transition the new workflow state is immediately saved in the
