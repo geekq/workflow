@@ -42,7 +42,7 @@ module Workflow
 
         return false unless to
 
-        within_transition(from, to, event_id) do
+        within_transition(from, to.name, event_id) do
           valid?
         end
       end
