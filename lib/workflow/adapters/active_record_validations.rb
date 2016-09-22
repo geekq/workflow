@@ -25,13 +25,13 @@ module Workflow
         end
       end
 
-      # def valid?(context=nil)
-      #   if errors.any?
-      #     false
-      #   else
-      #     super
-      #   end
-      # end
+      def valid?(context=nil)
+        if errors.any?
+          false
+        else
+          super
+        end
+      end
 
       def can_transition?(event_id)
         event = current_state.find_event(event_id)
