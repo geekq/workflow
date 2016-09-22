@@ -1,0 +1,18 @@
+
+[:before, :after, :around].each do |callback|
+puts <<-EOF
+##
+# :method: #{callback}_transition
+#
+# :call-seq:
+#   #{callback}_transition(*instance_method_names, options={})
+#   #{callback}_transition(*instance_method_names)
+#   #{callback}_transition(*instance_method_names)
+#
+# Append a callback #{callback} transitions.
+# Instance methods used for `before` and `after` transitions
+# receive no 
+#
+
+EOF
+end

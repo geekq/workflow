@@ -1,67 +1,137 @@
 require 'workflow/state'
 require 'workflow/event'
-require 'workflow/event_collection'
 require 'workflow/errors'
+require 'active_support/callbacks'
 
 module Workflow
+  # Metadata object describing available states and state transitions.
   class Specification
-    attr_accessor :states, :initial_state, :meta,
-      :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
+    include ActiveSupport::Callbacks
 
-    def initialize(meta = {}, &specification)
-      @states = Hash.new
-      @meta = meta
-      instance_eval(&specification)
+    # The state objects defined for this specification, keyed by name
+    # @return [Hash]
+    attr_reader :states
+
+    # State object to be given to newly created objects under this workflow.
+    # @return [State]
+    attr_reader :initial_state
+
+    # Optional metadata stored with this workflow specification
+    # @return [Hash]
+    attr_reader :meta
+
+    # List of symbols, for attribute accessors to be added to {TransitionContext} object
+    # @return [Array]
+    attr_reader :named_arguments
+
+    define_callbacks :spec_definition
+    set_callback(:spec_definition, :after, if: :define_revert_events?) do |spec|
+      spec.states.each do |state|
+        state.events.reject{ |e|
+          e.name.to_s =~ /^revert_/
+        }.select{|e| e.transitions.length == 1}.each do |event|
+          revert_event_name = "revert_#{event.name}".to_sym
+          from_state_for_revert = event.transitions.first.target_state
+          from_state_for_revert.on revert_event_name, to: state
+        end
+      end
     end
 
-    def state_names
-      states.keys
+    set_callback(:spec_definition, :after) do |spec|
+      spec.states.each do |state|
+        state.events.each do |event|
+          event.transitions.each do |transition|
+            target_state = spec.find_state(transition.target_state)
+            unless target_state.present?
+              raise Workflow::Errors::WorkflowDefinitionError.new("Event #{event.name} transitions to #{transition.target_state} but there is no such state.")
+            end
+            transition.target_state = target_state
+          end
+        end
+      end
+    end
+
+    def find_state(name)
+      states.find{|t| t.name == name.to_sym}
+    end
+
+
+
+
+    # @api private
+    #
+    # @param [Hash] meta Metadata
+    # @yield [] Block for workflow definition
+    # @return [Specification]
+    def initialize(meta = {}, &specification)
+      @states = []
+      @meta = meta
+      run_callbacks :spec_definition do
+        instance_eval(&specification)
+      end
+    end
+
+    # Define a new state named [name]
+    #
+    # @param [Symbol] name name of state
+    # @param [Hash] meta Metadata to be stored with the state within the {Specification} object
+    # @yield [] block defining events for this state.
+    # @return [nil]
+    def state(name, meta: {}, &events)
+      name = name.to_sym
+      new_state = Workflow::State.new(name, self, meta)
+      @initial_state ||= new_state
+      @states << new_state
+      new_state.instance_eval(&events) if block_given?
+    end
+
+
+
+    # Specify attributes to make available on the {TransitionContext} object
+    # during transitions taking place in this specification.
+    # The attributes' values will be taken in order from the arguments passed to
+    # the event transit method call.
+    #
+    # @param [Array] names A list of symbols
+    # @return [nil]
+    def event_args(*names)
+      @named_arguments = names
+    end
+
+
+    # Also create additional event transitions that will move each configured transition
+    # in the reverse direction.
+    #
+    # @return [nil]
+    #
+    #```ruby
+    # class Article
+    #   include Workflow
+    #   workflow do
+    #     define_revert_events!
+    #     state :foo do
+    #       event :bar, transitions_to: :bax
+    #     end
+    #     state :bax
+    #   end
+    # end
+    #
+    # a = Article.new
+    # a.process_event! :foo
+    # a.current_state.name          # => :bax
+    # a.process_event! :revert_bar
+    # a.current_state.name          # => :foo
+    #```
+    def define_revert_events!
+      @define_revert_events = true
     end
 
     private
 
-    def state(name, meta = {:meta => {}}, &events_and_etc)
-      # meta[:meta] to keep the API consistent..., gah
-      new_state = Workflow::State.new(name, self, meta[:meta])
-      @initial_state = new_state if @states.empty?
-      @states[name.to_sym] = new_state
-      @scoped_state = new_state
-      instance_eval(&events_and_etc) if events_and_etc
+
+    def define_revert_events?
+      !!@define_revert_events
     end
 
-    def event(name, args = {}, &action)
-      target = args[:transitions_to] || args[:transition_to]
-      condition = args[:if]
-      raise WorkflowDefinitionError.new(
-        "missing ':transitions_to' in workflow event definition for '#{name}'") \
-        if target.nil?
-      @scoped_state.events.push(
-        name, Workflow::Event.new(name, target, condition, (args[:meta] or {}), &action)
-      )
-    end
-
-    def on_entry(&proc)
-      @scoped_state.on_entry = proc
-    end
-
-    def on_exit(&proc)
-      @scoped_state.on_exit = proc
-    end
-
-    def after_transition(&proc)
-      @after_transition_proc = proc
-    end
-
-    def before_transition(&proc)
-      @before_transition_proc = proc
-    end
-
-    def on_transition(&proc)
-      @on_transition_proc = proc
-    end
-
-    def on_error(&proc)
-      @on_error_proc = proc
-    end
   end
 end

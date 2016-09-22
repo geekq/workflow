@@ -9,14 +9,22 @@ module Workflow
 
       module InstanceMethods
         def load_workflow_state
-          read_attribute(self.class.workflow_column)
+          read_attribute(self.class.workflow_column)&.to_sym
         end
 
         # On transition the new workflow state is immediately saved in the
-        # database.
+        # database, if configured to do so.
         def persist_workflow_state(new_value)
           # Rails 3.1 or newer
-          update_column self.class.workflow_column, new_value
+          if persisted? && Workflow.config.persist_workflow_state_immediately
+            attrs = {self.class.workflow_column => new_value}
+            if Workflow.config.touch_on_update_column
+              attrs[:updated_at] = DateTime.now
+            end
+            update_columns attrs
+          else
+            self[self.class.workflow_column] = new_value
+          end
         end
 
         private
@@ -27,7 +35,7 @@ module Workflow
         # state. That's why it is important to save the string with the name of the
         # initial state in all the new records.
         def write_initial_state
-          write_attribute self.class.workflow_column, current_state.to_s
+          write_attribute self.class.workflow_column, current_state.name
         end
       end
 
@@ -52,19 +60,18 @@ module Workflow
 
         def workflow_with_scopes(&specification)
           workflow_without_scopes(&specification)
-          states = workflow_spec.states.values
+          states = workflow_spec.states
 
-          states.each do |state|
+          states.map(&:name).each do |state|
             define_singleton_method("with_#{state}_state") do
-              where("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+              where(self.workflow_column.to_sym => state.to_s)
             end
 
             define_singleton_method("without_#{state}_state") do
-              where.not("#{table_name}.#{self.workflow_column.to_sym} = ?", state.to_s)
+              where.not(self.workflow_column.to_sym => state.to_s)
             end
           end
         end
-
       end
     end
   end
