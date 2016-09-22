@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'sqlite3'
   spec.add_development_dependency 'mocha'
   spec.add_development_dependency 'yard'
+  spec.add_development_dependency 'cancancan'
   spec.add_development_dependency 'redcarpet'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'test-unit'

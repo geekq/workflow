@@ -57,7 +57,7 @@ module Workflow
   # @param [Symbol] name name of event to initiate
   # @param [Mixed] *args Arguments passed to state transition. Available also to callbacks
   # @return [Type] description of returned object
-  def process_event!(name, *args)
+  def process_event!(name, *args, **attributes)
     event = current_state.find_event(name)
     raise NoTransitionAllowed.new(
       "There is no event #{name} defined for the #{current_state.name} state") \
@@ -79,6 +79,7 @@ module Workflow
         to: target.name,
         event: name,
         event_args: args,
+        attributes: attributes,
         named_arguments: workflow_spec.named_arguments
 
       run_all_callbacks do

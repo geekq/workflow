@@ -4,6 +4,7 @@ require 'active_record'
 require 'sqlite3'
 require 'workflow'
 require 'byebug'
+require 'cancan'
 require_relative 'support/active_record_setup'
 require_relative 'support/helpers'
 

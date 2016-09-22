@@ -29,12 +29,13 @@ module Workflow
   # The entire list of passed parameters will still be available on +event_args+.
   # If you pass fewer parameters, the later ones will simply be nil.
   class TransitionContext
-    attr_reader :from, :to, :event, :event_args, :named_arguments
-    def initialize(from:, to:, event:, event_args:, named_arguments: [])
+    attr_reader :from, :to, :event, :event_args, :attributes, :named_arguments
+    def initialize(from:, to:, event:, event_args:, attributes:, named_arguments: [])
       @from = from
       @to = to
       @event = event
       @event_args = event_args
+      @attributes = attributes
       @named_arguments = (named_arguments || []).zip(event_args).to_h
     end
 

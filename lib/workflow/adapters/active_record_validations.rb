@@ -69,6 +69,7 @@ module Workflow
             from: from,
             to: to,
             event: event,
+            attributes: {},
             event_args: []
 
           return block.call()

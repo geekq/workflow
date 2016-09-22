@@ -6,7 +6,7 @@ RSpec.describe "Callbacks" do
     include Workflow
 
     def wrap_in_transaction?
-      transition_context.event_args&.first&.fetch(:lock, false)
+      transition_context.lock
     end
 
     def in_transition_validations
@@ -33,7 +33,7 @@ RSpec.describe "Callbacks" do
       singleton.send :define_method, :validate_for_transition, &validations
       validate_for_transition
       halt! "Event[#{triggering_event}]'s transitions_to[#{to}] is not valid." unless self.errors.empty?
-      save! if event_args.first&.fetch(:save, false)
+      save! if transition_context.save
     end
 
     def wrap_in_transaction(&block)
@@ -41,7 +41,7 @@ RSpec.describe "Callbacks" do
     end
 
     def check_for_halt_message
-      if transition_context.event_args&.first&.fetch(:halted, false)
+      if transition_context.halted
         raise "This is a problem"
       else
         yield
@@ -49,12 +49,11 @@ RSpec.describe "Callbacks" do
     end
 
     def set_attributes_from_event_args
-      args = transition_context.event_args.first || {}
-      self.attributes = args[:attributes] if args[:attributes]
+      self.attributes = transition_context.attributes
     end
 
     def raise_error_if_flagged
-      raise "There was an error" if transition_context.event_args&.first&.fetch(:raise_after_transition, false)
+      raise "There was an error" if transition_context.raise_after_transition
     end
 
     # around_transition :wrap_in_transaction, if: :wrap_in_transaction?
@@ -75,6 +74,7 @@ RSpec.describe "Callbacks" do
     attr_accessor :message
 
     workflow do
+      event_args :lock, :save, :halted, :raise_after_transition
       state :new do
         on :accept, to: :accepted, :meta => {:validates_presence_of => [:title, :body]}
         on :reject, to: :rejected
@@ -146,7 +146,7 @@ RSpec.describe "Callbacks" do
     it "can halt the execution" do
       a = ActiveSupportArticle.new
       expect {
-        a.accept! halted: true
+        a.accept! false, false, true
       }.to raise_error(RuntimeError, "This is a problem")
 
       expect(a).to be_new
@@ -181,7 +181,7 @@ RSpec.describe "Callbacks" do
         end
         it "should allow non-matching transitions to continue" do
           expect {
-            subject.accept! lock: true, attributes: {body: 'Blah'}, save: true
+            subject.accept! true, true, body: 'Blah'
           }.to change {
             subject.class.find(subject.id).workflow_state
           }.from('new').to('accepted')
@@ -198,7 +198,7 @@ RSpec.describe "Callbacks" do
         end
         it "should halt the transition" do
           expect {
-            subject.accept! lock: true
+            subject.accept! true
           }.to raise_error(Workflow::TransitionHaltedError)
         end
       end
@@ -209,7 +209,7 @@ RSpec.describe "Callbacks" do
         end
         it "should complete the state change" do
           expect {
-            subject.accept! lock: true
+            subject.accept! true
           }.to change {
             subject.class.find(subject.id).workflow_state
           }.from('new').to('accepted')
@@ -219,7 +219,7 @@ RSpec.describe "Callbacks" do
       describe "When attribute changes are passed along as a part of the transition" do
         it "executes the transition" do
           expect {
-            subject.accept! lock: true, attributes: {body: 'Blah'}, save: true
+            subject.accept! true, true, body: 'Blah'
           }.to change {
             subject.class.find(subject.id).workflow_state
           }.from('new').to('accepted')
@@ -227,7 +227,7 @@ RSpec.describe "Callbacks" do
 
         it "updates the body of the article" do
           expect {
-            subject.accept! lock: true, attributes: {body: 'Blah'}, save: true
+            subject.accept! true, true, body: 'Blah'
           }.to change {
             subject.class.find(subject.id).body
           }.from(nil).to('Blah')
@@ -238,7 +238,7 @@ RSpec.describe "Callbacks" do
         it "rolls back the changes to the workflow state" do
           expect {
             expect {
-              subject.accept! lock: true, attributes: {body: 'Blah'}, save: true, raise_after_transition: true
+              subject.accept! true, true, false, true, body: 'Blah'
             }.to raise_error(RuntimeError, "There was an error")
           }.not_to change {
             subject.class.find(subject.id).workflow_state
@@ -248,7 +248,7 @@ RSpec.describe "Callbacks" do
         it "rolls back the changes to the attributes" do
           expect {
             expect {
-              subject.accept! lock: true, attributes: {body: 'Blah'}, save: true, raise_after_transition: true
+              subject.accept! true, true, false, true, body: 'Blah'
             }.to raise_error(RuntimeError, "There was an error")
           }.not_to change {
             subject.class.find(subject.id).body
