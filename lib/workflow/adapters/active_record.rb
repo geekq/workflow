@@ -1,9 +1,6 @@
 module Workflow
   module Adapter
     module ActiveRecord
-      TRANSACTIONAL_TRANSITIONS_KEY   = :transactional.freeze
-      TRANSACTIONAL_TRANSITIONS_CVAR  = '@@transactional_transition'.freeze
-
       def self.included(klass)
         klass.send :include, Adapter::ActiveRecord::InstanceMethods
         klass.send :extend, Adapter::ActiveRecord::Scopes
@@ -16,21 +13,21 @@ module Workflow
         end
 
         # On transition the new workflow state is immediately saved in the
-        # database.
+        # database, if configured to do so.
         def persist_workflow_state(new_value)
           # Rails 3.1 or newer
-          update_column self.class.workflow_column, new_value
+          if persisted? && Workflow.config.persist_workflow_state_immediately
+            attrs = {self.class.workflow_column => new_value}
+            if Workflow.config.touch_on_update_column
+              attrs[:updated_at] = DateTime.now
+            end
+            update_columns attrs
+          else
+            self[self.class.workflow_column] = new_value
+          end
         end
 
         private
-
-        def transition_wrapper(&block)
-          if self.class.transactional_transitions?
-            with_lock(& block)
-          else
-            yield
-          end
-        end
 
         # Motivation: even if NULL is stored in the workflow_state database column,
         # the current_state is correctly recognized in the Ruby code. The problem

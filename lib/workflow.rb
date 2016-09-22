@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'active_support/concern'
 require 'workflow/version'
+require 'workflow/configuration'
 require 'workflow/specification'
 require 'workflow/callbacks'
 require 'workflow/adapters/active_record'
@@ -16,6 +17,14 @@ module Workflow
   extend ActiveSupport::Concern
   include Callbacks
   include Errors
+
+  def self.configure(&block)
+    block.call(config)
+  end
+
+  def self.config
+    @@configuration ||= Configuration.new
+  end
 
   included do
 
