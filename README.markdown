@@ -5,6 +5,22 @@ at http://rubygems.org/gems/workflow : select a version (optional,
 default is latest release), click "Documentation" link. When reading on
 github.com, the README refers to the upcoming release.
 
+**Note on ActiveRecord/Rails 5.0 Support:** currently the workflow gem only
+contains ActiveRecord integration for versions < 5.0. For now you can use
+[your own state persistence](https://github.com/geekq/workflow#custom-workflow-state-persistence)
+
+Since integration with ActiveRecord makes over 90% of the issues and
+maintenance effort, for including Rails/ActiveRecord 5.0 Support I am
+considering:
+
+* either to split ActiveRecord-Integration to as separate module/gem and allow
+  for independent release life cycle / maintainer
+* or separate only support for ActiveRecord 5.0
+* or use separate branch + version of workflow
+
+More background on
+[Rails integration](http://solnic.eu/2016/05/22/my-time-with-rails-is-up.html#not-a-good-citizen)
+
 What is workflow?
 -----------------
 
