@@ -287,6 +287,7 @@ using CouchDB, a document oriented database.
 [Tim Lossen](http://tim.lossen.de/) implemented support
 for [remodel](http://github.com/tlossen/remodel) / [redis](http://github.com/antirez/redis)
 key-value store.
+[Tobias L. Maier](http://tobiasmaier.info/) implemented support for [Sequel](http://sequel.jeremyevans.net/).
 
 Integration with CouchDB
 ------------------------
