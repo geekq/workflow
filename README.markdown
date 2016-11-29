@@ -254,6 +254,19 @@ states names:
     # returns all orders with `pending` state
     Order.with_pending_state
 
+### Wrap State Transition in a locking transaction
+
+Wrap your transition in a locking transaction to ensure that any exceptions
+raised later in the transition sequence will roll back earlier changes made to
+the record:
+
+    class Order < ActiveRecord::Base
+      include Workflow
+      workflow transactional: true do
+        state :approved
+        state :pending
+      end
+    end
 
 ### Custom workflow database column
 
@@ -806,4 +819,3 @@ Copyright (c) 2007-2008 Ryan Allen, FlashDen Pty Ltd
 Based on the work of Ryan Allen and Scott Barron
 
 Licensed under MIT license, see the MIT-LICENSE file.
-
