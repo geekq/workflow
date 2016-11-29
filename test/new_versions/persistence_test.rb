@@ -24,6 +24,7 @@ class PersistenceTestOrder < ActiveRecord::Base
 
   attr_accessible :title # protecting all the other attributes
 
+  validates :title, :presence => true
 end
 
 PersistenceTestOrder.logger = Logger.new(STDOUT) # active_record 2.3 expects a logger instance
@@ -55,8 +56,15 @@ class PersistenceTest < ActiveRecordTestCase
     o.title = 'going to change the title'
     assert o.changed?
     o.ship!
-    assert o.changed?, 'title should not be saved and the change still stay pending'
+    assert !o.changed?, 'title should be saved'
+  end
+
+  test 'should raise ActiveRecord::RecordInvalid exception when saving record with failing validations' do
+    o = assert_state 'order6', 'accepted'
+    o.title = nil
+    assert_raise ActiveRecord::RecordInvalid do
+      o.ship!
+    end
   end
 
 end
-

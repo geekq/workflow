@@ -15,8 +15,8 @@ module Workflow
         # On transition the new workflow state is immediately saved in the
         # database.
         def persist_workflow_state(new_value)
-          # Rails 3.1 or newer
-          update_column self.class.workflow_column, new_value
+          write_attribute(self.class.workflow_column, new_value)
+          save!
         end
 
         private
