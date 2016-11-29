@@ -443,7 +443,7 @@ Conditional event transitions
 
 Conditions can be a "method name symbol" with a corresponding instance method, a `proc` or `lambda` which are added to events, like so:
 
-    state :off
+    state :off do
       event :turn_on, :transition_to => :on,
                       :if => :sufficient_battery_level?
 
