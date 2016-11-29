@@ -495,6 +495,29 @@ example][advanced_hooks_and_validation_test].
 
 [advanced_hooks_and_validation_test]: http://github.com/geekq/workflow/blob/master/test/advanced_hooks_and_validation_test.rb
 
+### around_transition
+
+You may want to wrap the entire state transition in a context such as an ActiveRecord Transaction.
+
+    class Article < ActiveRecord::Base
+      include Workflow
+      workflow do
+        state :one do
+          event :increment, :transitions_to => :two
+        end
+        state :two
+
+        #  The following will place a row-level lock on the record being updated,
+        #  And will also set instance variables allowing conditional validations to run.
+        around_transition do |from, to, triggering_event, transition_proc, *event_args|
+          @current_transition = {from: from, to: to, event: triggering_event}
+          with_lock &transition_proc
+          remove_instance_variable '@current_transition'
+        end
+
+      end
+    end
+
 ### on_error
 
 If you want to do custom exception handling internal to workflow, you can define an `on_error` hook in your workflow.
@@ -538,6 +561,7 @@ You can check `halted?` and `halted_because` values later.
 
 The whole event sequence is as follows:
 
+    * around_transition (wrap the transition in a custom context)
     * before_transition
     * event specific action
     * on_transition (if action did not halt)
@@ -806,4 +830,3 @@ Copyright (c) 2007-2008 Ryan Allen, FlashDen Pty Ltd
 Based on the work of Ryan Allen and Scott Barron
 
 Licensed under MIT license, see the MIT-LICENSE file.
-

@@ -106,28 +106,31 @@ module Workflow
       from = current_state
       to = spec.states[event.transitions_to]
 
-      run_before_transition(from, to, name, *args)
-      return false if @halted
 
-      begin
-        return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
-      rescue StandardError => e
-        run_on_error(e, from, to, name, *args)
+      run_around_transition(from, to, name, *args) do
+        run_before_transition(from, to, name, *args)
+        return false if @halted
+
+        begin
+          return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
+        rescue StandardError => e
+          run_on_error(e, from, to, name, *args)
+        end
+
+        return false if @halted
+
+        run_on_transition(from, to, name, *args)
+
+        run_on_exit(from, to, name, *args)
+
+        transition_value = persist_workflow_state to.to_s
+
+        run_on_entry(to, from, name, *args)
+
+        run_after_transition(from, to, name, *args)
+
+        return_value.nil? ? transition_value : return_value
       end
-
-      return false if @halted
-
-      run_on_transition(from, to, name, *args)
-
-      run_on_exit(from, to, name, *args)
-
-      transition_value = persist_workflow_state to.to_s
-
-      run_on_entry(to, from, name, *args)
-
-      run_after_transition(from, to, name, *args)
-
-      return_value.nil? ? transition_value : return_value
     end
 
     def halt(reason = nil)
@@ -184,6 +187,14 @@ module Workflow
 
     def run_on_transition(from, to, event, *args)
       instance_exec(from.name, to.name, event, *args, &spec.on_transition_proc) if spec.on_transition_proc
+    end
+
+    def run_around_transition(from, to, event, *args, &transition)
+      if spec.around_transition_proc
+        instance_exec(from.name, to.name, event, transition, *args, &spec.around_transition_proc)
+      else
+        yield
+      end
     end
 
     def run_after_transition(from, to, event, *args)
