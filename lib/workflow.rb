@@ -142,12 +142,10 @@ module Workflow
     end
 
     def spec
-      # check the singleton class first
-      class << self
-        return workflow_spec if workflow_spec
-      end
-
+      ws = singleton_class.workflow_spec
+      return ws if ws
       c = self.class
+
       # using a simple loop instead of class_inheritable_accessor to avoid
       # dependency on Rails' ActiveSupport
       until c.workflow_spec || !(c.include? Workflow)
