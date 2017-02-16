@@ -1,5 +1,4 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
-require 'workflow'
+require 'test_helper'
 
 class WithoutWorkflowTest < Test::Unit::TestCase
   class Article
@@ -26,7 +25,7 @@ class WithoutWorkflowTest < Test::Unit::TestCase
   end
 
   test 'better error message on transitions_to typo' do
-    assert_raise Workflow::WorkflowDefinitionError do
+    assert_raises Workflow::WorkflowDefinitionError do
       Class.new do
         include Workflow
         workflow do

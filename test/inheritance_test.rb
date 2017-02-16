@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
-require 'workflow'
+require 'test_helper'
+
 class InheritanceTest < ActiveRecordTestCase
 
   test '#69 inheritance' do
@@ -40,7 +40,7 @@ class InheritanceTest < ActiveRecordTestCase
 
     animal.birth!
 
-    assert_raise NoMethodError, 'Methods defined by the old workflow spec should have be gone away' do
+    assert_raises NoMethodError, 'Methods defined by the old workflow spec should have be gone away' do
       cat.birth!
     end
 

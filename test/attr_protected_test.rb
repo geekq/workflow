@@ -1,10 +1,8 @@
 require 'test_helper'
 
 $VERBOSE = false
-require 'active_record'
 require 'logger'
 require 'sqlite3'
-require 'workflow'
 require 'mocha/setup'
 require 'stringio'
 

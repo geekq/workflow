@@ -1,9 +1,7 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
+require 'test_helper'
 
 $VERBOSE = false
-require 'active_record'
 require 'sqlite3'
-require 'workflow'
 
 ActiveRecord::Migration.verbose = false
 

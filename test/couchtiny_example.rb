@@ -1,7 +1,7 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
+require 'test_helper'
+
 require 'couchtiny'
 require 'couchtiny/document'
-require 'workflow'
 
 class User < CouchTiny::Document
   include Workflow

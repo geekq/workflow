@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
-require 'workflow'
+require 'test_helper'
+
 class MultipleWorkflowsTest < ActiveRecordTestCase
 
   test 'multiple workflows' do

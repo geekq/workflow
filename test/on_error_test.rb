@@ -1,5 +1,4 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
-require 'workflow'
+require 'test_helper'
 
 class OnErrorTest < Test::Unit::TestCase
   # A class that does not handle errors in an error block
@@ -38,13 +37,14 @@ class OnErrorTest < Test::Unit::TestCase
 
   test 'that an exception is raised if there is no associated on_error block' do
     flow = NoErrorBlock.new
-    assert_raise( RuntimeError, "This is some random runtime error" ) { flow.forward! }
+    assert_raises( RuntimeError, "This is some random runtime error" ) { flow.forward! }
     assert_equal(true, flow.first?)
   end
-  
+
   test 'that on_error block is called when an exception is raised and the transition is halted' do
     flow = ErrorBlock.new
-    assert_nothing_raised { flow.forward! }
+    #assert_nothing_raised { flow.forward! }
+    flow.forward!
     assert_equal({:error => RuntimeError, :from=>:first, :to=>:second, :event=>:forward, :args=>[]}, flow.errors)
     # transition should not happen
     assert_equal(true, flow.first?)

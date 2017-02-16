@@ -1,8 +1,6 @@
 require 'test_helper'
-require 'active_record'
 require 'logger'
 require 'sqlite3'
-require 'workflow'
 require 'mocha/setup'
 require 'stringio'
 

@@ -1,9 +1,7 @@
-require File.join(File.dirname(__FILE__), 'test_helper')
+require 'test_helper'
 
 $VERBOSE = false
-require 'active_record'
 require 'sqlite3'
-require 'workflow'
 
 ActiveRecord::Migration.verbose = false
 
@@ -88,7 +86,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
 
   test 'deny transition from new to accepted because of the missing presence of the body' do
     a = Article.find_by_title('new1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raises Workflow::TransitionHalted do
       a.accept!
     end
     assert_state 'new1', 'new', Article
@@ -109,7 +107,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
 
   test 'deny transition from accepted to blamed because of no blame_reason' do
     a = Article.find_by_title('accepted1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raises Workflow::TransitionHalted do
       assert a.blame!
     end
     assert_state 'accepted1', 'accepted', Article

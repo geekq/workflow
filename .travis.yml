@@ -6,6 +6,7 @@ before_script:
 
 rvm:
   - 2.3.1
+
 gemfile:
   - gemfiles/Gemfile.rails-edge
 
@@ -17,15 +18,27 @@ matrix:
     - rvm: 2.0.0
       gemfile: gemfiles/Gemfile.rails-3.x
 
-    - rvm: 2.0.0
-      gemfile: gemfiles/Gemfile.rails-4.0
+    - rvm: 2.1.0
+      gemfile: gemfiles/Gemfile.rails-3.x
+
+    - rvm: 2.2.0
+      gemfile: gemfiles/Gemfile.rails-3.x
 
     - rvm: 2.3.1
+      gemfile: gemfiles/Gemfile.rails-4.0
+
+    - rvm: 2.4.0
       gemfile: gemfiles/Gemfile.rails-4.0
 
     - rvm: 2.3.1
       gemfile: gemfiles/Gemfile.rails-5.0
+
   allow_failures:
     - gemfile: gemfiles/Gemfile.rails-5.0
     - gemfile: gemfiles/Gemfile.rails-edge
+    # not compatible
+    #
+    #  TypeError: Cannot visit Integer
+    - rvm: 2.4.0
+      gemfile: gemfiles/Gemfile.rails-3.x
 

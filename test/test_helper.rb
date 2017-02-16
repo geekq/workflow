@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'test/unit'
 require 'active_record'
+require 'workflow'
 
 class << Test::Unit::TestCase
   def test(name, &block)

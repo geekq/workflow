@@ -7,5 +7,6 @@ group :development do
   gem "sqlite3"
   gem "mocha"
   gem "rake"
+  gem "test-unit"
   gem "ruby-graphviz", "~> 1.0.0"
 end
