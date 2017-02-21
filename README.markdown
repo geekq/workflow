@@ -90,6 +90,10 @@ of possible events and other meta information:
         @transitions_to=:awaiting_review, @name=:submit, @meta={}>},
       name:new, meta{}
 
+Use `current_state` to check against a list of state symbols:
+
+    article.current_state.in? %i(new awaiting_review)
+
 On Ruby 1.9 and above, you can check whether a state comes before or
 after another state (by the order they were defined):
 
@@ -806,4 +810,3 @@ Copyright (c) 2007-2008 Ryan Allen, FlashDen Pty Ltd
 Based on the work of Ryan Allen and Scott Barron
 
 Licensed under MIT license, see the MIT-LICENSE file.
-

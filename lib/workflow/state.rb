@@ -23,6 +23,9 @@ module Workflow
       node
     end
 
+    def in?(states)
+      states.include? self.to_sym
+    end
 
     if RUBY_VERSION >= '1.9'
       include Comparable

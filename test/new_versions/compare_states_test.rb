@@ -16,7 +16,6 @@ class ComparableStatesOrder
 end
 
 class CompareStatesTest < Test::Unit::TestCase
-
   test 'compare states' do
     o = ComparableStatesOrder.new
     o.accept!
@@ -29,4 +28,10 @@ class CompareStatesTest < Test::Unit::TestCase
     end
   end
 
+  test 'State#in?' do
+    o = ComparableStatesOrder.new
+    o.accept!
+    assert o.current_state.in?([:accepted, :shipped])
+    assert !o.current_state.in?([:submitted, :shipped])
+  end
 end
