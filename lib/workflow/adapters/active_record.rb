@@ -16,8 +16,12 @@ module Workflow
         # database.
         def persist_workflow_state(new_value)
           # Rails 3.1 or newer
-          run_callbacks :update do
-            self[self.class.workflow_column] = new_value
+          if self.class.workflow_spec && self.class.workflow_spec.with_callbacks
+            run_callbacks :update do
+              self[self.class.workflow_column] = new_value
+              update_column self.class.workflow_column, new_value
+            end
+          else
             update_column self.class.workflow_column, new_value
           end
         end

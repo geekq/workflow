@@ -13,6 +13,8 @@ ActiveRecord::Migration.verbose = false
 class Order < ActiveRecord::Base
   include Workflow
   workflow do
+    with_callbacks
+
     state :submitted do
       event :accept, :transitions_to => :accepted, :meta => {:weight => 8} do |reviewer, args|
       end
@@ -104,6 +106,12 @@ class MainTest < ActiveRecordTestCase
     o = assert_state 'some order', 'accepted'
     assert o.ship!
     assert(o.instance_variable_get(:@capture_wf_change))
+  end
+
+  test 'after update hook is not called' do
+    o = assert_state 'some order', 'accepted', LegacyOrder
+    assert o.ship!
+    assert(!o.instance_variable_get(:@capture_wf_change))
   end
 
   test 'immediately save the new workflow_state on state machine transition' do
