@@ -60,6 +60,8 @@ end
 class SpecialSmallImage < SmallImage
 end
 
+Order.after_update { @capture_wf_change = workflow_state_changed? }
+
 class MainTest < ActiveRecordTestCase
 
   def setup
@@ -96,6 +98,12 @@ class MainTest < ActiveRecordTestCase
     o = klass.find_by_title(title)
     assert_equal expected_state, o.read_attribute(klass.workflow_column)
     o
+  end
+
+  test 'after update hook is called' do
+    o = assert_state 'some order', 'accepted'
+    assert o.ship!
+    assert(o.instance_variable_get(:@capture_wf_change))
   end
 
   test 'immediately save the new workflow_state on state machine transition' do
