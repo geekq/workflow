@@ -218,6 +218,8 @@ and include the workflow mixin in your model class as usual:
     class Order < ActiveRecord::Base
       include Workflow
       workflow do
+        with_callbacks # optionally invoke update callbacks with state
+transition
         # list states and transitions here
       end
     end
