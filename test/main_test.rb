@@ -339,6 +339,25 @@ class MainTest < ActiveRecordTestCase
     a.fail!(args)
   end
 
+  test 'Explicitly set initial state' do
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow do
+        initial_state :second
+        state :first do
+          event :to_second, :transitions_to => :second
+        end
+        state :second do
+          event :to_third, :transitions_to => :third
+        end
+        state :third
+      end
+    end
+    a = c.new
+    assert a.current_state == :second
+  end
+
   test 'Single table inheritance (STI)' do
     class BigOrder < Order
     end

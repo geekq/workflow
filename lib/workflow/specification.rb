@@ -5,13 +5,19 @@ require 'workflow/errors'
 
 module Workflow
   class Specification
-    attr_accessor :states, :initial_state, :meta,
+    attr_accessor :states, :meta,
       :on_transition_proc, :before_transition_proc, :after_transition_proc, :on_error_proc
 
     def initialize(meta = {}, &specification)
+      @initial_state = nil
       @states = Hash.new
       @meta = meta
       instance_eval(&specification)
+    end
+
+    def initial_state(state = nil)
+      @initial_state = state if state
+      @initial_state
     end
 
     def state_names
@@ -23,7 +29,7 @@ module Workflow
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
       new_state = Workflow::State.new(name, self, meta[:meta])
-      @initial_state = new_state if @states.empty?
+      @initial_state ||= new_state
       @states[name.to_sym] = new_state
       @scoped_state = new_state
       instance_eval(&events_and_etc) if events_and_etc
