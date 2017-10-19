@@ -1,7 +1,7 @@
 begin
   require 'rubygems'
 
-  gem 'ruby-graphviz', '~> 1.0.0'
+  gem 'ruby-graphviz', '~> 1.2'
   gem 'activesupport'
 
   require 'graphviz'
