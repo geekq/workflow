@@ -23,12 +23,13 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency 'rdoc',    [">= 3.12"]
   gem.add_development_dependency 'bundler', [">= 1.0.0"]
-  gem.add_development_dependency 'activerecord'
+  gem.add_development_dependency 'activerecord', ["< 5.0"]
   gem.add_development_dependency 'sqlite3'
   gem.add_development_dependency 'mocha'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'test-unit'
   gem.add_development_dependency 'ruby-graphviz', ['~> 1.0.0']
+  gem.add_development_dependency 'protected_attributes'
   
   gem.required_ruby_version = '>= 1.9.2'
 end
