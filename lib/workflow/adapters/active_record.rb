@@ -5,6 +5,19 @@ module Workflow
         klass.send :include, Adapter::ActiveRecord::InstanceMethods
         klass.send :extend, Adapter::ActiveRecord::Scopes
         klass.before_validation :write_initial_state
+        klass.extend ClassMethods
+      end
+
+      module ClassMethods
+        # Use this to turn on active record validations when persisting a state change
+        # to the workflow column.
+        def workflow_validate
+          @_workflow_validating = true
+        end
+
+        def workflow_validating?
+          @_workflow_validating ||= false
+        end
       end
 
       module InstanceMethods
@@ -14,9 +27,16 @@ module Workflow
 
         # On transition the new workflow state is immediately saved in the
         # database.
-        def persist_workflow_state(new_value)
-          # Rails 3.1 or newer
-          update_column self.class.workflow_column, new_value
+        def persist_workflow_state(new_value, &block)
+          if self.class.workflow_validating?
+            setter = "#{self.class.workflow_column}="
+            send(setter, new_value)
+            block.call if block
+            save!
+          else
+            # Rails 3.1 or newer
+            update_column self.class.workflow_column, new_value
+          end
         end
 
         private

@@ -60,8 +60,8 @@ module Workflow
         state.events.flat.each do |event|
           event_name = event.name
           module_eval do
-            define_method "#{event_name}!".to_sym do |*args|
-              process_event!(event_name, *args)
+            define_method "#{event_name}!".to_sym do |*args, &block|
+              process_event!(event_name, *args, &block)
             end
 
             define_method "can_#{event_name}?" do
@@ -93,7 +93,7 @@ module Workflow
       @halted_because
     end
 
-    def process_event!(name, *args)
+    def process_event!(name, *args, &block)
       event = current_state.events.first_applicable(name, self)
       raise NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
@@ -121,7 +121,7 @@ module Workflow
 
       run_on_exit(from, to, name, *args)
 
-      transition_value = persist_workflow_state to.to_s
+      transition_value = persist_workflow_state to.to_s, &block
 
       run_on_entry(to, from, name, *args)
 
@@ -241,8 +241,9 @@ module Workflow
       @workflow_state if instance_variable_defined? :@workflow_state
     end
 
-    def persist_workflow_state(new_value)
+    def persist_workflow_state(new_value, &block)
       @workflow_state = new_value
+      block.call if block
     end
   end
 
