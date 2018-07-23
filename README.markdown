@@ -177,7 +177,9 @@ gem immediately persists the new workflow state with `update_column()`,
 bypassing any ActiveRecord callbacks including `updated_at` update.
 This way it is possible to deal with the validation and to save the
 pending changes to a record at some later point instead of the moment
-when transition occurs.
+when transition occurs.  To enable ActiveRecord callbacks and validations,
+(most notably, if you need to use optimistic locking to handle race conditions)
+use the method `workflow_validate` described below.
 
 You can also define event handler accepting/requiring additional
 arguments:
@@ -192,6 +194,64 @@ arguments:
     article2.submit!
     article2.review!('Homer Simpson') # => [Homer Simpson] is now reviewing the article
 
+
+Transitions with validations and a transaction
+----------------------------------------------
+
+One risk with the workflow state machine (actually, a risk with _any_ database update) is
+that two actors in the system may be trying to perform competing updates at the same time.
+This kind of race condition is somewhat rare, but if your application suffers from it,
+the best way to handle it is by using [Optimistic Locking](http://api.rubyonrails.org/classes/ActiveRecord/Locking/Optimistic.html).
+The standard behavior of this gem, as described in the previous section, circumvents the
+types of ActiveRecord validations that Optimistic Locking depends on.  You will need to
+explicitly turn on validations and transactions upon state transitions in order to use
+Optimistic Locking.
+
+To turn on validations, call `workflow_validate` after before declaring the workflow:
+
+    class Task < ActiveRecord::Base
+      include Workflow
+
+      workflow_validate
+
+      workflow do
+        state :active do
+          event :pause, :transitions_to => :paused
+          event :complete, :transitions_to => :completed
+        end
+        state :paused do
+          event :resume, :transitions_to => :active
+        end
+        state :completed
+      end
+    end
+
+If Optimistic Locking is enabled, an attempt to make a stale update will now raise
+`ActiveRecord::StaleObjectError`.
+
+    task = Task.create
+
+    task1 = Task.find(task.id)
+    task2 = Task.find(task.id)
+
+    task1.pause!
+
+    task2.complete!  # raises ActiveRecord::StaleObjectError
+
+If you need to update other attributes within the same transaction and ensure that all
+writes fail if the record is stale, pass the additional updates in a block to the bang
+transaction method:
+
+    task.pause! do
+      # This will not be performed if "pause" is illegal at this point or if task
+      # holds a stale reference.
+      task.some_other_attribute = # ...
+    end
+
+Note: using blocks like this is an alternative to event handler methods as described
+above.  `workflow_validate` need not be enabled in order to use blocks.  Another use
+case for this mechanism is if the side effects upon a certain transition are not always
+the same, depending on where in the software they are triggered.
 
 ### The old, deprecated way
 
