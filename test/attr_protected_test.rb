@@ -29,8 +29,6 @@ class AttrProtectedTestOrder < ActiveRecord::Base
     state :shipped
   end
 
-  attr_accessible :title # protecting all the other attributes
-
 end
 
 AttrProtectedTestOrder.logger = Logger.new(STDOUT) # active_record 2.3 expects a logger instance

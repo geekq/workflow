@@ -40,7 +40,7 @@ class InheritanceTest < ActiveRecordTestCase
 
     animal.birth!
 
-    assert_raise NoMethodError, 'Methods defined by the old workflow spec should have be gone away' do
+    assert_raises NoMethodError, 'Methods defined by the old workflow spec should have be gone away' do
       cat.birth!
     end
 

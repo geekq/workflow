@@ -1,7 +1,7 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 require 'workflow'
 
-class BeforeTransitionTest < Test::Unit::TestCase
+class BeforeTransitionTest < Minitest::Test
   class MyFlow
     attr_reader :history
     def initialize

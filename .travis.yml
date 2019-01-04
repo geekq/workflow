@@ -1,31 +1,50 @@
+language: ruby
+sudo: false
+
+cache: bundler
+
 before_install:
   - sudo apt-get install -qq graphviz
+  - gem update --system
+  - gem install bundler
+
 before_script:
-  - gem list
-  - bundle show
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 rvm:
-  - 2.3.1
+  - 2.5
+  - 2.4
+  - 2.3
+
 gemfile:
-  - gemfiles/Gemfile.rails-edge
+  - gemfiles/activerecord-4.1.Gemfile
+  - gemfiles/activerecord-4.2.Gemfile
+  - gemfiles/activerecord-5.0.Gemfile
+  - gemfiles/activerecord-5.1.Gemfile
+  - gemfiles/activerecord-5.2.Gemfile
+
 
 matrix:
-  include:
-    - rvm: 1.9.3
-      gemfile: gemfiles/Gemfile.rails-3.x
+  exclude:
+    # RUBY 2.3
+  - rvm: 2.3
+    gemfile: gemfiles/activerecord-5.0.Gemfile
 
-    - rvm: 2.0.0
-      gemfile: gemfiles/Gemfile.rails-3.x
+  - rvm: 2.3
+    gemfile: gemfiles/activerecord-5.1.Gemfile
 
-    - rvm: 2.0.0
-      gemfile: gemfiles/Gemfile.rails-4.0
+  - rvm: 2.3
+    gemfile: gemfiles/activerecord-5.2.Gemfile
 
-    - rvm: 2.3.1
-      gemfile: gemfiles/Gemfile.rails-4.0
+    # RUBY 2.4
+  - rvm: 2.4
+    gemfile: gemfiles/activerecord-4.1.Gemfile
 
-    - rvm: 2.3.1
-      gemfile: gemfiles/Gemfile.rails-5.0
-  allow_failures:
-    - gemfile: gemfiles/Gemfile.rails-5.0
-    - gemfile: gemfiles/Gemfile.rails-edge
-
+    # RUBY 2.5
+  - rvm: 2.5
+    gemfile: gemfiles/activerecord-4.1.Gemfile

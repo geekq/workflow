@@ -23,7 +23,7 @@ class User < CouchTiny::Document
 end
 
 
-class CouchtinyExample < Test::Unit::TestCase
+class CouchtinyExample < Minitest::Test
 
   def setup
     db = CouchTiny::Database.url("http://127.0.0.1:5984/test-workflow")

@@ -47,7 +47,10 @@ class Article < ActiveRecord::Base
         fields_to_validate = meta[:validates_presence_of]
         if fields_to_validate
           validations = Proc.new {
-            errors.add_on_blank(fields_to_validate) if fields_to_validate
+            Array(fields_to_validate).each do |attribute|
+              value = self.send(:read_attribute_for_validation, attribute)
+              errors.add(attribute, :blank) if value.blank?
+            end
           }
         end
 
@@ -88,7 +91,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
 
   test 'deny transition from new to accepted because of the missing presence of the body' do
     a = Article.find_by_title('new1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raises Workflow::TransitionHalted do
       a.accept!
     end
     assert_state 'new1', 'new', Article
@@ -109,7 +112,7 @@ class AdvancedHooksAndValidationTest < ActiveRecordTestCase
 
   test 'deny transition from accepted to blamed because of no blame_reason' do
     a = Article.find_by_title('accepted1');
-    assert_raise Workflow::TransitionHalted do
+    assert_raises Workflow::TransitionHalted do
       assert a.blame!
     end
     assert_state 'accepted1', 'accepted', Article
