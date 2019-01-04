@@ -1,4 +1,9 @@
-[![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow) Tested with [different Ruby and Rails versions](https://travis-ci.org/geekq/workflow)
+[![Version      ](https://img.shields.io/gem/v/workflow.svg?maxAge=2592000)](https://rubygems.org/gems/workflow)
+[![Build Status ](https://travis-ci.org/geekq/workflow.svg)](https://travis-ci.org/geekq/workflow)
+[![Code Climate ](https://codeclimate.com/github/geekq/workflow/badges/gpa.svg)](https://codeclimate.com/github/geekq/workflow)
+[![Test Coverage](https://codeclimate.com/github/geekq/workflow/badges/coverage.svg)](https://codeclimate.com/github/geekq/workflow/coverage)
+
+# Workflow
 
 Note: you can find documentation for specific workflow rubygem versions
 at http://rubygems.org/gems/workflow : select a version (optional,
