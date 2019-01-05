@@ -22,8 +22,6 @@ class PersistenceTestOrder < ActiveRecord::Base
     state :shipped
   end
 
-  attr_accessible :title # protecting all the other attributes
-
 end
 
 PersistenceTestOrder.logger = Logger.new(STDOUT) # active_record 2.3 expects a logger instance

@@ -4,6 +4,14 @@ require 'workflow/specification'
 require 'workflow/adapters/active_record'
 require 'workflow/adapters/remodel'
 
+begin
+  require 'ruby-graphviz'
+  require 'active_support/inflector'
+  require 'workflow/draw'
+rescue LoadError => e
+  $stderr.puts "Could not load the ruby-graphiz or active_support gems for rendering: #{e.message}"
+end
+
 # See also README.markdown for documentation
 module Workflow
   module ClassMethods

@@ -1,15 +1,3 @@
-begin
-  require 'rubygems'
-
-  gem 'ruby-graphviz', '~> 1.0.0'
-  gem 'activesupport'
-
-  require 'graphviz'
-  require 'active_support/inflector'
-rescue LoadError => e
-  $stderr.puts "Could not load the ruby-graphiz or active_support gems for rendering: #{e.message}"
-end
-
 module Workflow
   module Draw
 
@@ -48,9 +36,9 @@ module Workflow
         :ratio => "fill",
         :format => 'png',
         :font => 'Helvetica'
-        }.merge options
+      }.merge options
 
-        graph = ::GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB', :ratio => options[:ratio])
+      graph = ::GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB', :ratio => options[:ratio])
 
       # Add nodes
       klass.workflow_spec.states.each do |_, state|
@@ -66,7 +54,7 @@ module Workflow
       # Generate the graph
       filename = File.join(options[:path], "#{options[:name]}.#{options[:format]}")
 
-      graph.output options[:format] => "'#{filename}'"
+      graph.output options[:format] => filename
 
       puts "
       Please run the following to open the generated file:
