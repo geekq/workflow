@@ -1,8 +1,6 @@
 require 'rubygems'
 require 'minitest/autorun'
 
-require 'active_record'
-
 require 'simplecov'
 SimpleCov.start do
   add_filter 'test'
@@ -19,27 +17,3 @@ class << Minitest::Test
     end
   end
 end
-
-class ActiveRecordTestCase < Minitest::Test
-  def exec(sql)
-    ActiveRecord::Base.connection.execute sql
-  end
-
-  def setup
-    ActiveRecord::Base.establish_connection(
-      :adapter => "sqlite3",
-      :database  => ":memory:" #"tmp/test"
-    )
-
-    # eliminate ActiveRecord warning. TODO: delete as soon as ActiveRecord is fixed
-    ActiveRecord::Base.connection.reconnect!
-  end
-
-  def teardown
-    ActiveRecord::Base.connection.disconnect!
-  end
-
-  def default_test
-  end
-end
-

@@ -627,6 +627,17 @@ Use `Workflow::create_workflow_diagram(class)` in your rake task like:
     end
 
 
+Development Setup
+-----------------
+
+    sudo apt-get install graphviz # Linux
+    brew cask install graphviz # Mac OS
+    cd workflow
+    gem install bundler
+    bundle install
+    rake test # to run all the tests
+
+
 Earlier versions
 ----------------
 

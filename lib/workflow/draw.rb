@@ -29,8 +29,11 @@ module Workflow
     # @param [String] target_dir Directory, where to save the dot and the pdf files
     # @param [String] graph_options You can change graph orientation, size etc. See graphviz documentation
     def self.workflow_diagram(klass, options={})
+      # TODO: find some replacement for ActiveSupport::Inflector.tableize
+      # or make it usage optional
       options = {
-        :name => "#{klass.name.tableize}_workflow".gsub('/', '_'),
+        # :name => "#{klass.name.tableize}_workflow".gsub('/', '_'),
+        :name => "#{klass.name}_workflow".gsub('/', '_'),
         :path => '.',
         :orientation => "landscape",
         :ratio => "fill",

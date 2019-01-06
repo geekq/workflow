@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 require 'workflow'
-class InheritanceTest < ActiveRecordTestCase
+class InheritanceTest < Minitest::Test
 
   test '#69 inheritance' do
     class Animal
