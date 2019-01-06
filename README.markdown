@@ -635,7 +635,8 @@ Development Setup
     cd workflow
     gem install bundler
     bundle install
-    rake test # to run all the tests
+    # run all the tests
+    bundle exec rake test
 
 
 Earlier versions
@@ -679,6 +680,7 @@ Changelog
 
 * extract Rails/ActiveRecord integration into a separate gem
   workflow-activerecord
+* Remodel integration removed - needs to be a separate gem
 
 ### New in the upcoming version 1.3.0 (never released)
 
