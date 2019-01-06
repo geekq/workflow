@@ -7,6 +7,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["vladimir@geekq.net"]
   gem.description   = "Workflow is a finite-state-machine-inspired API for modeling and interacting\n    with what we tend to refer to as 'workflow'.\n\n    * nice DSL to describe your states, events and transitions\n    * robust integration with ActiveRecord and non relational data stores\n    * various hooks for single transitions, entering state etc.\n    * convenient access to the workflow specification: list states, possible events\n      for particular state\n"
   gem.summary       = %q{A replacement for acts_as_state_machine.}
+  gem.licenses      = ['MIT']
   gem.homepage      = "http://www.geekq.net/workflow/"
 
   gem.files         = Dir['CHANGELOG.md', 'README.md', 'LICENSE', 'lib/**/*']
