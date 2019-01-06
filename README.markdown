@@ -664,7 +664,12 @@ when using both a block and a callback method for an event, the block executes p
 Changelog
 ---------
 
-### New in the upcoming version 1.3.0
+### New in the upcoming version 2.0.0
+
+* extract Rails/ActiveRecord integration into a separate gem
+  workflow-activerecord
+
+### New in the upcoming version 1.3.0 (never released)
 
 * Retiring Ruby 1.8.7 and Rails 2 support #118. If you still need this older
   versions despite security issues and missing updates, you can use
