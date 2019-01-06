@@ -10,12 +10,12 @@ at http://rubygems.org/gems/workflow : select a version (optional,
 default is latest release), click "Documentation" link. When reading on
 github.com, the README refers to the upcoming release.
 
-**Note on ActiveRecord/Rails 4.*, 5.* Support:**
+**Note on ActiveRecord/Rails 4.\*, 5.\* Support:**
 
 Since integration with ActiveRecord makes over 90% of the issues and
 maintenance effort, and also to allow for an independent (faster) release cycle
 for Rails support, starting with workflow **version 2.0** the support for
-ActiveRecord (4.*, 5.* and newer) is extracted into a separate
+ActiveRecord (4.\*, 5.\* and newer) is extracted into a separate
 [workflow-activerecord](https://github.com/geekq/workflow-activerecord) gem.
 
 You can also implement
