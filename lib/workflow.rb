@@ -29,6 +29,27 @@ module Workflow
       assign_workflow Specification.new(Hash.new, &specification)
     end
 
+    # Returns available events list for specified state
+    #
+    # @param [Symbol]       State
+    #
+    # @return Array[Symbol] List of events
+    #
+    def available_workflow_events_for_state(state)
+      state_spec = self.class.workflow_spec.states[state.to_sym]
+      raise "Unknown state '#{state}'" if state_spec.nil?
+
+      state_spec.events.select do |key, spec|
+        condition_applicable? self
+      end
+    end
+
+    # Returns available events list for current state
+    #
+    def enabled_workflow_events
+      current_state.events.map { |k, events| events.select { |e| e.condition_applicable? self } }.flatten.uniq.map(&:name)
+    end
+
     private
 
     # Creates the convinience methods like `my_transition!`
