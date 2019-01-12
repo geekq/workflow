@@ -10,6 +10,9 @@ at http://rubygems.org/gems/workflow : select a version (optional,
 default is latest release), click "Documentation" link. When reading on
 github.com, the README refers to the upcoming release.
 
+**Note: this branch is currently under heavy refactoring preparing for
+the 2.0 release where ActiveRecord support is extracted into a separate gem.**
+
 **Note on ActiveRecord/Rails 4.\*, 5.\* Support:**
 
 Since integration with ActiveRecord makes over 90% of the issues and
@@ -18,9 +21,8 @@ for Rails support, starting with workflow **version 2.0** the support for
 ActiveRecord (4.\*, 5.\* and newer) is extracted into a separate
 [workflow-activerecord](https://github.com/geekq/workflow-activerecord) gem.
 
-You can also implement
-[your own state persistence](https://github.com/geekq/workflow#custom-workflow-state-persistence)
-for ActiveRecord or any other persistence library.
+For older Ruby/Rails versions and integrated ActiveRecord support
+please use Workflow 1.2.0.
 
 What is workflow?
 -----------------
@@ -639,48 +641,17 @@ Development Setup
     bundle exec rake test
 
 
-Earlier versions
-----------------
-
-The `workflow` library was originally written by Ryan Allen.
-
-The version 0.3 was almost completely (including ActiveRecord
-integration, API for accessing workflow specification,
-method_missing free implementation) rewritten by Vladimir Dobriakov
-keeping the original workflow DSL spirit.
-
-
-Migration from the original Ryan's library
-------------------------------------------
-
-Credit: Michael (rockrep)
-
-Accessing workflow specification
-
-    my_instance.workflow # old
-    MyClass.workflow_spec # new
-
-Accessing states, events, meta, e.g.
-
-    my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag] # old
-    MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag] # new
-
-Causing state transitions
-
-    my_instance.workflow.my_event # old
-    my_instance.my_event! # new
-
-when using both a block and a callback method for an event, the block executes prior to the callback
-
-
 Changelog
 ---------
 
-### New in the upcoming version 2.0.0
+### New in the version 2.0.0
 
 * extract Rails/ActiveRecord integration into a separate gem
   workflow-activerecord
 * Remodel integration removed - needs to be a separate gem
+
+Special thanks to https://github.com/voltechs for implementing Rails 5 support
+and helping to revive `workflow`!
 
 ### New in the upcoming version 1.3.0 (never released)
 
@@ -814,9 +785,9 @@ Support
 About
 -----
 
-Author: Vladimir Dobriakov, <http://www.mobile-web-consulting.de>, <http://blog.geekq.net/>
+Author: Vladimir Dobriakov, <https://infrastructure-as-code.de>
 
-Copyright (c) 2010-2014 Vladimir Dobriakov, www.mobile-web-consulting.de
+Copyright (c) 2010-2019 Vladimir Dobriakov and Contributors
 
 Copyright (c) 2008-2009 Vodafone
 
