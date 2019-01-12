@@ -14,6 +14,11 @@ github.com, the README refers to the upcoming release.
 For different options/troubleshooting using it with your Rails application see
 [State persistence with ActiveRecord](#state-persistence-with-activerecord).**
 
+Note for contributors: it looks like github closed all the pull requests after
+I had changed the default branch on 2019-01-12. Please check the new refactored
+workflow 2.0, complementing workflow-activerecord and recreate your pull
+request if needed.
+
 What is workflow?
 -----------------
 
