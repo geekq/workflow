@@ -10,20 +10,9 @@ at http://rubygems.org/gems/workflow : select a version (optional,
 default is latest release), click "Documentation" link. When reading on
 github.com, the README refers to the upcoming release.
 
-**Note: this branch is currently under heavy refactoring preparing for
-the 2.0 release where ActiveRecord support is extracted into a separate gem.**
-
-**Note on ActiveRecord/Rails 4.\*, 5.\* Support:**
-
-Since integration with ActiveRecord makes over 90% of the issues and
-maintenance effort, and also to allow for an independent (faster) release cycle
-for Rails support, starting with workflow **version 2.0** in January 2019 the
-support for ActiveRecord (4.\*, 5.\* and newer) is extracted into a separate
-[workflow-activerecord](https://github.com/geekq/workflow-activerecord) gem.
-Read there, how to include the right gem.
-
-For older Ruby/Rails versions and integrated ActiveRecord support
-please use Workflow 1.2.0.
+**Note: Workflow 2.0 is a major refactoring of the library.
+For different options/troubleshooting using it with your Rails application see
+[State persistence with ActiveRecord](#state-persistence-with-activerecord)**
 
 What is workflow?
 -----------------
@@ -204,8 +193,27 @@ name as the event (convention over configuration) as explained before.
 State persistence with ActiveRecord
 -----------------------------------
 
-See [workflow-activerecord](https://github.com/geekq/workflow-activerecord).
+Note: Workflow 2.0 is a major refactoring for the `worklow` library.
+If your application suddenly breaks after the workflow 2.0 release, you've
+probably got your Gemfile wrong ;-). workflow uses [semantic versioning][]. For
+highest compatibility please reference the desired major+minor version.
 
+Note on ActiveRecord/Rails 4.\*, 5.\* Support:
+
+Since integration with ActiveRecord makes over 90% of the issues and
+maintenance effort, and also to allow for an independent (faster) release cycle
+for Rails support, starting with workflow **version 2.0** in January 2019 the
+support for ActiveRecord (4.\*, 5.\* and newer) has been extracted into a separate
+[workflow-activerecord](https://github.com/geekq/workflow-activerecord) gem.
+Read at [workflow-activerecord][], how to include the right gem.
+
+To use legacy built-in ActiveRecord 2.3 - 4.* support reference Workflow 1.2 in
+your Gemfile:
+
+    gem 'workflow', '~> 1.2'
+
+[semantic versioning]: https://guides.rubygems.org/patterns/#semantic-versioning
+[workflow-activerecord]: https://github.com/geekq/workflow-activerecord
 
 Custom workflow state persistence
 ---------------------------------
