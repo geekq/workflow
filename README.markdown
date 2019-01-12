@@ -520,8 +520,7 @@ example][multiple_workflow_test]!
 
 [STI]: http://www.martinfowler.com/eaaCatalog/singleTableInheritance.html
 [ActiveRecord]: http://api.rubyonrails.org/classes/ActiveRecord/Base.html
-[multiple_workflow_test]: http://github.com/geekq/workflow/blob/master/test/multiple_workflows_test.rb
-
+[multiple_workflow_test]: https://github.com/geekq/workflow-activerecord/blob/develop/test/multiple_workflows_test.rb
 
 Documenting with diagrams
 -------------------------
@@ -560,8 +559,10 @@ Changelog
   workflow-activerecord
 * Remodel integration removed - needs to be a separate gem
 
-Special thanks to https://github.com/voltechs for implementing Rails 5 support
+Special thanks to [voltechs][] for implementing Rails 5 support
 and helping to revive `workflow`!
+
+[voltechs]: https://github.com/voltechs
 
 ### New in the upcoming version 1.3.0 (never released)
 
