@@ -17,9 +17,10 @@ the 2.0 release where ActiveRecord support is extracted into a separate gem.**
 
 Since integration with ActiveRecord makes over 90% of the issues and
 maintenance effort, and also to allow for an independent (faster) release cycle
-for Rails support, starting with workflow **version 2.0** the support for
-ActiveRecord (4.\*, 5.\* and newer) is extracted into a separate
+for Rails support, starting with workflow **version 2.0** in January 2019 the
+support for ActiveRecord (4.\*, 5.\* and newer) is extracted into a separate
 [workflow-activerecord](https://github.com/geekq/workflow-activerecord) gem.
+Read there, how to include the right gem.
 
 For older Ruby/Rails versions and integrated ActiveRecord support
 please use Workflow 1.2.0.
@@ -93,8 +94,8 @@ of possible events and other meta information:
         @transitions_to=:awaiting_review, @name=:submit, @meta={}>},
       name:new, meta{}
 
-On Ruby 1.9 and above, you can check whether a state comes before or
-after another state (by the order they were defined):
+You can also check, whether a state comes before or after another state (by the
+order they were defined):
 
     article.current_state
     => being_reviewed
@@ -131,16 +132,6 @@ install the `activesupport` and `ruby-graphviz` gems.
 Versions up to and including 1.0.0 are also available as a single file download -
 [lib/workflow.rb file](https://github.com/geekq/workflow/blob/v1.0.0/lib/workflow.rb).
 
-Ruby 1.9
---------
-
-Workflow gem does not work with some Ruby 1.9
-builds due to a known bug in Ruby 1.9. Either
-
-* use newer ruby build, 1.9.2-p136 and -p180 tested to work
-* or compile your Ruby 1.9 from source
-* or [comment out some lines in workflow](http://github.com/geekq/workflow/issues#issue/6)
-(reduces functionality).
 
 Examples
 --------
