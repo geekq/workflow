@@ -1,4 +1,4 @@
-[![Version      ](https://img.shields.io/gem/v/workflow.svg?maxAge=2592000)](https://rubygems.org/gems/workflow)
+[![Version      ](https://badge.fury.io/rb/workflow.svg)](https://badge.fury.io/rb/workflow)
 [![Build Status ](https://travis-ci.org/geekq/workflow.svg)](https://travis-ci.org/geekq/workflow)
 [![Code Climate ](https://codeclimate.com/github/geekq/workflow/badges/gpa.svg)](https://codeclimate.com/github/geekq/workflow)
 [![Test Coverage](https://codeclimate.com/github/geekq/workflow/badges/coverage.svg)](https://codeclimate.com/github/geekq/workflow/coverage)
