@@ -12,7 +12,7 @@ github.com, the README refers to the upcoming release.
 
 **Note: Workflow 2.0 is a major refactoring of the library.
 For different options/troubleshooting using it with your Rails application see
-[State persistence with ActiveRecord](#state-persistence-with-activerecord)**
+[State persistence with ActiveRecord](#state-persistence-with-activerecord).**
 
 What is workflow?
 -----------------
@@ -204,10 +204,9 @@ Since integration with ActiveRecord makes over 90% of the issues and
 maintenance effort, and also to allow for an independent (faster) release cycle
 for Rails support, starting with workflow **version 2.0** in January 2019 the
 support for ActiveRecord (4.\*, 5.\* and newer) has been extracted into a separate
-[workflow-activerecord](https://github.com/geekq/workflow-activerecord) gem.
-Read at [workflow-activerecord][], how to include the right gem.
+gem. Read at [workflow-activerecord][], how to include the right gem.
 
-To use legacy built-in ActiveRecord 2.3 - 4.* support reference Workflow 1.2 in
+To use legacy built-in ActiveRecord 2.3 - 4.* support, reference Workflow 1.2 in
 your Gemfile:
 
     gem 'workflow', '~> 1.2'
