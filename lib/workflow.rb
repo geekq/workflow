@@ -15,6 +15,9 @@ module Workflow
   module ClassMethods
     attr_reader :workflow_spec
 
+    # Workflow does not provide any state persistence - it is the job of particular
+    # persistence libraries for workflow and activerecord or remodel.
+    # But it still makes sense to provide a default name and override feature.
     def workflow_column(column_name=nil)
       if column_name
         @workflow_state_column_name = column_name.to_sym
