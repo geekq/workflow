@@ -1,25 +1,29 @@
-[![Build Status](https://travis-ci.org/geekq/workflow.png?branch=master)](https://travis-ci.org/geekq/workflow) Tested with [different Ruby and Rails versions](https://travis-ci.org/geekq/workflow)
+[![Version      ](https://img.shields.io/gem/v/workflow.svg?maxAge=2592000)](https://rubygems.org/gems/workflow)
+[![Build Status ](https://travis-ci.org/geekq/workflow.svg)](https://travis-ci.org/geekq/workflow)
+[![Code Climate ](https://codeclimate.com/github/geekq/workflow/badges/gpa.svg)](https://codeclimate.com/github/geekq/workflow)
+[![Test Coverage](https://codeclimate.com/github/geekq/workflow/badges/coverage.svg)](https://codeclimate.com/github/geekq/workflow/coverage)
+
+# Workflow
 
 Note: you can find documentation for specific workflow rubygem versions
 at http://rubygems.org/gems/workflow : select a version (optional,
 default is latest release), click "Documentation" link. When reading on
 github.com, the README refers to the upcoming release.
 
-**Note on ActiveRecord/Rails 5.0 Support:** currently the workflow gem only
-contains ActiveRecord integration for versions < 5.0. For now you can use
-[your own state persistence](https://github.com/geekq/workflow#custom-workflow-state-persistence)
+**Note: this branch is currently under heavy refactoring preparing for
+the 2.0 release where ActiveRecord support is extracted into a separate gem.**
+
+**Note on ActiveRecord/Rails 4.\*, 5.\* Support:**
 
 Since integration with ActiveRecord makes over 90% of the issues and
-maintenance effort, for including Rails/ActiveRecord 5.0 Support I am
-considering:
+maintenance effort, and also to allow for an independent (faster) release cycle
+for Rails support, starting with workflow **version 2.0** in January 2019 the
+support for ActiveRecord (4.\*, 5.\* and newer) is extracted into a separate
+[workflow-activerecord](https://github.com/geekq/workflow-activerecord) gem.
+Read there, how to include the right gem.
 
-* either to split ActiveRecord-Integration to as separate module/gem and allow
-  for independent release life cycle / maintainer
-* or separate only support for ActiveRecord 5.0
-* or use separate branch + version of workflow
-
-More background on
-[Rails integration](http://solnic.eu/2016/05/22/my-time-with-rails-is-up.html#not-a-good-citizen)
+For older Ruby/Rails versions and integrated ActiveRecord support
+please use Workflow 1.2.0.
 
 What is workflow?
 -----------------
@@ -90,8 +94,8 @@ of possible events and other meta information:
         @transitions_to=:awaiting_review, @name=:submit, @meta={}>},
       name:new, meta{}
 
-On Ruby 1.9 and above, you can check whether a state comes before or
-after another state (by the order they were defined):
+You can also check, whether a state comes before or after another state (by the
+order they were defined):
 
     article.current_state
     => being_reviewed
@@ -128,16 +132,6 @@ install the `activesupport` and `ruby-graphviz` gems.
 Versions up to and including 1.0.0 are also available as a single file download -
 [lib/workflow.rb file](https://github.com/geekq/workflow/blob/v1.0.0/lib/workflow.rb).
 
-Ruby 1.9
---------
-
-Workflow gem does not work with some Ruby 1.9
-builds due to a known bug in Ruby 1.9. Either
-
-* use newer ruby build, 1.9.2-p136 and -p180 tested to work
-* or compile your Ruby 1.9 from source
-* or [comment out some lines in workflow](http://github.com/geekq/workflow/issues#issue/6)
-(reduces functionality).
 
 Examples
 --------
@@ -207,73 +201,11 @@ due to a deep nesting. We tried (and dismissed) lambdas for this. Eventually
 we decided to invoke an optional user defined callback method with the same
 name as the event (convention over configuration) as explained before.
 
+State persistence with ActiveRecord
+-----------------------------------
 
-Integration with ActiveRecord
------------------------------
+See [workflow-activerecord](https://github.com/geekq/workflow-activerecord).
 
-Workflow library can handle the state persistence fully automatically. You
-only need to define a string field on the table called `workflow_state`
-and include the workflow mixin in your model class as usual:
-
-    class Order < ActiveRecord::Base
-      include Workflow
-      workflow do
-        # list states and transitions here
-      end
-    end
-
-On a database record loading all the state check methods e.g.
-`article.state`, `article.awaiting_review?` are immediately available.
-For new records or if the `workflow_state` field is not set the state
-defaults to the first state declared in the workflow specification. In
-our example it is `:new`, so `Article.new.new?` returns true and
-`Article.new.approved?` returns false.
-
-At the end of a successful state transition like `article.approve!` the
-new state is immediately saved in the database.
-
-You can change this behaviour by overriding `persist_workflow_state`
-method.
-
-### Scopes
-
-Workflow library also adds automatically generated scopes with names based on
-states names:
-
-    class Order < ActiveRecord::Base
-      include Workflow
-      workflow do
-        state :approved
-        state :pending
-      end
-    end
-
-    # returns all orders with `approved` state
-    Order.with_approved_state
-
-    # returns all orders with `pending` state
-    Order.with_pending_state
-
-
-### Custom workflow database column
-
-[meuble](http://imeuble.info/) contributed a solution for using
-custom persistence column easily, e.g. for a legacy database schema:
-
-    class LegacyOrder < ActiveRecord::Base
-      include Workflow
-
-      workflow_column :foo_bar # use this legacy database column for
-                               # persistence
-    end
-
-
-
-### Single table inheritance
-
-Single table inheritance is also supported. Descendant classes can either
-inherit the workflow definition from the parent or override with its own
-definition.
 
 Custom workflow state persistence
 ---------------------------------
@@ -382,25 +314,6 @@ I can then link to your implementation from this README. Please let me
 also know, if you need any interface beyond `load_workflow_state` and
 `persist_workflow_state` methods to implement an adapter for your
 favorite database.
-
-
-Custom Versions of Existing Adapters
-------------------------------------
-
-Other adapters (such as a custom ActiveRecord plugin) can be selected by adding a `workflow_adapter` class method, eg.
-
-```ruby
-class Example < ActiveRecord::Base
-  def self.workflow_adapter
-    MyCustomAdapter
-  end
-  include Workflow
-
-  # ...
-end
-```
-
-(The above will include `MyCustomAdapter` *instead* of `Workflow::Adapter::ActiveRecord`.)
 
 
 Accessing your workflow specification
@@ -626,44 +539,31 @@ Use `Workflow::create_workflow_diagram(class)` in your rake task like:
     end
 
 
-Earlier versions
-----------------
+Development Setup
+-----------------
 
-The `workflow` library was originally written by Ryan Allen.
-
-The version 0.3 was almost completely (including ActiveRecord
-integration, API for accessing workflow specification,
-method_missing free implementation) rewritten by Vladimir Dobriakov
-keeping the original workflow DSL spirit.
-
-
-Migration from the original Ryan's library
-------------------------------------------
-
-Credit: Michael (rockrep)
-
-Accessing workflow specification
-
-    my_instance.workflow # old
-    MyClass.workflow_spec # new
-
-Accessing states, events, meta, e.g.
-
-    my_instance.workflow.states(:some_state).events(:some_event).meta[:some_meta_tag] # old
-    MyClass.workflow_spec.states[:some_state].events[:some_event].meta[:some_meta_tag] # new
-
-Causing state transitions
-
-    my_instance.workflow.my_event # old
-    my_instance.my_event! # new
-
-when using both a block and a callback method for an event, the block executes prior to the callback
+    sudo apt-get install graphviz # Linux
+    brew cask install graphviz # Mac OS
+    cd workflow
+    gem install bundler
+    bundle install
+    # run all the tests
+    bundle exec rake test
 
 
 Changelog
 ---------
 
-### New in the upcoming version 1.3.0
+### New in the version 2.0.0
+
+* extract Rails/ActiveRecord integration into a separate gem
+  workflow-activerecord
+* Remodel integration removed - needs to be a separate gem
+
+Special thanks to https://github.com/voltechs for implementing Rails 5 support
+and helping to revive `workflow`!
+
+### New in the upcoming version 1.3.0 (never released)
 
 * Retiring Ruby 1.8.7 and Rails 2 support #118. If you still need this older
   versions despite security issues and missing updates, you can use
@@ -795,9 +695,9 @@ Support
 About
 -----
 
-Author: Vladimir Dobriakov, <http://www.mobile-web-consulting.de>, <http://blog.geekq.net/>
+Author: Vladimir Dobriakov, <https://infrastructure-as-code.de>
 
-Copyright (c) 2010-2014 Vladimir Dobriakov, www.mobile-web-consulting.de
+Copyright (c) 2010-2019 Vladimir Dobriakov and Contributors
 
 Copyright (c) 2008-2009 Vodafone
 

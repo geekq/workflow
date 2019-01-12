@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 require 'workflow'
-class AdvanceExamplesTest < ActiveRecordTestCase
+class AdvanceExamplesTest < Minitest::Test
 
   class Article
     include Workflow

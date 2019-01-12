@@ -1,31 +1,25 @@
+language: ruby
+sudo: false
+env:
+  global:
+    - CC_TEST_REPORTER_ID=62c8432c7209b62a8fe7638d88a2f9ce097c51c09ef48f12c1f8625616436931
+
+cache: bundler
+
 before_install:
   - sudo apt-get install -qq graphviz
+  - gem update --system
+  - gem install bundler
+
 before_script:
-  - gem list
-  - bundle show
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 rvm:
-  - 2.3.1
-gemfile:
-  - gemfiles/Gemfile.rails-edge
-
-matrix:
-  include:
-    - rvm: 1.9.3
-      gemfile: gemfiles/Gemfile.rails-3.x
-
-    - rvm: 2.0.0
-      gemfile: gemfiles/Gemfile.rails-3.x
-
-    - rvm: 2.0.0
-      gemfile: gemfiles/Gemfile.rails-4.0
-
-    - rvm: 2.3.1
-      gemfile: gemfiles/Gemfile.rails-4.0
-
-    - rvm: 2.3.1
-      gemfile: gemfiles/Gemfile.rails-5.0
-  allow_failures:
-    - gemfile: gemfiles/Gemfile.rails-5.0
-    - gemfile: gemfiles/Gemfile.rails-edge
-
+  - 2.5
+  - 2.4
+  - 2.3

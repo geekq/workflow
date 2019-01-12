@@ -1,8 +1,12 @@
 require 'rubygems'
-require 'test/unit'
-require 'active_record'
+require 'minitest/autorun'
 
-class << Test::Unit::TestCase
+require 'simplecov'
+SimpleCov.start do
+  add_filter 'test'
+end
+
+class << Minitest::Test
   def test(name, &block)
     test_name = :"test_#{name.gsub(' ','_')}"
     raise ArgumentError, "#{test_name} is already defined" if self.instance_methods.include? test_name.to_s
@@ -13,27 +17,3 @@ class << Test::Unit::TestCase
     end
   end
 end
-
-class ActiveRecordTestCase < Test::Unit::TestCase
-  def exec(sql)
-    ActiveRecord::Base.connection.execute sql
-  end
-
-  def setup
-    ActiveRecord::Base.establish_connection(
-      :adapter => "sqlite3",
-      :database  => ":memory:" #"tmp/test"
-    )
-
-    # eliminate ActiveRecord warning. TODO: delete as soon as ActiveRecord is fixed
-    ActiveRecord::Base.connection.reconnect!
-  end
-
-  def teardown
-    ActiveRecord::Base.connection.disconnect!
-  end
-
-  def default_test
-  end
-end
-
