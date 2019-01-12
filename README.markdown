@@ -201,73 +201,11 @@ due to a deep nesting. We tried (and dismissed) lambdas for this. Eventually
 we decided to invoke an optional user defined callback method with the same
 name as the event (convention over configuration) as explained before.
 
+State persistence with ActiveRecord
+-----------------------------------
 
-Integration with ActiveRecord
------------------------------
+See [workflow-activerecord](https://github.com/geekq/workflow-activerecord).
 
-Workflow library can handle the state persistence fully automatically. You
-only need to define a string field on the table called `workflow_state`
-and include the workflow mixin in your model class as usual:
-
-    class Order < ActiveRecord::Base
-      include Workflow
-      workflow do
-        # list states and transitions here
-      end
-    end
-
-On a database record loading all the state check methods e.g.
-`article.state`, `article.awaiting_review?` are immediately available.
-For new records or if the `workflow_state` field is not set the state
-defaults to the first state declared in the workflow specification. In
-our example it is `:new`, so `Article.new.new?` returns true and
-`Article.new.approved?` returns false.
-
-At the end of a successful state transition like `article.approve!` the
-new state is immediately saved in the database.
-
-You can change this behaviour by overriding `persist_workflow_state`
-method.
-
-### Scopes
-
-Workflow library also adds automatically generated scopes with names based on
-states names:
-
-    class Order < ActiveRecord::Base
-      include Workflow
-      workflow do
-        state :approved
-        state :pending
-      end
-    end
-
-    # returns all orders with `approved` state
-    Order.with_approved_state
-
-    # returns all orders with `pending` state
-    Order.with_pending_state
-
-
-### Custom workflow database column
-
-[meuble](http://imeuble.info/) contributed a solution for using
-custom persistence column easily, e.g. for a legacy database schema:
-
-    class LegacyOrder < ActiveRecord::Base
-      include Workflow
-
-      workflow_column :foo_bar # use this legacy database column for
-                               # persistence
-    end
-
-
-
-### Single table inheritance
-
-Single table inheritance is also supported. Descendant classes can either
-inherit the workflow definition from the parent or override with its own
-definition.
 
 Custom workflow state persistence
 ---------------------------------
@@ -376,25 +314,6 @@ I can then link to your implementation from this README. Please let me
 also know, if you need any interface beyond `load_workflow_state` and
 `persist_workflow_state` methods to implement an adapter for your
 favorite database.
-
-
-Custom Versions of Existing Adapters
-------------------------------------
-
-Other adapters (such as a custom ActiveRecord plugin) can be selected by adding a `workflow_adapter` class method, eg.
-
-```ruby
-class Example < ActiveRecord::Base
-  def self.workflow_adapter
-    MyCustomAdapter
-  end
-  include Workflow
-
-  # ...
-end
-```
-
-(The above will include `MyCustomAdapter` *instead* of `Workflow::Adapter::ActiveRecord`.)
 
 
 Accessing your workflow specification
