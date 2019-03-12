@@ -1,3 +1,9 @@
+begin
+  require 'ruby-graphviz'
+rescue LoadError => e
+  $stderr.puts "Could not load the ruby-graphviz gem for rendering: #{e.message}"
+end
+
 module Workflow
   module Draw
 

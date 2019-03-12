@@ -3,13 +3,6 @@ require 'rubygems'
 require 'workflow/specification'
 require 'workflow/adapters/remodel'
 
-begin
-  require 'ruby-graphviz'
-  require 'workflow/draw'
-rescue LoadError => e
-  $stderr.puts "Could not load the ruby-graphviz gem for rendering: #{e.message}"
-end
-
 # See also README.markdown for documentation
 module Workflow
   module ClassMethods
