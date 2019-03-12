@@ -364,6 +364,7 @@ class MainTest < Minitest::Test
   end
 
   test 'workflow graph generation' do
+    require 'workflow/draw'
     Dir.chdir('/tmp') do
       capture_streams do
         Workflow::Draw::workflow_diagram(Order, :path => '/tmp')
