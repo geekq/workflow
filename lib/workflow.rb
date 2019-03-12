@@ -7,7 +7,7 @@ begin
   require 'ruby-graphviz'
   require 'workflow/draw'
 rescue LoadError => e
-  $stderr.puts "Could not load the ruby-graphiz or active_support gems for rendering: #{e.message}"
+  $stderr.puts "Could not load the ruby-graphviz gem for rendering: #{e.message}"
 end
 
 # See also README.markdown for documentation
