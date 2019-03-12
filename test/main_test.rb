@@ -373,6 +373,7 @@ class MainTest < Minitest::Test
   end
 
   test 'workflow graph generation in a path with spaces' do
+    require 'workflow/draw'
     `mkdir -p '/tmp/Workflow test'`
     capture_streams do
       Workflow::Draw::workflow_diagram(Order, :path => '/tmp/Workflow test')
