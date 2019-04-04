@@ -1,9 +1,3 @@
-begin
-  require 'ruby-graphviz'
-rescue LoadError => e
-  $stderr.puts "Could not load the ruby-graphviz gem for rendering: #{e.message}"
-end
-
 module Workflow
   module Draw
 
@@ -47,6 +41,7 @@ module Workflow
         :font => 'Helvetica'
       }.merge options
 
+      require 'ruby-graphviz'
       graph = ::GraphViz.new('G', :rankdir => options[:orientation] == 'landscape' ? 'LR' : 'TB', :ratio => options[:ratio])
 
       # Add nodes
