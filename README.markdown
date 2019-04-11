@@ -503,6 +503,11 @@ Development Setup
 Changelog
 ---------
 
+### New in the version 2.0.1
+
+* retire Ruby 2.3 since it has reached end of live
+* fix #213 ruby-graphiz warnings
+
 ### New in the version 2.0.0
 
 * extract Rails/ActiveRecord integration into a separate gem
