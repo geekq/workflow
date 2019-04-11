@@ -20,12 +20,12 @@ Gem::Specification.new do |gem|
   ]
 
   gem.required_ruby_version = '>= 2.3'
-  gem.add_development_dependency 'rdoc',    [">= 3.12"]
-  gem.add_development_dependency 'bundler', [">= 1.0.0"]
-  gem.add_development_dependency 'mocha'
-  gem.add_development_dependency 'rake'
-  gem.add_development_dependency 'minitest'
-  gem.add_development_dependency 'ruby-graphviz'
+  gem.add_development_dependency 'rdoc',          '~> 6.1'
+  gem.add_development_dependency 'bundler',       '~> 2.0'
+  gem.add_development_dependency 'mocha',         '~> 1.8'
+  gem.add_development_dependency 'rake',          '~> 12.3'
+  gem.add_development_dependency 'minitest',      '~> 5.11'
+  gem.add_development_dependency 'ruby-graphviz', '~> 1.2'
 
 end
 
