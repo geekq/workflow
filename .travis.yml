@@ -20,6 +20,6 @@ after_script:
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 rvm:
+  - 2.6
   - 2.5
   - 2.4
-  - 2.3
