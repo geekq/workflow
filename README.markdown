@@ -415,11 +415,6 @@ logging then you can use the universal `on_transition` hook:
       end
     end
 
-Please also have a look at the [advanced end to end
-example][advanced_hooks_and_validation_test].
-
-[advanced_hooks_and_validation_test]: http://github.com/geekq/workflow/blob/master/test/advanced_hooks_and_validation_test.rb
-
 ### on_error
 
 If you want to do custom exception handling internal to workflow, you can define an `on_error` hook in your workflow.
