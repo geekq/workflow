@@ -5,10 +5,18 @@ Gem::Specification.new do |gem|
   gem.version       = Workflow::VERSION
   gem.authors       = ["Vladimir Dobriakov"]
   gem.email         = ["vladimir@geekq.net"]
-  gem.description   = "Workflow is a finite-state-machine-inspired API for modeling and interacting\n    with what we tend to refer to as 'workflow'.\n\n    * nice DSL to describe your states, events and transitions\n    * various hooks for single transitions, entering state etc.\n    * convenient access to the workflow specification: list states, possible events\n      for particular state\n"
+  gem.description   = <<~DESC
+                        Workflow is a finite-state-machine-inspired API for modeling and
+                        interacting with what we tend to refer to as 'workflow'.
+
+                        * nice DSL to describe your states, events and transitions
+                        * various hooks for single transitions, entering state etc.
+                        * convenient access to the workflow specification: list states, possible events
+                        for particular state
+                      DESC
   gem.summary       = %q{A replacement for acts_as_state_machine.}
   gem.licenses      = ['MIT']
-  gem.homepage      = "http://www.geekq.net/workflow/"
+  gem.homepage      = "https://github.com/geekq/workflow"
 
   gem.files         = Dir['CHANGELOG.md', 'README.md', 'LICENSE', 'lib/**/*']
   gem.executables   = gem.files.grep(%r{^bin/}) { |f| File.basename(f) }
