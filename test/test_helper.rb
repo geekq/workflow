@@ -1,3 +1,10 @@
+# Require and start simplecov BEFORE minitest/autorun loads ./lib to get correct test results.
+# Otherwise lot of executed lines are not detected.
+require 'simplecov'
+SimpleCov.start do
+  add_filter 'test'
+end
+
 require 'minitest/autorun'
 
 class << Minitest::Test
