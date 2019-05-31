@@ -1,7 +1,6 @@
 require 'rubygems'
 
 require 'workflow/specification'
-require 'workflow/adapters/remodel'
 
 # See also README.markdown for documentation
 module Workflow

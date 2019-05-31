@@ -498,6 +498,10 @@ Development Setup
 Changelog
 ---------
 
+### New in the version 2.0.2
+
+* finalize extraction of persistence adapters, remove remodel adapter
+
 ### New in the version 2.0.1
 
 * retire Ruby 2.3 since it has reached end of live
