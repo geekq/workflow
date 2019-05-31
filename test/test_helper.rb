@@ -1,10 +1,4 @@
-require 'rubygems'
 require 'minitest/autorun'
-
-require 'simplecov'
-SimpleCov.start do
-  add_filter 'test'
-end
 
 class << Minitest::Test
   def test(name, &block)
