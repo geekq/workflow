@@ -1,9 +1,15 @@
-[![Version      ](https://badge.fury.io/rb/workflow.svg)](https://badge.fury.io/rb/workflow)
-[![Build Status ](https://travis-ci.org/geekq/workflow.svg)](https://travis-ci.org/geekq/workflow)
-[![Code Climate ](https://codeclimate.com/github/geekq/workflow/badges/gpa.svg)](https://codeclimate.com/github/geekq/workflow)
-[![Test Coverage](https://codeclimate.com/github/geekq/workflow/badges/coverage.svg)](https://codeclimate.com/github/geekq/workflow/coverage)
+:doctype: book
+:toc: macro
+:toclevels: 1
+:sectlinks:
+:idprefix:
 
 # Workflow
+
+image:https://badge.fury.io/rb/workflow.svg[link=https://badge.fury.io/rb/workflow]
+image:https://travis-ci.org/geekq/workflow.svg[link=https://travis-ci.org/geekq/workflow]
+image:https://codeclimate.com/github/geekq/workflow/badges/gpa.svg[link=https://codeclimate.com/github/geekq/workflow]
+image:https://codeclimate.com/github/geekq/workflow/badges/coverage.svg[link=https://codeclimate.com/github/geekq/workflow/coverage]
 
 Note: you can find documentation for specific workflow rubygem versions
 at http://rubygems.org/gems/workflow : select a version (optional,
@@ -12,12 +18,14 @@ github.com, the README refers to the upcoming release.
 
 **Note: Workflow 2.0 is a major refactoring of the library.
 For different options/troubleshooting using it with your Rails application see
-[State persistence with ActiveRecord](#state-persistence-with-activerecord).**
+link:#activerecord[State persistence with ActiveRecord].**
 
 Note for contributors: it looks like github closed all the pull requests after
 I had changed the default branch on 2019-01-12. Please check the new refactored
 workflow 2.0, complementing workflow-activerecord and recreate your pull
 request if needed.
+
+toc::[]
 
 What is workflow?
 -----------------
@@ -115,8 +123,10 @@ current state . `article.can_submit?` checks if there is a `:submit`
 event (transition) defined for the current state.
 
 
-Installation
-------------
+Getting started
+---------------
+
+=== Installation
 
     gem install workflow
 
@@ -127,10 +137,9 @@ Versions up to and including 1.0.0 are also available as a single file download 
 [lib/workflow.rb file](https://github.com/geekq/workflow/blob/v1.0.0/lib/workflow.rb).
 
 
-Examples
---------
+=== Examples
 
-After installation or downloading of the library you can easily try out
+After installation or downloading the library you can easily try out
 all the example code from this README in irb.
 
     $ irb
@@ -141,8 +150,7 @@ Now just copy and paste the source code from the beginning of this README
 file snippet by snippet and observe the output.
 
 
-Transition event handler
-------------------------
+### Transition event handler
 
 The best way is to use convention over configuration and to define a
 method with the same name as the event. Then it is automatically invoked
@@ -181,9 +189,8 @@ arguments:
     article2.review!('Homer Simpson') # => [Homer Simpson] is now reviewing the article
 
 
-### The old, deprecated way
-
-The old way, using a block is still supported but deprecated:
+Alternative way is to use a block (only recommended for short event
+implementation without further code nesting):
 
     event :review, :transitions_to => :being_reviewed do |reviewer|
       # store the reviewer
@@ -195,13 +202,16 @@ due to a deep nesting. We tried (and dismissed) lambdas for this. Eventually
 we decided to invoke an optional user defined callback method with the same
 name as the event (convention over configuration) as explained before.
 
-State persistence with ActiveRecord
------------------------------------
+State persistence
+-----------------
+
+=== ActiveRecord
 
 Note: Workflow 2.0 is a major refactoring for the `worklow` library.
 If your application suddenly breaks after the workflow 2.0 release, you've
-probably got your Gemfile wrong ;-). workflow uses [semantic versioning][]. For
-highest compatibility please reference the desired major+minor version.
+probably got your Gemfile wrong ;-). workflow uses
+https://guides.rubygems.org/patterns/#semantic-versioning[semantic versioning].
+For highest compatibility please reference the desired major+minor version.
 
 Note on ActiveRecord/Rails 4.\*, 5.\* Support:
 
@@ -209,18 +219,17 @@ Since integration with ActiveRecord makes over 90% of the issues and
 maintenance effort, and also to allow for an independent (faster) release cycle
 for Rails support, starting with workflow **version 2.0** in January 2019 the
 support for ActiveRecord (4.\*, 5.\* and newer) has been extracted into a separate
-gem. Read at [workflow-activerecord][], how to include the right gem.
+gem. Read at
+https://github.com/geekq/workflow-activerecord[workflow-activerecord], how to
+include the right gem.
 
 To use legacy built-in ActiveRecord 2.3 - 4.* support, reference Workflow 1.2 in
 your Gemfile:
 
     gem 'workflow', '~> 1.2'
 
-[semantic versioning]: https://guides.rubygems.org/patterns/#semantic-versioning
-[workflow-activerecord]: https://github.com/geekq/workflow-activerecord
 
-Custom workflow state persistence
----------------------------------
+=== Custom workflow state persistence
 
 If you do not use a relational database and ActiveRecord, you can still
 integrate the workflow very easily. To implement persistence you just
@@ -228,14 +237,13 @@ need to override `load_workflow_state` and
 `persist_workflow_state(new_value)` methods. Next section contains an example for
 using CouchDB, a document oriented database.
 
-[Tim Lossen](http://tim.lossen.de/) implemented support
-for [remodel](http://github.com/tlossen/remodel) / [redis](http://github.com/antirez/redis)
+http://tim.lossen.de/[Tim Lossen] implemented support
+for http://github.com/tlossen/remodel[remodel] / http://github.com/antirez/redis[redis]
 key-value store.
 
-Integration with CouchDB
-------------------------
+=== Integration with CouchDB
 
-We are using the compact [couchtiny library](http://github.com/geekq/couchtiny)
+We are using the compact http://github.com/geekq/couchtiny[couchtiny library]
 here. But the implementation would look similar for the popular
 couchrest library.
 
@@ -263,11 +271,10 @@ couchrest library.
     end
 
 Please also have a look at
-[the full source code](http://github.com/geekq/workflow/blob/master/test/couchtiny_example.rb).
+http://github.com/geekq/workflow/blob/develop/test/couchtiny_example.rb[the full source code].
 
 
-Adapters to support other databases
------------------------------------
+=== Adapters to support other databases
 
 I get a lot of requests to integrate persistence support for different
 databases, object-relational adapters, column stores, document
@@ -327,9 +334,10 @@ also know, if you need any interface beyond `load_workflow_state` and
 `persist_workflow_state` methods to implement an adapter for your
 favorite database.
 
+Advanced usage
+--------------
 
-Accessing your workflow specification
--------------------------------------
+### Accessing your workflow specification
 
 You can easily reflect on workflow specification programmatically - for
 the whole class or for the current object. Examples:
@@ -363,8 +371,7 @@ The workflow library itself uses this feature to tweak the graphical
 representation of the workflow. See below.
 
 
-Conditional event transitions
------------------------------
+### Conditional event transitions
 
 Conditions can be a "method name symbol" with a corresponding instance method, a `proc` or `lambda` which are added to events, like so:
 
@@ -388,10 +395,9 @@ When calling a `device.can_<fire_event>?` check, or attempting a `device.<event>
 * If you've run out of events to check (eg. `battery_level == 0`), then the transition isn't possible.
 
 
-Advanced transition hooks
--------------------------
+### Advanced transition hooks
 
-### on_entry/on_exit
+#### on_entry/on_exit
 
 We already had a look at the declaring callbacks for particular workflow
 events. If you would like to react to all transitions to/from the same state
@@ -400,7 +406,7 @@ with a block inside the workflow definition or through naming
 convention, e.g. for the state :pending just define the method
 `on_pending_exit(new_state, event, *args)` somewhere in your class.
 
-### on_transition
+#### on_transition
 
 If you want to be informed about everything happening everywhere, e.g. for
 logging then you can use the universal `on_transition` hook:
@@ -415,7 +421,7 @@ logging then you can use the universal `on_transition` hook:
       end
     end
 
-### on_error
+#### on_error
 
 If you want to do custom exception handling internal to workflow, you can define an `on_error` hook in your workflow.
 For example:
@@ -483,17 +489,6 @@ Use `Workflow::create_workflow_diagram(class)` in your rake task like:
     end
 
 
-Development Setup
------------------
-
-    sudo apt-get install graphviz # Linux
-    brew cask install graphviz # Mac OS
-    cd workflow
-    gem install bundler
-    bundle install
-    # run all the tests
-    bundle exec rake test
-
 
 Changelog
 ---------
@@ -513,142 +508,29 @@ Changelog
   workflow-activerecord
 * Remodel integration removed - needs to be a separate gem
 
-Special thanks to [voltechs][] for implementing Rails 5 support
-and helping to revive `workflow`!
-
-[voltechs]: https://github.com/voltechs
-
-### New in the upcoming version 1.3.0 (never released)
-
-* Retiring Ruby 1.8.7 and Rails 2 support #118. If you still need this older
-  versions despite security issues and missing updates, you can use
-  workflow 1.2.0 or older. In your Gemfile put
-
-      gem 'workflow', '~> 1.2.0'
-
-  or when using github source just reference the v1.2.0 tag.
-* improved callback method handling: #113 and #125
-
-### New in the version 1.2.0
-
-* Fix issue #98 protected on\_\* callbacks in Ruby 2
-* #106 Inherit exceptions from StandardError instead of Exception
-* #109 Conditional event transitions, contributed by [damncabbage](http://robhoward.id.au/)
-  Please note: this introduces incompatible changes to the meta data API, see also #131.
-* New policy for supporting other databases - extract to separate
-  gems. See the README section above.
-* #111 Custom Versions of Existing Adapters by [damncabbage](http://robhoward.id.au/)
+Special thanks to https://github.com/voltechs[voltechs] for implementing
+Rails 5 support and helping to revive `workflow`!
 
 
-### New in the version 1.1.0
-
-* Tested with ActiveRecord 4.0 (Rails 4.0)
-* Tested with Ruby 2.0
-* automatically generated scopes with names based on state names
-* clean workflow definition override for class inheritance - undefining
-  the old convinience methods, s. <http://git.io/FZO02A>
-
-### New in the version 1.0.0
-
-* **Support to private/protected callback methods.**
-  See also issues [#53](https://github.com/geekq/workflow/pull/53)
-  and [#58](https://github.com/geekq/workflow/pull/58). With the new
-  implementation:
-
-  * callback methods can be hidden (non public): both private methods
-    in the immediate class and protected methods somewhere in the class
-    hierarchy are supported
-  * no unintentional calls on `fail!` and other Kernel methods
-  * inheritance hierarchy with workflow is supported
-
-* using Rails' 3.1 `update_column` whenever available so only the
-  workflow state column and not other pending attribute changes are
-  saved on state transition. Fallback to `update_attribute` for older
-  Rails and other ORMs. [commit](https://github.com/geekq/workflow/commit/7e091d8ded1aeeb0a86647bbf7d78ab3c9d0c458)
-
-### New in the version 0.8.7
-
-* switch from [jeweler][] to pure bundler for building gems
-
-### New in the version 0.8.0
-
-* check if a certain transition possible from the current state with
-  `can_....?`
-* fix workflow_state persistence for multiple_workflows example
-* add before_transition and after_transition hooks as suggested by
-  [kasperbn](https://github.com/kasperbn)
-
-### New in the version 0.7.0
-
-* fix issue#10 Workflow::create_workflow_diagram documentation and path
-  escaping
-* fix issue#7 workflow_column does not work STI (single table
-  inheritance) ActiveRecord models
-* fix issue#5 Diagram generation fails for models in modules
-
-### New in the version 0.6.0
-
-* enable multiple workflows by connecting workflow to object instances
-  (using metaclass) instead of connecting to a class, s. "Multiple
-  Workflows" section
-
-### New in the version 0.5.0
-
-* fix issue#3 change the behaviour of halt! to immediately raise an
-  exception. See also http://github.com/geekq/workflow/issues/#issue/3
-
-### New in the version 0.4.0
-
-* completely rewritten the documentation to match my branch
-* switch to [jeweler][] for building gems
-* use [gemcutter][] for gem distribution
-* every described feature is backed up by an automated test
-
-[jeweler]: http://github.com/technicalpickles/jeweler
-[gemcutter]: http://gemcutter.org/gems/workflow
-
-### New in the version 0.3.0
-
-Intermixing of transition graph definition (states, transitions)
-on the one side and implementation of the actions on the other side
-for a bigger state machine can introduce clutter.
-
-To reduce this clutter it is now possible to use state entry- and
-exit- hooks defined through a naming convention. For example, if there
-is a state :pending, then instead of using a
-block:
-
-    state :pending do
-      on_entry do
-        # your implementation here
-      end
-    end
-
-you can hook in by defining method
-
-    def on_pending_exit(new_state, event, *args)
-      # your implementation here
-    end
-
-anywhere in your class. You can also use a simpler function signature
-like `def on_pending_exit(*args)` if your are not interested in
-arguments.  Please note: `def on_pending_exit()` with an empty list
-would not work.
-
-If both a function with a name according to naming convention and the
-on_entry/on_exit block are given, then only on_entry/on_exit block is used.
-
-
-Support
--------
+Support, Participation
+----------------------
 
 ### Reporting bugs
 
 <http://github.com/geekq/workflow/issues>
 
+### Development Setup
 
-About
------
+    sudo apt-get install graphviz # Linux
+    brew cask install graphviz # Mac OS
+    cd workflow
+    gem install bundler
+    bundle install
+    # run all the tests
+    bundle exec rake test
+
+
+### About
 
 Author: Vladimir Dobriakov, <https://infrastructure-as-code.de>
 
