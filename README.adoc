@@ -529,6 +529,10 @@ Support, Participation
     # run all the tests
     bundle exec rake test
 
+### Other 3rd party libraries
+
+https://github.com/kwent/active_admin-workflow[ActiveAdmin-Workflow] - is an
+integration with https://github.com/activeadmin/activeadmin[ActiveAdmin].
 
 ### About
 
