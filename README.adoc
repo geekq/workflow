@@ -342,6 +342,8 @@ Advanced usage
 You can easily reflect on workflow specification programmatically - for
 the whole class or for the current object. Examples:
 
+include::test/reflection_test.rb[tag=reflect]
+
     article2.current_state.events # lists possible events from here
     article2.current_state.events[:reject].transitions_to # => :rejected
 
@@ -375,18 +377,20 @@ representation of the workflow. See below.
 
 Conditions can be a "method name symbol" with a corresponding instance method, a `proc` or `lambda` which are added to events, like so:
 
-    state :off
-      event :turn_on, :transition_to => :on,
-                      :if => :sufficient_battery_level?
+....
+state :off
+  event :turn_on, :transition_to => :on,
+                  :if => :sufficient_battery_level?
 
-      event :turn_on, :transition_to => :low_battery,
-                      :if => proc { |device| device.battery_level > 0 }
-    end
+  event :turn_on, :transition_to => :low_battery,
+                  :if => proc { |device| device.battery_level > 0 }
+end
 
-    # corresponding instance method
-    def sufficient_battery_level?
-      battery_level > 10
-    end
+# corresponding instance method
+def sufficient_battery_level?
+  battery_level > 10
+end
+....
 
 When calling a `device.can_<fire_event>?` check, or attempting a `device.<event>!`, each event is checked in turn:
 
