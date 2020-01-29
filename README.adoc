@@ -548,13 +548,15 @@ Support, Participation
 
 ### Development Setup
 
-    sudo apt-get install graphviz # Linux
-    brew cask install graphviz # Mac OS
-    cd workflow
-    gem install bundler
-    bundle install
-    # run all the tests
-    bundle exec rake test
+```sh
+sudo apt-get install graphviz # Linux
+brew cask install graphviz # Mac OS
+cd workflow
+gem install bundler
+bundle install
+# run all the tests
+bundle exec rake test
+```
 
 ### Other 3rd party libraries
 
