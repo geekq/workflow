@@ -201,9 +201,11 @@ article2.review!('Homer Simpson') # => [Homer Simpson] is now reviewing the arti
 Alternative way is to use a block (only recommended for short event
 implementation without further code nesting):
 
-    event :review, :transitions_to => :being_reviewed do |reviewer|
-      # store the reviewer
-    end
+```rb
+event :review, :transitions_to => :being_reviewed do |reviewer|
+  # store the reviewer
+end
+```
 
 We've noticed, that mixing the list of events and states with the blocks
 invoked for particular transitions leads to a bumpy and poorly readable code
