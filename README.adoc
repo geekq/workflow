@@ -552,7 +552,7 @@ Support, Participation
 
 ```sh
 sudo apt-get install graphviz # Linux
-brew cask install graphviz # Mac OS
+brew install graphviz # Mac OS
 cd workflow
 gem install bundler
 bundle install
