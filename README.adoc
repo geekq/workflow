@@ -458,7 +458,7 @@ workflow do
   state :second
 
   on_error do |error, from, to, event, *args|
-    Log.info "Exception(#error.class) on #{from} -> #{to}"
+    Log.info "Exception(#{error.class}) on #{from} -> #{to}"
   end
 end
 ```
