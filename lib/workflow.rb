@@ -95,7 +95,7 @@ module Workflow
     end
 
     def process_event!(name, *args)
-      event = current_state.events.first_applicable(name, self)
+      event = current_state.events.first_applicable(name, self, args)
       raise NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
         if event.nil?

@@ -15,12 +15,12 @@ module Workflow
                    end
     end
 
-    def condition_applicable?(object)
+    def condition_applicable?(object, event_arguments)
       if condition
         if condition.is_a?(Symbol)
-          object.send(condition)
+          object.send(condition, *event_arguments)
         else
-          condition.call(object)
+          condition.call(object, *event_arguments)
         end
       else
         true
