@@ -6,8 +6,8 @@
 
 # Workflow
 
-image:https://badge.fury.io/rb/workflow.svg[link=https://badge.fury.io/rb/workflow]
-image:https://travis-ci.org/geekq/workflow.svg[link=https://travis-ci.org/geekq/workflow]
+image:https://img.shields.io/gem/v/workflow.svg[link=https://rubygems.org/gems/workflow]
+image:https://github.com/geekq/workflow/actions/workflows/test.yml/badge.svg[link=https://github.com/geekq/workflow/actions/workflows/test.yml]
 image:https://codeclimate.com/github/geekq/workflow/badges/gpa.svg[link=https://codeclimate.com/github/geekq/workflow]
 image:https://codeclimate.com/github/geekq/workflow/badges/coverage.svg[link=https://codeclimate.com/github/geekq/workflow/coverage]
 
