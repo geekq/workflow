@@ -2,7 +2,7 @@ require 'rubygems'
 
 require 'workflow/specification'
 
-# See also README.markdown for documentation
+# See also README for documentation
 module Workflow
   module ClassMethods
     attr_reader :workflow_spec

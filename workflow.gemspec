@@ -24,7 +24,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ['lib']
 
   gem.extra_rdoc_files = [
-    "README.markdown"
+    "README.adoc"
   ]
 
   gem.required_ruby_version = '>= 2.7'
