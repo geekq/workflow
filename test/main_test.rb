@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), 'test_helper')
 
 $VERBOSE = false
 require 'workflow'
-require 'mocha/setup'
+require 'mocha/minitest'
 require 'stringio'
 #require 'ruby-debug'
 
@@ -92,7 +92,8 @@ class MainTest < Minitest::Test
     assert_equal 'one', c.new.current_state.to_s
   end
 
-  test 'multiple events with the same name and different arguments lists from different states'
+  # TODO Consider following test case:
+  # test 'multiple events with the same name and different arguments lists from different states'
 
   test 'implicit transition callback' do
     args = mock()
@@ -385,7 +386,7 @@ class MainTest < Minitest::Test
     yield
     $stdout
   ensure
-    captured, $stdout = $stdout, old_stdout
+    $stdout = old_stdout
   end
 
 end
