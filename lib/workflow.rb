@@ -61,8 +61,8 @@ module Workflow
         state.events.flat.each do |event|
           event_name = event.name
           module_eval do
-            define_method "#{event_name}!".to_sym do |*args|
-              process_event!(event_name, *args)
+            define_method "#{event_name}!".to_sym do |*args, **kwargs|
+              process_event!(event_name, *args, **kwargs)
             end
 
             define_method "can_#{event_name}?" do
@@ -94,7 +94,7 @@ module Workflow
       @halted_because
     end
 
-    def process_event!(name, *args)
+    def process_event!(name, *args, **kwargs)
       event = current_state.events.first_applicable(name, self)
       raise NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
@@ -107,26 +107,26 @@ module Workflow
       from = current_state
       to = spec.states[event.transitions_to]
 
-      run_before_transition(from, to, name, *args)
+      run_before_transition(from, to, name, *args, **kwargs)
       return false if @halted
 
       begin
-        return_value = run_action(event.action, *args) || run_action_callback(event.name, *args)
+        return_value = run_action(event.action, *args, **kwargs) || run_action_callback(event.name, *args, **kwargs)
       rescue StandardError => e
-        run_on_error(e, from, to, name, *args)
+        run_on_error(e, from, to, name, *args, **kwargs)
       end
 
       return false if @halted
 
-      run_on_transition(from, to, name, *args)
+      run_on_transition(from, to, name, *args, **kwargs)
 
-      run_on_exit(from, to, name, *args)
+      run_on_exit(from, to, name, *args, **kwargs)
 
       transition_value = persist_workflow_state to.to_s
 
-      run_on_entry(to, from, name, *args)
+      run_on_entry(to, from, name, *args, **kwargs)
 
-      run_after_transition(from, to, name, *args)
+      run_after_transition(from, to, name, *args, **kwargs)
 
       return_value.nil? ? transition_value : return_value
     end
@@ -169,31 +169,31 @@ module Workflow
       end
     end
 
-    def run_before_transition(from, to, event, *args)
-      instance_exec(from.name, to.name, event, *args, &spec.before_transition_proc) if
+    def run_before_transition(from, to, event, *args, **kwargs)
+      instance_exec(from.name, to.name, event, *args, **kwargs, &spec.before_transition_proc) if
         spec.before_transition_proc
     end
 
-    def run_on_error(error, from, to, event, *args)
+    def run_on_error(error, from, to, event, *args, **kwargs)
       if spec.on_error_proc
-        instance_exec(error, from.name, to.name, event, *args, &spec.on_error_proc)
+        instance_exec(error, from.name, to.name, event, *args, **kwargs, &spec.on_error_proc)
         halt(error.message)
       else
         raise error
       end
     end
 
-    def run_on_transition(from, to, event, *args)
-      instance_exec(from.name, to.name, event, *args, &spec.on_transition_proc) if spec.on_transition_proc
+    def run_on_transition(from, to, event, *args, **kwargs)
+      instance_exec(from.name, to.name, event, *args, **kwargs, &spec.on_transition_proc) if spec.on_transition_proc
     end
 
-    def run_after_transition(from, to, event, *args)
-      instance_exec(from.name, to.name, event, *args, &spec.after_transition_proc) if
+    def run_after_transition(from, to, event, *args, **kwargs)
+      instance_exec(from.name, to.name, event, *args, **kwargs, &spec.after_transition_proc) if
         spec.after_transition_proc
     end
 
-    def run_action(action, *args)
-      instance_exec(*args, &action) if action
+    def run_action(action, *args, **kwargs)
+      instance_exec(*args, **kwargs, &action) if action
     end
 
     def has_callback?(action)
@@ -206,27 +206,27 @@ module Workflow
         self.private_methods(false).map(&:to_sym).include?(action)
     end
 
-    def run_action_callback(action_name, *args)
+    def run_action_callback(action_name, *args, **kwargs)
       action = action_name.to_sym
-      self.send(action, *args) if has_callback?(action)
+      self.send(action, *args, **kwargs) if has_callback?(action)
     end
 
-    def run_on_entry(state, prior_state, triggering_event, *args)
+    def run_on_entry(state, prior_state, triggering_event, *args, **kwargs)
       if state.on_entry
-        instance_exec(prior_state.name, triggering_event, *args, &state.on_entry)
+        instance_exec(prior_state.name, triggering_event, *args, **kwargs, &state.on_entry)
       else
         hook_name = "on_#{state}_entry"
-        self.send hook_name, prior_state, triggering_event, *args if has_callback?(hook_name)
+        self.send hook_name, prior_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
       end
     end
 
-    def run_on_exit(state, new_state, triggering_event, *args)
+    def run_on_exit(state, new_state, triggering_event, *args, **kwargs)
       if state
         if state.on_exit
-          instance_exec(new_state.name, triggering_event, *args, &state.on_exit)
+          instance_exec(new_state.name, triggering_event, *args, **kwargs, &state.on_exit)
         else
           hook_name = "on_#{state}_exit"
-          self.send hook_name, new_state, triggering_event, *args if has_callback?(hook_name)
+          self.send hook_name, new_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
         end
       end
     end
