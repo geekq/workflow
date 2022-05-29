@@ -16,15 +16,6 @@ at http://rubygems.org/gems/workflow : select a version (optional,
 default is latest release), click "Documentation" link. When reading on
 github.com, the README refers to the upcoming release.
 
-**Note: Workflow 2.0 is a major refactoring of the library.
-For different options/troubleshooting using it with your Rails application see
-link:#activerecord[State persistence with ActiveRecord].**
-
-Note for contributors: it looks like github closed all the pull requests after
-I had changed the default branch on 2019-01-12. Please check the new refactored
-workflow 2.0, complementing workflow-activerecord and recreate your pull
-request if needed.
-
 toc::[]
 
 What is workflow?
@@ -522,24 +513,16 @@ end
 Changelog
 ---------
 
-### New in the version 2.0.2
+=== New in the version 3.0.0
 
-* finalize extraction of persistence adapters, remove remodel adapter
+* gh-228 Support for Ruby 3 keyword args, provided by @agirling
+* retire Ruby 2.6 since it has reached end of live; please use workflow 2.x, if you still depend on that Ruby version
+* gh-229 Switch from travis CI to GihHub actions for continuous integration
 
-### New in the version 2.0.1
+### New in the versions 2.x
 
-* retire Ruby 2.3 since it has reached end of live
-* fix #213 ruby-graphiz warnings
-
-### New in the version 2.0.0
-
-* extract Rails/ActiveRecord integration into a separate gem
+* extract persistence adapters, Rails/ActiveRecord integration is now a separate gem
   workflow-activerecord
-* Remodel integration removed - needs to be a separate gem
-
-Special thanks to https://github.com/voltechs[voltechs] for implementing
-Rails 5 support and helping to revive `workflow`!
-
 
 Support, Participation
 ----------------------
@@ -569,7 +552,7 @@ integration with https://github.com/activeadmin/activeadmin[ActiveAdmin].
 
 Author: Vladimir Dobriakov, <https://infrastructure-as-code.de>
 
-Copyright (c) 2010-2019 Vladimir Dobriakov and Contributors
+Copyright (c) 2010-2022 Vladimir Dobriakov and Contributors
 
 Copyright (c) 2008-2009 Vodafone
 

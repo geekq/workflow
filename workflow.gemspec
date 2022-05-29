@@ -27,7 +27,7 @@ Gem::Specification.new do |gem|
     "README.markdown"
   ]
 
-  gem.required_ruby_version = '>= 2.3'
+  gem.required_ruby_version = '>= 2.7'
   gem.add_development_dependency 'rdoc',          '~> 6.1'
   gem.add_development_dependency 'bundler',       '~> 2.0'
   gem.add_development_dependency 'mocha',         '~> 1.8'
