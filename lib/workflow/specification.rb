@@ -20,6 +20,10 @@ module Workflow
 
     private
 
+    def include(proc)
+      instance_eval(&proc)
+    end
+
     def state(name, meta = {:meta => {}}, &events_and_etc)
       # meta[:meta] to keep the API consistent..., gah
       new_state = Workflow::State.new(name, self, meta[:meta])
