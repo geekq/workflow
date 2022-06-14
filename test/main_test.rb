@@ -92,6 +92,23 @@ class MainTest < Minitest::Test
     assert_equal 'one', c.new.current_state.to_s
   end
 
+  test 'including a child workflow definition for composable workflows' do
+    child = Proc.new do
+      state :two
+    end
+
+    c = Class.new
+    c.class_eval do
+      include Workflow
+      workflow do
+        state :one
+        include child
+        state :three
+      end
+    end
+    assert_equal [:one, :two, :three], c.workflow_spec.states.keys
+  end
+
   # TODO Consider following test case:
   # test 'multiple events with the same name and different arguments lists from different states'
 
@@ -390,4 +407,3 @@ class MainTest < Minitest::Test
   end
 
 end
-
