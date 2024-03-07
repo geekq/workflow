@@ -210,23 +210,25 @@ module Workflow
       action = action_name.to_sym
       self.send(action, *args, **kwargs) if has_callback?(action)
     end
-
+      
     def run_on_entry(state, prior_state, triggering_event, *args, **kwargs)
-      if state.on_entry
+      if state.on_entry&.is_a? Proc
         instance_exec(prior_state.name, triggering_event, *args, **kwargs, &state.on_entry)
       else
-        hook_name = "on_#{state}_entry"
-        self.send hook_name, prior_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+        [state.on_entry&.to_sym, "on_#{state}_entry"].compact.each do |hook_name|
+          self.send hook_name, prior_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+        end
       end
     end
 
     def run_on_exit(state, new_state, triggering_event, *args, **kwargs)
       if state
-        if state.on_exit
+        if state.on_exit&.is_a? Proc
           instance_exec(new_state.name, triggering_event, *args, **kwargs, &state.on_exit)
         else
-          hook_name = "on_#{state}_exit"
-          self.send hook_name, new_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+          [state.on_exit&.to_sym, "on_#{state}_exit"].compact.each do |hook_name|
+            self.send hook_name, new_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+          end
         end
       end
     end
