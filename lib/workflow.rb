@@ -170,11 +170,13 @@ module Workflow
     end
 
     def run_before_transition(from, to, event, *args, **kwargs)
+      run_action_callback(:before_transition, from, to, event, *args, **kwargs)
       instance_exec(from.name, to.name, event, *args, **kwargs, &spec.before_transition_proc) if
         spec.before_transition_proc
     end
 
     def run_on_error(error, from, to, event, *args, **kwargs)
+      run_action_callback(:on_error, error, from, to, event, *args, **kwargs)
       if spec.on_error_proc
         instance_exec(error, from.name, to.name, event, *args, **kwargs, &spec.on_error_proc)
         halt(error.message)
@@ -184,10 +186,12 @@ module Workflow
     end
 
     def run_on_transition(from, to, event, *args, **kwargs)
+      run_action_callback(:on_transition, from, to, event, *args, **kwargs)
       instance_exec(from.name, to.name, event, *args, **kwargs, &spec.on_transition_proc) if spec.on_transition_proc
     end
 
     def run_after_transition(from, to, event, *args, **kwargs)
+      run_action_callback(:after_transition, from, to, event, *args, **kwargs)
       instance_exec(from.name, to.name, event, *args, **kwargs, &spec.after_transition_proc) if
         spec.after_transition_proc
     end
@@ -210,23 +214,25 @@ module Workflow
       action = action_name.to_sym
       self.send(action, *args, **kwargs) if has_callback?(action)
     end
-
+      
     def run_on_entry(state, prior_state, triggering_event, *args, **kwargs)
-      if state.on_entry
+      if state.on_entry&.is_a? Proc
         instance_exec(prior_state.name, triggering_event, *args, **kwargs, &state.on_entry)
       else
-        hook_name = "on_#{state}_entry"
-        self.send hook_name, prior_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+        [state.on_entry&.to_sym, "on_#{state}_entry"].compact.each do |hook_name|
+          self.send hook_name, prior_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+        end
       end
     end
 
     def run_on_exit(state, new_state, triggering_event, *args, **kwargs)
       if state
-        if state.on_exit
+        if state.on_exit&.is_a? Proc
           instance_exec(new_state.name, triggering_event, *args, **kwargs, &state.on_exit)
         else
-          hook_name = "on_#{state}_exit"
-          self.send hook_name, new_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+          [state.on_exit&.to_sym, "on_#{state}_exit"].compact.each do |hook_name|
+            self.send hook_name, new_state, triggering_event, *args, **kwargs if has_callback?(hook_name)
+          end
         end
       end
     end

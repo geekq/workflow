@@ -40,12 +40,12 @@ module Workflow
       )
     end
 
-    def on_entry(&proc)
-      @scoped_state.on_entry = proc
+    def on_entry(sym=nil, &proc)
+      @scoped_state.on_entry = sym || proc
     end
 
-    def on_exit(&proc)
-      @scoped_state.on_exit = proc
+    def on_exit(sym=nil, &proc)
+      @scoped_state.on_exit = sym || proc
     end
 
     def after_transition(&proc)
