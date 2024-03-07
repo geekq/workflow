@@ -170,11 +170,13 @@ module Workflow
     end
 
     def run_before_transition(from, to, event, *args, **kwargs)
+      run_action_callback(:before_transition, from, to, event, *args, **kwargs)
       instance_exec(from.name, to.name, event, *args, **kwargs, &spec.before_transition_proc) if
         spec.before_transition_proc
     end
 
     def run_on_error(error, from, to, event, *args, **kwargs)
+      run_action_callback(:on_error, error, from, to, event, *args, **kwargs)
       if spec.on_error_proc
         instance_exec(error, from.name, to.name, event, *args, **kwargs, &spec.on_error_proc)
         halt(error.message)
@@ -184,10 +186,12 @@ module Workflow
     end
 
     def run_on_transition(from, to, event, *args, **kwargs)
+      run_action_callback(:on_transition, from, to, event, *args, **kwargs)
       instance_exec(from.name, to.name, event, *args, **kwargs, &spec.on_transition_proc) if spec.on_transition_proc
     end
 
     def run_after_transition(from, to, event, *args, **kwargs)
+      run_action_callback(:after_transition, from, to, event, *args, **kwargs)
       instance_exec(from.name, to.name, event, *args, **kwargs, &spec.after_transition_proc) if
         spec.after_transition_proc
     end
