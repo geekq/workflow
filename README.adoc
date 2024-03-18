@@ -102,7 +102,7 @@ article.current_state.between? :awaiting_review, :rejected # => true
 ```
 
 Now we can call the submit event, which transitions to the
-<tt>:awaiting_review</tt> state:
+`:awaiting_review` state:
 
 ```rb
 article.submit!
