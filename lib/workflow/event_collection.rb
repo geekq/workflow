@@ -26,9 +26,9 @@ module Workflow
       end
     end
 
-    def first_applicable(name, object_context, event_arguments)
+    def first_applicable(name, object_context, event_arguments, event_kwargs)
       (self[name] || []).detect do |event|
-        event.condition_applicable?(object_context, event_arguments) && event
+        event.condition_applicable?(object_context, event_arguments, event_kwargs) && event
       end
     end
 

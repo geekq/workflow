@@ -92,7 +92,8 @@ class ConditionalsTest < Minitest::Test
           event :turn_on, :transitions_to => :low_battery # otherwise
         end
         state :on do
-          event :check, :transitions_to => :low_battery, :if => proc { |obj| return false }
+          # Use a lambda proc, which enforces correct arity
+          event :check, :transitions_to => :low_battery, :if => -> (obj) { return false }
           event :check, :transitions_to => :on # stay in on state otherwise
         end
         state :low_battery
@@ -109,6 +110,68 @@ class ConditionalsTest < Minitest::Test
     device.check!('foo') # also ensure that if conditional in the definition above does not support arguments,
     # it still works and just ignores superfluous arguments
     assert device.on?
+  end
+
+  test 'conditionals can accept keyword arguments' do
+    c = Class.new do
+      include Workflow
+
+      workflow do
+        state :inside do
+          # method with kwarg
+          event :leave, :transitions_to => :outside, if: :warm_outside?
+        end
+        state :outside do
+          # method with positional arg and kwarg
+          event :go_inside, :transitions_to => :in_office, if: :work_to_be_done?
+        end
+        state :in_office do
+          # Lambda with kwarg
+          event :relax, :transitions_to => :on_couch, if: -> (obj, hour:) { hour > 18 }
+        end
+        state :on_couch do
+          # Lambda with positional arg and kwarg
+          event :sleep, :transitions_to => :in_bed, if: -> (obj, sleepiness, hour:) { sleepiness > 10 && hour > 20  }
+        end
+        state :in_bed do
+          # Proc/block with no arg
+          event :wake_up, transitions_to: :awake, if: proc { |obj| true }
+        end
+        state :awake do
+          # Proc/block with kwarg
+          event :make_coffee, transitions_to: :caffienated, if: proc { |obj, decaf:| decaf }
+        end
+        state :caffienated
+      end
+
+      def warm_outside?(outside_temperature:)
+        outside_temperature > 20
+      end
+
+      def work_to_be_done?(tasks_completed, quota:)
+        tasks_completed < quota
+      end
+    end
+
+    obj = c.new
+
+    obj.leave!(outside_temperature: 21)
+    assert obj.outside?
+
+    obj.go_inside!(5, quota: 10)
+    assert obj.in_office?
+
+    obj.relax!(hour: 19)
+    assert obj.on_couch?
+
+    obj.sleep!(11, hour: 21)
+    assert obj.in_bed?
+
+    obj.wake_up!(hour: 9)
+    assert obj.awake?
+
+    obj.make_coffee!(decaf: true)
+    assert obj.caffienated?
   end
 
 end
