@@ -66,7 +66,7 @@ module Workflow
             end
 
             define_method "can_#{event_name}?".to_sym do |*args, **kwargs|
-              return !!current_state.events.first_applicable(event_name, self, args)
+              return !!current_state.events.first_applicable(event_name, self, args, kwargs)
             end
           end
         end
@@ -95,7 +95,7 @@ module Workflow
     end
 
     def process_event!(name, *args, **kwargs)
-      event = current_state.events.first_applicable(name, self, args)
+      event = current_state.events.first_applicable(name, self, args, kwargs)
       raise NoTransitionAllowed.new(
         "There is no event #{name.to_sym} defined for the #{current_state} state") \
         if event.nil?

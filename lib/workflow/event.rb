@@ -15,7 +15,7 @@ module Workflow
                    end
     end
 
-    def condition_applicable?(object, event_arguments)
+    def condition_applicable?(object, event_arguments, event_kwargs)
       if condition
         if condition.is_a?(Symbol)
           m = object.method(condition)
@@ -25,7 +25,7 @@ module Workflow
           if m.arity == 0 # no additional parameters accepted
             object.send(condition)
           else
-            object.send(condition, *event_arguments)
+            object.send(condition, *event_arguments, **event_kwargs)
           end
         else
           # Blocks and non-lambda Procs can ignore extra arguments without raising an error in Ruby,
@@ -33,7 +33,7 @@ module Workflow
           if condition.arity == 1 # no additional parameters accepted
             condition.call(object)
           else
-            condition.call(object, *event_arguments)
+            condition.call(object, *event_arguments, **event_kwargs)
           end
         end
       else
