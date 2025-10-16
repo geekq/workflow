@@ -92,8 +92,7 @@ class ConditionalsTest < Minitest::Test
           event :turn_on, :transitions_to => :low_battery # otherwise
         end
         state :on do
-          # Use a lambda proc, which enforces correct arity
-          event :check, :transitions_to => :low_battery, :if => -> (obj) { return false }
+          event :check, :transitions_to => :low_battery, :if => proc { |obj| return false }
           event :check, :transitions_to => :on # stay in on state otherwise
         end
         state :low_battery
