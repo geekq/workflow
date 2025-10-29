@@ -15,7 +15,9 @@ module Workflow
         :shape => 'ellipse'
       }
 
-      node = graph.add_nodes(to_s, defaults.merge(meta))
+      nodesattrs = GraphViz::Constants::NODESATTRS.keys.map(&:to_sym)
+
+      node = graph.add_nodes(to_s, defaults.merge(meta.slice(*nodesattrs)))
 
       # Add open arrow for initial state
       # graph.add_edge(graph.add_node('starting_state', :shape => 'point'), node) if initial?

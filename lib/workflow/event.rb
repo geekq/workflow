@@ -42,7 +42,11 @@ module Workflow
     end
 
     def draw(graph, from_state)
-      graph.add_edges(from_state.name.to_s, transitions_to.to_s, meta.merge(:label => to_s))
+      edgesattrs = GraphViz::Constants::EDGESATTRS.keys.map(&:to_sym)
+
+      defaults = { label: to_s }
+
+      graph.add_edges(from_state.name.to_s, transitions_to.to_s, defaults.merge(meta.slice(*edgesattrs)))
     end
 
     def to_s
