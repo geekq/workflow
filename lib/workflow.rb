@@ -5,7 +5,17 @@ require 'workflow/specification'
 # See also README for documentation
 module Workflow
   module ClassMethods
-    attr_reader :workflow_spec
+    # Use this over an attr_reader to allow children of a parent class to access
+    # the parent's workflow through the same class method.
+    def workflow_spec
+      return @workflow_spec if @workflow_spec
+      return nil unless include?(Workflow)
+
+      parent = superclass
+      return nil unless parent.respond_to?(:workflow_spec)
+
+      parent.workflow_spec
+    end
 
     # Workflow does not provide any state persistence - it is the job of particular
     # persistence libraries for workflow and activerecord or remodel.
@@ -148,13 +158,8 @@ module Workflow
         return workflow_spec if workflow_spec
       end
 
-      c = self.class
-      # using a simple loop instead of class_inheritable_accessor to avoid
-      # dependency on Rails' ActiveSupport
-      until c.workflow_spec || !(c.include? Workflow)
-        c = c.superclass
-      end
-      c.workflow_spec
+      # workflow_spec itself walks up the superclass chain
+      self.class.workflow_spec
     end
 
     private
